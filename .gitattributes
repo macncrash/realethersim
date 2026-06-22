@@ -1,0 +1,3 @@
+# Treat the lockfile as a generated artifact: collapse it in diffs and exclude it from
+# GitHub's language statistics, while still committing it for reproducible/secure installs.
+bun.lock linguist-generated=true
