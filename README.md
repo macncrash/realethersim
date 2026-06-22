@@ -18,9 +18,10 @@ mathematical archetypes, live-switchable, with fading trails, a structural hiera
 camera focus-tracking, JSON snapshots, and an optional fully GPU-resident compute path.
 
 ## Highlights
-- **A growing catalog behind one seam** — 14 strange attractors, 10 classic iterated maps, the
-  hierarchical hyper-oscillator, N-body, and quantum-foam (**27 systems**), grouped by category and
-  switchable live, no reload. Adding one is a single file + one `register()` call.
+- **A growing catalog behind one seam** — 14 strange attractors, 10 iterated maps, emergent
+  Particle Life, the hierarchical hyper-oscillator, N-body, and quantum-foam (**28 systems**),
+  grouped by category and switchable live, no reload. Adding one is a single file + one
+  `register()` call.
 - **Decoupled simulation** — the integrator runs in a Web Worker over a SharedArrayBuffer
   double-buffer (with a main-thread fallback), independent of the render frame rate.
 - **Optional GPU compute** — every archetype can run entirely on the GPU via Three.js **TSL**
@@ -32,8 +33,9 @@ camera focus-tracking, JSON snapshots, and an optional fully GPU-resident comput
   largest Lyapunov exponent ≈ 0.9056; the app also computes it live.
 
 ## Archetypes
-All four are rendered below **from this project's own integrators** — real trajectories and fields,
-not stock art. Each runs on the CPU worker path and, optionally, fully on the GPU via TSL compute.
+The images below are rendered **from this project's own integrators** — real trajectories and
+fields, not stock art. Every system runs on the CPU worker path; the original archetypes
+(attractors, hyper-oscillator, N-body, foam) also have an optional fully GPU-resident path via TSL.
 
 ### Strange attractors
 <p align="center"><img src="docs/gallery.svg" alt="Lorenz, Rössler, Aizawa, Thomas" width="100%"></p>
@@ -50,6 +52,14 @@ Ikeda, Hénon, Bedhead, and the 3D Pickover — each a 100k-point cloud that set
 attractor, with fading trails tracing the filaments.
 **Next:** GPU iteration for the maps; more families (Lozi, standard/Chirikov) and escape-time
 fractal coloring.
+
+### Particle Life
+K species in a toroidal cube governed by a random **asymmetric interaction matrix** — universal
+short-range repulsion plus per-pair attraction/repulsion yields emergent cells, membranes, and
+chasers (life from a matrix). Species are contiguous blocks, so the hierarchy tree spotlights each
+one; the "ecosystem" slider reseeds the matrix for a new world.
+**Next:** a spatial-hash neighbor grid to scale past O(n²), a GPU compute version, and save/share
+for favorite ecosystems.
 
 ### Hierarchical hyper-oscillator
 <p align="center"><img src="docs/arch-hyper.svg" alt="Nested epicycle swarm" width="62%"></p>

@@ -4,6 +4,7 @@ import { makeMapFactory, MAP_SYSTEMS } from './iteratedMap';
 import { hyperOscillatorFactory } from './hyperOscillator';
 import { nbodyFactory } from './nbody';
 import { quantumFoamFactory } from './quantumFoam';
+import { particleLifeFactory } from './particleLife';
 
 // Side-effect registration. Importing this module wires every archetype into the registry.
 // Adding a new archetype = add a file + one register() call here.
@@ -21,4 +22,5 @@ export function registerArchetypes(): void {
   register(hyperOscillatorFactory);
   register(nbodyFactory);
   register(quantumFoamFactory);
+  register(particleLifeFactory);
 }
