@@ -12,6 +12,7 @@ import { slimeMoldFactory } from './slimeMold';
 import { excitableMediumFactory } from './excitableMedium';
 import { pointVorticesFactory } from './pointVortices';
 import { leniaFactory } from './lenia';
+import { dlaFactory } from './dla';
 
 // Side-effect registration. Importing this module wires every archetype into the registry.
 // Adding a new archetype = add a file + one register() call here.
@@ -41,4 +42,5 @@ export function registerArchetypes(): void {
   register(excitableMediumFactory);
   register(pointVorticesFactory);
   register(leniaFactory);
+  register(dlaFactory);
 }

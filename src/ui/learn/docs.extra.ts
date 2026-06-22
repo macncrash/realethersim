@@ -28,4 +28,29 @@ A = clamp(A + rate * G, 0, 1);`,
       { label: 'Chan 2019, Lenia — Biology of Artificial Life', url: 'https://arxiv.org/abs/1812.05433' },
     ],
   },
+  dla: {
+    title: 'Diffusion-Limited Aggregation',
+    about:
+      'DLA models growth by random diffusion: particles wander randomly until they bump into a growing cluster, then stick permanently. From a single seed this builds a branching, self-similar dendrite — the same process behind coral, frost on a window, lightning, mineral veins, and electrodeposition. The result is a fractal with dimension ≈ 1.71.',
+    howItWorks:
+      'Many walkers random-walk across the grid; whenever a walker lands next to the cluster it freezes there (with probability "stickiness"), then a fresh walker is released. Lower stickiness lets walkers penetrate deeper, giving denser, bushier growth.',
+    equations: [
+      { label: 'fractal mass–radius scaling (D ≈ 1.71 in 2D)', latex: 'N(R) \\sim R^{D}, \\qquad D \\approx 1.71' },
+    ],
+    params: [
+      { key: 'stickiness', symbol: 'p', meaning: 'probability a walker freezes on contact — lower = denser, bushier clusters' },
+      { key: 'walkers', symbol: 'M', meaning: 'number of simultaneous random walkers (growth speed)' },
+    ],
+    code: `// per walker: random-walk one cell; if any of the 8 neighbours is stuck, freeze:
+if (anyNeighbourStuck && random() < stickiness) {
+  grid[cell] = 1;     // join the cluster
+  respawn(walker);    // release a fresh walker
+} else {
+  walker += randomStep();
+}`,
+    links: [
+      { label: 'Diffusion-limited aggregation (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Diffusion-limited_aggregation' },
+      { label: 'Witten & Sander 1981 (original paper)', url: 'https://journals.aps.org/prl/abstract/10.1103/PhysRevLett.47.1400' },
+    ],
+  },
 };

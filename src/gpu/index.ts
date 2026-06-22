@@ -6,6 +6,7 @@ import { IFS_SYSTEMS } from '../archetypes/fractalIFS';
 import { makeGpuEscape } from './gpuEscapeFractal';
 import { ESCAPE_SYSTEMS } from '../archetypes/escapeFractal';
 import { gpuLenia } from './gpuLenia';
+import { gpuDla } from './gpuDla';
 import { gpuHyperOscillator } from './gpuHyperOscillator';
 import { gpuNbody } from './gpuNbody';
 import { gpuFoam } from './gpuFoam';
@@ -21,6 +22,7 @@ const GPU_FACTORIES: Record<string, GpuFactory> = {
   nbody: gpuNbody,
   quantumFoam: gpuFoam,
   lenia: gpuLenia,
+  dla: gpuDla,
   particleLife: gpuParticleLife,
   boids: gpuBoids,
   slimeMold: gpuSlimeMold,
