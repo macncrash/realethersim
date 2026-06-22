@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ETHERSIM — a tour of complex systems</title>
+    <meta name="description" content="A scrolling tour of ETHERSIM: strange attractors, fractals, emergent life, and gravity — 41 dynamical systems in the browser, open source, WebGPU." />
+    <style>
+      :root {
+        --bg: #05070d;
+        --text: #e6edf7;
+        --dim: #8a97ad;
+        --accent: #4ad6c8;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; background: var(--bg); color: var(--text);
+        font: 16px/1.6 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+      a { color: var(--accent); }
+      #bg { position: fixed; inset: 0; z-index: 0; display: block; }
+      #fade { position: fixed; inset: 0; z-index: 1; pointer-events: none;
+        background: radial-gradient(ellipse at center, transparent 55%, rgba(5,7,13,0.55) 100%); }
+      header.brand { position: fixed; top: 18px; left: 22px; z-index: 3; letter-spacing: 0.22em;
+        font-weight: 700; font-size: 14px; color: var(--accent); }
+      .hint { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); z-index: 3;
+        color: var(--dim); font-size: 12px; letter-spacing: 0.18em; animation: bob 2s ease-in-out infinite; }
+      @keyframes bob { 0%,100% { opacity: 0.4; transform: translate(-50%,0); } 50% { opacity: 1; transform: translate(-50%,6px); } }
+      #scroller { position: relative; z-index: 2; }
+      section { min-height: 100vh; display: flex; align-items: flex-end; justify-content: center;
+        padding: 0 20px 13vh; scroll-snap-align: center; }
+      section.hero, section.outro { align-items: center; padding-bottom: 0; text-align: center; }
+      .card { max-width: 620px; background: rgba(8,12,20,0.42); border: 1px solid rgba(120,150,190,0.18);
+        border-radius: 14px; padding: 18px 22px; backdrop-filter: blur(7px);
+        box-shadow: 0 10px 40px rgba(0,0,0,0.35); }
+      .tag { font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--accent); }
+      .card h2 { margin: 6px 0 8px; font-size: 26px; font-weight: 700; }
+      .card p { margin: 0; color: var(--dim); }
+      .card .eq { margin-top: 10px; color: #aeb9cc; font: 13px/1.5 ui-monospace, Menlo, monospace; }
+      .hero h1 { font-size: clamp(40px, 9vw, 96px); margin: 0; letter-spacing: 0.16em; font-weight: 800; }
+      .hero .sub { margin-top: 14px; color: var(--dim); font-size: clamp(15px, 2.4vw, 20px); letter-spacing: 0.04em; }
+      .hero .pills { margin-top: 20px; color: var(--accent); font-size: 13px; letter-spacing: 0.18em; }
+      .outro h2 { font-size: clamp(28px, 6vw, 56px); margin: 0 0 10px; letter-spacing: 0.04em; }
+      .outro p { color: var(--dim); }
+      .outro .cta { display: inline-block; margin-top: 18px; padding: 12px 22px; border: 1px solid var(--accent);
+        border-radius: 10px; color: var(--accent); text-decoration: none; letter-spacing: 0.12em; font-size: 14px; }
+      .outro .cta:hover { background: rgba(74,214,200,0.12); }
+      @media (prefers-reduced-motion: no-preference) { html { scroll-snap-type: y proximity; } }
+    </style>
+  </head>
+  <body>
+    <canvas id="bg"></canvas>
+    <div id="fade"></div>
+    <header class="brand">ETHERSIM</header>
+    <div class="hint">scroll ↓</div>
+    <main id="scroller">
+      <section class="hero" data-sim="lorenz">
+        <div>
+          <h1>ETHERSIM</h1>
+          <div class="sub">A tour of complex systems — chaos, fractals, life, and gravity,<br />simulated live in your browser.</div>
+          <div class="pills">41 SYSTEMS · 8 FAMILIES · WEBGPU · OPEN SOURCE</div>
+        </div>
+      </section>
+
+      <section data-sim="lorenz">
+        <div class="card"><div class="tag">Strange Attractor</div><h2>The Lorenz attractor</h2>
+          <p>A weather model so simple it fits on a napkin — yet it never repeats. Tiny differences explode: the original "butterfly effect."</p>
+          <div class="eq">ẋ = σ(y−x) · ẏ = x(ρ−z)−y · ż = xy−βz</div></div>
+      </section>
+
+      <section data-sim="thomas">
+        <div class="card"><div class="tag">Strange Attractor</div><h2>Thomas' labyrinth</h2>
+          <p>Three identical rules, cycled — each axis chases the sine of the next. The flow wanders a symmetric, maze-like tangle forever.</p>
+          <div class="eq">ẋ = sin(y) − b·x &nbsp;(and cyclic in y, z)</div></div>
+      </section>
+
+      <section data-sim="clifford">
+        <div class="card"><div class="tag">Iterated Map</div><h2>Clifford map</h2>
+          <p>One point, fed back through a pair of sine equations a hundred thousand times, settles into a fine woven web of light.</p>
+          <div class="eq">xₙ₊₁ = sin(a·y) + c·cos(a·x)</div></div>
+      </section>
+
+      <section data-sim="barnsley-fern">
+        <div class="card"><div class="tag">Fractal · IFS</div><h2>The Barnsley fern</h2>
+          <p>Four affine maps, chosen at random — that's the whole recipe. A lifelike fern condenses out of pure chance, self-similar to the tips.</p></div>
+      </section>
+
+      <section data-sim="mandelbrot">
+        <div class="card"><div class="tag">Fractal · Escape-time</div><h2>The Mandelbrot set</h2>
+          <p>Iterate z → z² + c for every pixel; colour by how fast it flees to infinity. The boundary is infinitely detailed — zoom forever.</p>
+          <div class="eq">zₙ₊₁ = zₙ² + c</div></div>
+      </section>
+
+      <section data-sim="particleLife">
+        <div class="card"><div class="tag">Emergent Life</div><h2>Particle Life</h2>
+          <p>A handful of species, a random table of who-likes-whom — and cells, membranes, and chasers assemble themselves. Life from a matrix.</p></div>
+      </section>
+
+      <section data-sim="nbody">
+        <div class="card"><div class="tag">Gravity</div><h2>Scale-invariant N-body</h2>
+          <p>Thousands of masses pulling on each other under softened gravity — clusters form, orbits wind, structure emerges from attraction alone.</p></div>
+      </section>
+
+      <section class="outro" data-sim="nbody">
+        <div>
+          <h2>Explore all 41 systems</h2>
+          <p>Strange attractors · iterated maps · fractals · Particle Life · Boids · slime mold · vortices · Lenia · reaction-diffusion · N-body.<br />
+             Every one runs on the GPU, with built-in notes, math, and code.</p>
+          <a class="cta" id="appLink" href="./index.html">launch ETHERSIM →</a>
+          <p style="margin-top:16px;font-size:13px;">open source · WebGPU · Three.js · github.com/macncrash/realethersim</p>
+        </div>
+      </section>
+    </main>
+    <script type="module" src="/src/demo/demo.ts"></script>
+  </body>
+</html>
