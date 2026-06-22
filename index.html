@@ -40,6 +40,31 @@
       .treenode { display: flex; justify-content: space-between; gap: 8px; text-align: left; opacity: 0.8; }
       .treenode.active { opacity: 1; border-color: var(--accent); color: var(--accent); }
       .tp-dfwv { width: 100% !important; }
+
+      /* Learn panel (bottom) */
+      .learn { position: absolute; left: 12px; bottom: 12px; right: 304px; z-index: 5; }
+      .learn.open { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 10px;
+        backdrop-filter: blur(8px); padding: 10px 12px; max-height: 42vh; display: flex; flex-direction: column; }
+      .learn.closed { right: auto; }
+      .learn-handle { font-size: 12px; opacity: 0.85; }
+      .learn-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+      .ltabs { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+      .ltitle { color: var(--accent); margin-right: 4px; letter-spacing: 0.04em; }
+      .learn-body { overflow: auto; margin-top: 8px; }
+      .ltext { margin: 0 0 8px; max-width: 78ch; }
+      .ltext.dim { color: var(--text-dim); }
+      .llinks { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 4px; }
+      .llinks a { color: var(--accent); text-decoration: none; }
+      .llinks a:hover { text-decoration: underline; }
+      .leqs { display: flex; flex-direction: column; gap: 4px; }
+      .leq { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }
+      .leq-label { color: var(--text-dim); font-size: 11px; }
+      .lvals { margin-top: 10px; overflow-x: auto; }
+      .lparams { margin: 8px 0 0; padding-left: 16px; color: var(--text-dim); }
+      .lparams li { margin: 2px 0; }
+      .lparams .psym { color: var(--text); }
+      .lcode { margin: 0; padding: 10px; background: #0a0e18; border: 1px solid var(--panel-border);
+        border-radius: 6px; overflow: auto; white-space: pre; color: #b8c4d8; font-size: 12px; }
     </style>
   </head>
   <body>

@@ -5,6 +5,7 @@ import './params-panel';
 import './hierarchy-tree';
 import './telemetry-panel';
 import './snapshot-controls';
+import './learn-panel';
 
 // Renders into light DOM (createRenderRoot -> this) so the global stylesheet and Tweakpane's
 // injected styles apply, and so the canvas lives in the normal document for the renderer.
@@ -38,6 +39,7 @@ export class EtherApp extends LitElement {
           <ether-telemetry-panel></ether-telemetry-panel>
           <ether-snapshot-controls></ether-snapshot-controls>
         </aside>
+        <ether-learn-panel></ether-learn-panel>
       </div>
     `;
   }
