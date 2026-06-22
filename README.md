@@ -25,11 +25,12 @@ camera focus-tracking, JSON snapshots, and an optional fully GPU-resident comput
   one `register()` call.
 - **Decoupled simulation** — the integrator runs in a Web Worker over a SharedArrayBuffer
   double-buffer (with a main-thread fallback), independent of the render frame rate.
-- **Optional GPU compute** — all 14 attractors and 10 iterated maps, plus the hyper-oscillator,
-  N-body, and quantum-foam, run entirely on the GPU via Three.js **TSL** compute kernels
-  (per-particle RK4, map iteration, all-pairs N-body `Loop`, Gray-Scott grid). The toggle greys
-  out (n/a) for the remaining CPU-only systems (Life, Fluid, excitable medium) — GPU kernels for
-  those are on the roadmap.
+- **Every system runs on the GPU** — all 14 attractors, 10 iterated maps, the Life family
+  (Particle Life, Boids, slime mold), point vortices, both field systems (Gray-Scott foam,
+  excitable medium), the hyper-oscillator and N-body each have a fully GPU-resident **TSL** compute
+  path: per-particle RK4, map iteration, brute-force `Loop` flocking/particle-life, an
+  atomic-scatter slime trail field, softened Biot–Savart vortices, integer grid CA / Gray-Scott
+  reaction-diffusion, and all-pairs N-body. The **GPU compute** toggle is live for the whole catalog.
 - **Fading world-space trails**, a **hierarchy tree** with particle highlighting and
   **macro→micro camera focus-tracking**, **logarithmic depth/zoom**, and **versioned JSON
   snapshots**.
@@ -38,8 +39,8 @@ camera focus-tracking, JSON snapshots, and an optional fully GPU-resident comput
 
 ## Archetypes
 The images below are rendered **from this project's own integrators** — real trajectories and
-fields, not stock art. Every system runs on the CPU worker path; the attractors, iterated maps,
-hyper-oscillator, N-body, and foam also have an optional fully GPU-resident path via TSL.
+fields, not stock art. Every system runs on the CPU worker path **and** has an optional fully
+GPU-resident TSL compute path — toggle **GPU compute** to move the active system onto the GPU.
 
 ### Strange attractors
 <p align="center"><img src="docs/gallery.svg" alt="Lorenz, Rössler, Aizawa, Thomas" width="100%"></p>
@@ -62,20 +63,20 @@ short-range repulsion plus per-pair attraction/repulsion yields emergent cells, 
 chasers (life from a matrix). Neighbour queries use a shared spatial-hash grid, so it scales to
 16k+. Species are contiguous blocks, so the hierarchy tree spotlights each one; the "ecosystem"
 slider reseeds the matrix for a new world.
-**Next:** a GPU compute version; save/share for favourite ecosystems.
+**Next:** save/share for favourite ecosystems.
 
 ### Boids (flocking)
 Reynolds flocking — separation, alignment, cohesion within a perception radius — in a toroidal
 cube, with neighbour queries through the same spatial-hash grid (so flocks scale to tens of
 thousands). Emergent streams, swirls, and murmurations.
-**Next:** predators / obstacles, per-flock species, a GPU compute version.
+**Next:** predators / obstacles, per-flock species.
 
 ### Slime mold (Physarum)
 Agents wander a toroidal trail field, depositing a chemical and steering toward whichever of three
 forward sensors smells strongest; the field diffuses and decays. They reinforce the paths they
 travel, so emergent **transport networks** — veins, cells, voids — appear in the agent density.
 This is the archetype that exercises the agent↔field feedback (`readField()`).
-**Next:** food sources / obstacles, multi-species networks, a GPU compute version.
+**Next:** food sources / obstacles, multi-species networks.
 
 ### Point Vortices
 A handful of ± vortices induce a 2D velocity field (softened Biot–Savart, toroidal); thousands of

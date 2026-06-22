@@ -4,12 +4,22 @@ import { GPU_MAPS, makeGpuMap } from './gpuMap';
 import { gpuHyperOscillator } from './gpuHyperOscillator';
 import { gpuNbody } from './gpuNbody';
 import { gpuFoam } from './gpuFoam';
+import { gpuParticleLife } from './gpuParticleLife';
+import { gpuBoids } from './gpuBoids';
+import { gpuSlimeMold } from './gpuSlimeMold';
+import { gpuPointVortices } from './gpuPointVortices';
+import { gpuExcitableMedium } from './gpuExcitableMedium';
 
 // Registry of GPU-compute factories by archetype id (parallel to the CPU archetype registry).
 const GPU_FACTORIES: Record<string, GpuFactory> = {
   hyperOscillator: gpuHyperOscillator,
   nbody: gpuNbody,
   quantumFoam: gpuFoam,
+  particleLife: gpuParticleLife,
+  boids: gpuBoids,
+  slimeMold: gpuSlimeMold,
+  pointVortices: gpuPointVortices,
+  excitableMedium: gpuExcitableMedium,
 };
 for (const id of Object.keys(GPU_SYSTEMS)) GPU_FACTORIES[id] = makeGpuAttractor(id);
 for (const id of Object.keys(GPU_MAPS)) GPU_FACTORIES[id] = makeGpuMap(id);
