@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AETHER-SIM</title>
+    <style>
+      :root {
+        --bg: #05070d;
+        --panel: #0b0f1acc;
+        --panel-border: #1c2638;
+        --text: #cdd6e4;
+        --text-dim: #6b7689;
+        --accent: #4ad6c8;
+      }
+      html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text);
+        font: 13px/1.5 ui-monospace, "SF Mono", Menlo, monospace; overflow: hidden; }
+      .layout { position: fixed; inset: 0; }
+      canvas.view { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+      aside.panel { position: absolute; top: 12px; right: 12px; width: 280px; max-height: calc(100vh - 24px);
+        overflow: auto; background: var(--panel); border: 1px solid var(--panel-border);
+        border-radius: 10px; padding: 12px; backdrop-filter: blur(8px); }
+      .brand { font-size: 15px; letter-spacing: 0.18em; color: var(--accent); margin: 0 0 10px; font-weight: 600; }
+      .section { margin-top: 12px; border-top: 1px solid var(--panel-border); padding-top: 10px; }
+      .section h4 { margin: 0 0 6px; font-size: 11px; letter-spacing: 0.12em; color: var(--text-dim); text-transform: uppercase; }
+      .row { display: flex; justify-content: space-between; gap: 8px; }
+      .row .v { color: var(--accent); }
+      button { background: #14203a; color: var(--text); border: 1px solid var(--panel-border);
+        border-radius: 6px; padding: 6px 10px; cursor: pointer; font: inherit; }
+      button:hover { border-color: var(--accent); }
+      input[type="file"] { display: none; }
+      label.filebtn { display: inline-block; }
+      .tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+      .tab { font-size: 12px; padding: 5px 9px; opacity: 0.7; }
+      .tab.active { opacity: 1; border-color: var(--accent); color: var(--accent); }
+      .tree { display: flex; flex-direction: column; gap: 3px; }
+      .treenode { display: flex; justify-content: space-between; gap: 8px; text-align: left; opacity: 0.8; }
+      .treenode.active { opacity: 1; border-color: var(--accent); color: var(--accent); }
+      .tp-dfwv { width: 100% !important; }
+    </style>
+  </head>
+  <body>
+    <aether-app></aether-app>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

@@ -1,0 +1,25 @@
+import type { GpuFactory, GpuSim } from './types';
+import { GPU_SYSTEMS, makeGpuAttractor } from './gpuAttractor';
+import { gpuHyperOscillator } from './gpuHyperOscillator';
+import { gpuNbody } from './gpuNbody';
+import { gpuFoam } from './gpuFoam';
+
+// Registry of GPU-compute factories by archetype id (parallel to the CPU archetype registry).
+const GPU_FACTORIES: Record<string, GpuFactory> = {
+  hyperOscillator: gpuHyperOscillator,
+  nbody: gpuNbody,
+  quantumFoam: gpuFoam,
+};
+for (const id of Object.keys(GPU_SYSTEMS)) GPU_FACTORIES[id] = makeGpuAttractor(id);
+
+export function hasGpu(id: string): boolean {
+  return id in GPU_FACTORIES;
+}
+
+export function createGpu(id: string, count: number, dt: number, params: Record<string, number>): GpuSim {
+  const sim = GPU_FACTORIES[id](count, dt, params);
+  sim.setParams({ ...params, dt });
+  return sim;
+}
+
+export type { GpuSim } from './types';
