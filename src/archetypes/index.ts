@@ -5,6 +5,7 @@ import { hyperOscillatorFactory } from './hyperOscillator';
 import { nbodyFactory } from './nbody';
 import { quantumFoamFactory } from './quantumFoam';
 import { particleLifeFactory } from './particleLife';
+import { boidsFactory } from './boids';
 
 // Side-effect registration. Importing this module wires every archetype into the registry.
 // Adding a new archetype = add a file + one register() call here.
@@ -23,4 +24,5 @@ export function registerArchetypes(): void {
   register(nbodyFactory);
   register(quantumFoamFactory);
   register(particleLifeFactory);
+  register(boidsFactory);
 }

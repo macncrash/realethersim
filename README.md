@@ -19,9 +19,9 @@ camera focus-tracking, JSON snapshots, and an optional fully GPU-resident comput
 
 ## Highlights
 - **A growing catalog behind one seam** — 14 strange attractors, 10 iterated maps, emergent
-  Particle Life, the hierarchical hyper-oscillator, N-body, and quantum-foam (**28 systems**),
-  grouped by category and switchable live, no reload. Adding one is a single file + one
-  `register()` call.
+  **Particle Life + Boids**, the hierarchical hyper-oscillator, N-body, and quantum-foam
+  (**29 systems**), grouped by category and switchable live, no reload. Adding one is a single
+  file + one `register()` call.
 - **Decoupled simulation** — the integrator runs in a Web Worker over a SharedArrayBuffer
   double-buffer (with a main-thread fallback), independent of the render frame rate.
 - **Optional GPU compute** — every archetype can run entirely on the GPU via Three.js **TSL**
@@ -56,10 +56,16 @@ fractal coloring.
 ### Particle Life
 K species in a toroidal cube governed by a random **asymmetric interaction matrix** — universal
 short-range repulsion plus per-pair attraction/repulsion yields emergent cells, membranes, and
-chasers (life from a matrix). Species are contiguous blocks, so the hierarchy tree spotlights each
-one; the "ecosystem" slider reseeds the matrix for a new world.
-**Next:** a spatial-hash neighbor grid to scale past O(n²), a GPU compute version, and save/share
-for favorite ecosystems.
+chasers (life from a matrix). Neighbour queries use a shared spatial-hash grid, so it scales to
+16k+. Species are contiguous blocks, so the hierarchy tree spotlights each one; the "ecosystem"
+slider reseeds the matrix for a new world.
+**Next:** a GPU compute version; save/share for favourite ecosystems.
+
+### Boids (flocking)
+Reynolds flocking — separation, alignment, cohesion within a perception radius — in a toroidal
+cube, with neighbour queries through the same spatial-hash grid (so flocks scale to tens of
+thousands). Emergent streams, swirls, and murmurations.
+**Next:** predators / obstacles, per-flock species, a GPU compute version.
 
 ### Hierarchical hyper-oscillator
 <p align="center"><img src="docs/arch-hyper.svg" alt="Nested epicycle swarm" width="62%"></p>
@@ -111,8 +117,8 @@ one file + one `register()` call and the UI builds its sliders automatically.
 
 ```
 src/core/        archetype seam, registry, simulation manager, params, color
-src/physics/     constants, integrators (rk4), lyapunov
-src/archetypes/  strangeAttractor, hyperOscillator, nbody, quantumFoam + registry wiring
+src/physics/     constants, integrators (rk4), lyapunov, spatial grid (cell list)
+src/archetypes/  attractors, maps, particle life, boids, hyper-osc, n-body, foam + registry
 src/sim/         fixed-timestep accumulator, worker + SAB double-buffer driver, trail ring
 src/render/      WebGPU renderer, points, trails, camera, floating-origin hook, theme
 src/gpu/         TSL compute kernels per archetype (opt-in GPU-resident path)

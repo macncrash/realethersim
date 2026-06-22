@@ -9,6 +9,7 @@ import type {
 } from '../core/archetype';
 import { hslToRgb } from '../core/color';
 import { mulberry32 } from '../state/rng';
+import { SpatialGrid } from '../physics/spatialGrid';
 
 // Particle Life: K species in a toroidal cube, governed by an ASYMMETRIC K×K interaction matrix
 // (how species i feels species j). A universal short-range repulsion plus the per-pair coefficient
@@ -16,7 +17,7 @@ import { mulberry32 } from '../state/rng';
 // from a random matrix. O(n²) forces (CPU worker), overdamped/friction dynamics. Species are
 // assigned in contiguous blocks so the hierarchy tree can spotlight each one.
 const PARAM_SPEC: ParamSpec[] = [
-  { key: 'radius', label: 'r_max', min: 0.15, max: 1.2, step: 0.01, default: 0.55 },
+  { key: 'radius', label: 'r_max', min: 0.15, max: 1.0, step: 0.01, default: 0.55 },
   { key: 'beta', label: 'β repel', min: 0.05, max: 0.6, step: 0.01, default: 0.3 },
   { key: 'friction', label: 'friction', min: 0.5, max: 0.97, step: 0.01, default: 0.86 },
   { key: 'force', label: 'force', min: 0.5, max: 10, step: 0.1, default: 4 },
@@ -41,6 +42,7 @@ class ParticleLifeArchetype implements Archetype {
   private readonly A: Float64Array; // K×K interaction coefficients in [-1,1]
   private readonly starts: number[] = []; // contiguous species ranges
   private readonly counts: number[] = [];
+  private readonly grid: SpatialGrid;
 
   constructor(config: ArchetypeConfig) {
     this.particleCount = config.particleCount;
@@ -51,6 +53,7 @@ class ParticleLifeArchetype implements Archetype {
     this.positions = new Float32Array(n * 3);
     this.colors = new Float32Array(n * 3);
     this.species = new Uint8Array(n);
+    this.grid = new SpatialGrid(n, DOMAIN);
 
     const variant = Math.round(config.params.variant ?? 1);
     const rng = mulberry32(config.seed * 1000 + variant);
@@ -86,8 +89,15 @@ class ParticleLifeArchetype implements Archetype {
     const fs = p.force ?? 4;
     const rMax2 = rMax * rMax;
     const invBeta1 = 1 / (1 - beta);
+    const grid = this.grid;
 
-    // Pass 1: accumulate forces (positions read-only here) and update each velocity in place.
+    // Pass 1: accumulate forces via the spatial grid (positions read-only here; forces depend only
+    // on positions + species, so updating each velocity in place is order-independent).
+    grid.build(st, DIM, 0, n, rMax);
+    const gx = grid.gx;
+    const cstart = grid.cellStart;
+    const order = grid.order;
+
     for (let i = 0; i < n; i++) {
       const oi = i * DIM;
       const xi = st[oi];
@@ -97,24 +107,38 @@ class ParticleLifeArchetype implements Archetype {
       let fx = 0;
       let fy = 0;
       let fz = 0;
-      for (let j = 0; j < n; j++) {
-        if (j === i) continue;
-        const oj = j * DIM;
-        let dx = st[oj] - xi;
-        let dy = st[oj + 1] - yi;
-        let dz = st[oj + 2] - zi;
-        if (dx > DOMAIN) dx -= L; else if (dx < -DOMAIN) dx += L; // toroidal min-image
-        if (dy > DOMAIN) dy -= L; else if (dy < -DOMAIN) dy += L;
-        if (dz > DOMAIN) dz -= L; else if (dz < -DOMAIN) dz += L;
-        const r2 = dx * dx + dy * dy + dz * dz;
-        if (r2 >= rMax2 || r2 < 1e-10) continue;
-        const r = Math.sqrt(r2);
-        const rn = r / rMax;
-        const F = rn < beta ? rn / beta - 1 : A[rowi + sp[j]] * (1 - Math.abs(2 * rn - 1 - beta) * invBeta1);
-        const g = F / r;
-        fx += dx * g;
-        fy += dy * g;
-        fz += dz * g;
+      const cx = grid.coord(xi);
+      const cy = grid.coord(yi);
+      const cz = grid.coord(zi);
+      for (let cdz = -1; cdz <= 1; cdz++) {
+        const ncz = (cz + cdz + gx) % gx;
+        for (let cdy = -1; cdy <= 1; cdy++) {
+          const ncy = (cy + cdy + gx) % gx;
+          for (let cdx = -1; cdx <= 1; cdx++) {
+            const ncx = (cx + cdx + gx) % gx;
+            const c = (ncz * gx + ncy) * gx + ncx;
+            for (let k = cstart[c]; k < cstart[c + 1]; k++) {
+              const j = order[k];
+              if (j === i) continue;
+              const oj = j * DIM;
+              let dx = st[oj] - xi;
+              let dy = st[oj + 1] - yi;
+              let dz = st[oj + 2] - zi;
+              if (dx > DOMAIN) dx -= L; else if (dx < -DOMAIN) dx += L; // toroidal min-image
+              if (dy > DOMAIN) dy -= L; else if (dy < -DOMAIN) dy += L;
+              if (dz > DOMAIN) dz -= L; else if (dz < -DOMAIN) dz += L;
+              const r2 = dx * dx + dy * dy + dz * dz;
+              if (r2 >= rMax2 || r2 < 1e-10) continue;
+              const r = Math.sqrt(r2);
+              const rn = r / rMax;
+              const F = rn < beta ? rn / beta - 1 : A[rowi + sp[j]] * (1 - Math.abs(2 * rn - 1 - beta) * invBeta1);
+              const g = F / r;
+              fx += dx * g;
+              fy += dy * g;
+              fz += dz * g;
+            }
+          }
+        }
       }
       st[oi + 3] = (st[oi + 3] + fx * fs * dt) * fr;
       st[oi + 4] = (st[oi + 4] + fy * fs * dt) * fr;
@@ -200,8 +224,8 @@ export const particleLifeFactory: ArchetypeFactory = {
   category: 'Life',
   kind: 'flow',
   params: PARAM_SPEC,
-  defaultParticleCount: 4000,
-  particleCountOptions: [1000, 2000, 4000, 8000],
+  defaultParticleCount: 8000,
+  particleCountOptions: [2000, 4000, 8000, 16000],
   defaultDt: 0.015,
   create: (config) => new ParticleLifeArchetype(config),
 };
