@@ -18,10 +18,10 @@ mathematical archetypes, live-switchable, with fading trails, a structural hiera
 camera focus-tracking, JSON snapshots, and an optional fully GPU-resident compute path.
 
 ## Highlights
-- **A growing catalog behind one seam** — 14 strange attractors, 10 iterated maps, emergent
-  **Particle Life + Boids**, the hierarchical hyper-oscillator, N-body, and quantum-foam
-  (**29 systems**), grouped by category and switchable live, no reload. Adding one is a single
-  file + one `register()` call.
+- **A growing catalog behind one seam** — 14 strange attractors, 10 iterated maps, a 3-system
+  emergent **Life** family (Particle Life, Boids, slime mold), the hierarchical hyper-oscillator,
+  N-body, and quantum-foam (**30 systems**), grouped by category and switchable live, no reload.
+  Adding one is a single file + one `register()` call.
 - **Decoupled simulation** — the integrator runs in a Web Worker over a SharedArrayBuffer
   double-buffer (with a main-thread fallback), independent of the render frame rate.
 - **Optional GPU compute** — every archetype can run entirely on the GPU via Three.js **TSL**
@@ -66,6 +66,13 @@ Reynolds flocking — separation, alignment, cohesion within a perception radius
 cube, with neighbour queries through the same spatial-hash grid (so flocks scale to tens of
 thousands). Emergent streams, swirls, and murmurations.
 **Next:** predators / obstacles, per-flock species, a GPU compute version.
+
+### Slime mold (Physarum)
+Agents wander a toroidal trail field, depositing a chemical and steering toward whichever of three
+forward sensors smells strongest; the field diffuses and decays. They reinforce the paths they
+travel, so emergent **transport networks** — veins, cells, voids — appear in the agent density.
+This is the archetype that exercises the agent↔field feedback (`readField()`).
+**Next:** food sources / obstacles, multi-species networks, a GPU compute version.
 
 ### Hierarchical hyper-oscillator
 <p align="center"><img src="docs/arch-hyper.svg" alt="Nested epicycle swarm" width="62%"></p>
