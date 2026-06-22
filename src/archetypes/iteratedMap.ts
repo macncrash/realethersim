@@ -95,6 +95,8 @@ export const MAP_SYSTEMS: Record<string, MapSystem> = Object.fromEntries(
       iterate: (o, x, p) => { const t = 0.4 - 6.0 / (1 + x[0] * x[0] + x[1] * x[1]); o[0] = 1 + p.u * (x[0] * Math.cos(t) - x[1] * Math.sin(t)); o[1] = p.u * (x[0] * Math.sin(t) + x[1] * Math.cos(t)); } }),
     makeMap({ id: 'henon', label: 'Hénon', defaults: { a: 1.4, b: 0.3 }, init: [0.1, 0.1], spread: 0.05, bounds: { x: [-1.5, 1.5], y: [-0.45, 0.45] },
       iterate: (o, x, p) => { o[0] = 1 - p.a * x[0] * x[0] + x[1]; o[1] = p.b * x[0]; } }),
+    makeMap({ id: 'lozi', label: 'Lozi', defaults: { a: 1.7, b: 0.5 }, init: [0.1, 0.1], spread: 0.05, bounds: { x: [-1.0, 1.4], y: [-0.5, 0.7] },
+      iterate: (o, x, p) => { o[0] = 1 - p.a * Math.abs(x[0]) + x[1]; o[1] = p.b * x[0]; } }),
     makeMap({ id: 'bedhead', label: 'Bedhead', defaults: { a: 0.65343, b: 0.7345345 }, init: [1, 1], spread: 0.1, bounds: { x: [-1.2, 1.6], y: [-1, 2.4] },
       iterate: (o, x, p) => { o[0] = Math.sin((x[0] * x[1]) / p.b) * x[1] + Math.cos(p.a * x[0] - x[1]); o[1] = x[0] + Math.sin(x[1]) / p.b; } }),
     makeMap({ id: 'pickover', label: 'Pickover 3D', dim: 3, defaults: { a: 2.24, b: 0.43, c: -0.65, d: -2.43, e: 1 }, init: [0.1, 0.1, 0.1], spread: 0.2, bounds: { x: [-2.2, 2.2], y: [-2, 2], z: [-1, 1] },

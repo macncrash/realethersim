@@ -6,7 +6,7 @@
   <img src="https://img.shields.io/badge/license-MIT-3aa0ff.svg" alt="MIT License">
   <img src="https://img.shields.io/badge/WebGPU-Three.js%20r184-4ad6c8" alt="WebGPU / Three.js">
   <img src="https://img.shields.io/badge/TypeScript-strict-7aa8ff" alt="TypeScript strict">
-  <img src="https://img.shields.io/badge/tests-65%20passing-4ad6c8" alt="65 tests passing">
+  <img src="https://img.shields.io/badge/tests-66%20passing-4ad6c8" alt="66 tests passing">
 </p>
 
 # ETHERSIM
@@ -18,18 +18,18 @@ mathematical archetypes, live-switchable, with fading trails, a structural hiera
 camera focus-tracking, JSON snapshots, and an optional fully GPU-resident compute path.
 
 ## Highlights
-- **A growing catalog behind one seam** — 14 strange attractors, 10 iterated maps, a **Fractal**
+- **A growing catalog behind one seam** — 14 strange attractors, 11 iterated maps, a **Fractal**
   family (Barnsley fern + IFS chaos-game, Mandelbrot/Julia/Burning-Ship escape-time, DLA), an
   emergent **Life** family (Particle Life, Boids, slime mold), **Fluid** (point vortices) and
   **Field** systems (Gray-Scott foam, excitable-medium waves, Lenia), plus the hyper-oscillator and
-  N-body — **41 systems across 8 categories**, switchable live, no reload. Adding one is a single
+  N-body — **42 systems across 8 categories**, switchable live, no reload. Adding one is a single
   file + one `register()` call.
 - **Learn as you go** — a built-in **Learn panel** (About / Math / Code) explains every system in
   plain English, renders its governing equations with **KaTeX** (with your live slider values
   substituted in), shows the core source, and links out to references.
 - **Decoupled simulation** — the integrator runs in a Web Worker over a SharedArrayBuffer
   double-buffer (with a main-thread fallback), independent of the render frame rate.
-- **Every system runs on the GPU** — all 41 systems have a fully GPU-resident **TSL** compute path:
+- **Every system runs on the GPU** — all 42 systems have a fully GPU-resident **TSL** compute path:
   per-particle RK4 (attractors), map iteration, chaos-game IFS, per-pixel escape-time fractals with
   live zoom, brute-force `Loop` flocking/particle-life, an atomic-scatter slime trail field, softened
   Biot–Savart vortices, ring-kernel Lenia + Gray-Scott / integer-grid CA, walker-aggregation DLA, and
@@ -55,10 +55,10 @@ Lyapunov exponent, computed live (e.g. Lorenz ≈ 0.906, Chen ≈ 2.0), not visu
 **Next:** live Lyapunov-spectrum + Kaplan–Yorke dimension.
 
 ### Iterated maps
-Ten classic discrete maps — Clifford, de Jong, Svensson, Hopalong, Gumowski–Mira, Tinkerbell,
-Ikeda, Hénon, Bedhead, and the 3D Pickover — each a 100k-point cloud that settles onto the
+Eleven classic discrete maps — Clifford, de Jong, Svensson, Hopalong, Gumowski–Mira, Tinkerbell,
+Ikeda, Hénon, Lozi, Bedhead, and the 3D Pickover — each a 100k-point cloud that settles onto the
 attractor, with fading trails tracing the filaments.
-**Next:** more families (Lozi, standard/Chirikov).
+**Next:** more families (standard/Chirikov, Gingerbreadman).
 
 ### Fractals
 Three flavours: **IFS chaos-game** attractors (Barnsley fern, Sierpiński triangle/carpet, Heighway

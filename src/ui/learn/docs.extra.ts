@@ -53,4 +53,18 @@ if (anyNeighbourStuck && random() < stickiness) {
       { label: 'Witten & Sander 1981 (original paper)', url: 'https://journals.aps.org/prl/abstract/10.1103/PhysRevLett.47.1400' },
     ],
   },
+  lozi: {
+    title: 'Lozi Map',
+    about:
+      'A piecewise-linear cousin of the Hénon map: swap the x² term for |x|. That sharp absolute value turns the smooth Hénon curve into an attractor built from straight segments — and made the Lozi map one of the first strange attractors proven rigorously to be chaotic.',
+    howItWorks: 'A single 2D point is fed through the map a hundred thousand times; it settles onto the angular, self-similar attractor.',
+    equations: [{ label: '', latex: '\\begin{aligned} x_{n+1} &= 1 - a\\,|x_n| + y_n \\\\ y_{n+1} &= b\\,x_n \\end{aligned}' }],
+    params: [
+      { key: 'a', symbol: 'a', meaning: 'fold strength (the |x| coefficient); ~1.7 is chaotic' },
+      { key: 'b', symbol: 'b', meaning: 'how much of x carries into y (area contraction)' },
+    ],
+    code: `o[0] = 1 - p.a * Math.abs(x[0]) + x[1];
+o[1] = p.b * x[0];`,
+    links: [{ label: 'Lozi map (Wikipedia)', url: 'https://en.wikipedia.org/wiki/L%C3%B4zi_map' }],
+  },
 };

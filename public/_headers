@@ -1,0 +1,6 @@
+# Cross-origin isolation — required for the SharedArrayBuffer worker sim path.
+# Applied by Cloudflare Pages / Netlify (this file is copied into the build output).
+# Without it the app still runs (worker falls back to the main thread; GPU compute is unaffected).
+/*
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Embedder-Policy: require-corp

@@ -75,6 +75,11 @@ export const GPU_MAPS: Record<string, GpuMapSystem> = {
     iterate: (X, u) => vec3(X.y.add(1).sub(u.a.mul(X.x.mul(X.x))), u.b.mul(X.x), 0),
     seedRange: [0.05, 0.05, 0], seedOffset: [0.1, 0.1, 0], scale: 1.0, center: [0, 0, 0], pointSize: 0.01,
   },
+  lozi: {
+    paramKeys: ['a', 'b'], defaults: { a: 1.7, b: 0.5 },
+    iterate: (X, u) => vec3(X.x.abs().mul(u.a).negate().add(1).add(X.y), u.b.mul(X.x), 0),
+    seedRange: [0.05, 0.05, 0], seedOffset: [0.1, 0.1, 0], scale: 1.25, center: [0.2, 0.1, 0], pointSize: 0.01,
+  },
   bedhead: {
     paramKeys: ['a', 'b'], defaults: { a: 0.65343, b: 0.7345345 },
     iterate: (X, u) => vec3(
