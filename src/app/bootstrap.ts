@@ -123,7 +123,7 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
       if (sim.init) await renderer.computeAsync(sim.init);
       gpuSim = sim;
     } catch (err) {
-      console.error('[aether] GPU compute init failed — reverting to CPU', err);
+      console.error('[ethersim] GPU compute init failed — reverting to CPU', err);
       $global.setKey('gpuCompute', false);
     }
   }
@@ -149,7 +149,7 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
     rebuildQueued = true;
     queueMicrotask(() => {
       rebuildQueued = false;
-      chain = chain.then(doRebuild).catch((err) => console.error('[aether] rebuild failed', err));
+      chain = chain.then(doRebuild).catch((err) => console.error('[ethersim] rebuild failed', err));
     });
   }
   async function doRebuild(): Promise<void> {

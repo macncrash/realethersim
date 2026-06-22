@@ -29,4 +29,4 @@ export class ArchetypeSwitcher extends LitElement {
   }
 }
 
-customElements.define('aether-archetype-switcher', ArchetypeSwitcher);
+customElements.define('ether-archetype-switcher', ArchetypeSwitcher);

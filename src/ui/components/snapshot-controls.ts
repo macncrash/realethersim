@@ -16,7 +16,7 @@ export class SnapshotControls extends LitElement {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'aether-snapshot.json';
+    a.download = 'ether-snapshot.json';
     a.click();
     URL.revokeObjectURL(url);
   }
@@ -29,7 +29,7 @@ export class SnapshotControls extends LitElement {
       const snap = migrate(JSON.parse(await file.text()));
       $engine.get()?.importSnapshot(snap);
     } catch (err) {
-      console.error('[aether] snapshot import failed', err);
+      console.error('[ethersim] snapshot import failed', err);
     } finally {
       input.value = '';
     }
@@ -52,4 +52,4 @@ export class SnapshotControls extends LitElement {
   }
 }
 
-customElements.define('aether-snapshot-controls', SnapshotControls);
+customElements.define('ether-snapshot-controls', SnapshotControls);

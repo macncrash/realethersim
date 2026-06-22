@@ -1,4 +1,4 @@
-# AETHER-SIM — Implementation Plan
+# ETHERSIM — Implementation Plan
 
 **Source:** PRD v1.0.0 (Dynamical Systems Visualizer), 2026-06-21
 **Status:** Approved for build · greenfield (empty repo)
@@ -8,7 +8,7 @@
 
 ## 0. Context — why we're building this
 
-AETHER-SIM is an interactive, high-performance sandbox for simulating and exploring complex dynamical systems — strange attractors, hierarchical hyper-oscillators, scale-invariant N-body, and cellular-automata "quantum foam" — under one architecture, rendered locally at 100k-particle scale with fading trails and seamless macro→micro zoom. The repo is empty; this plan is the first artifact and defines the architecture, the build order, and the verification gates for the PRD's 3-phase roadmap.
+ETHERSIM is an interactive, high-performance sandbox for simulating and exploring complex dynamical systems — strange attractors, hierarchical hyper-oscillators, scale-invariant N-body, and cellular-automata "quantum foam" — under one architecture, rendered locally at 100k-particle scale with fading trails and seamless macro→micro zoom. The repo is empty; this plan is the first artifact and defines the architecture, the build order, and the verification gates for the PRD's 3-phase roadmap.
 
 ### Locked decisions (this session)
 | Decision | Choice |
@@ -180,7 +180,7 @@ Migration: `while (doc.schemaVersion < CURRENT) doc = migrations[doc.schemaVersi
 ## 6. Directory structure
 
 ```
-aether-sim/
+ethersim/
   index.html
   vite.config.ts            # COOP same-origin / COEP require-corp headers; worker imports
   package.json              # bun; deps: three@r184, lit, @nanostores/lit, nanostores, tweakpane@4, zod

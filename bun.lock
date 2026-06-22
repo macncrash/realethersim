@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "aether-sim",
+      "name": "ethersim",
       "dependencies": {
         "@nanostores/lit": "^0.2.3",
         "lit": "^3.3.3",

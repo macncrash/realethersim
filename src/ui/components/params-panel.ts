@@ -77,4 +77,4 @@ export class ParamsPanel extends LitElement {
   }
 }
 
-customElements.define('aether-params-panel', ParamsPanel);
+customElements.define('ether-params-panel', ParamsPanel);

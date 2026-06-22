@@ -27,4 +27,4 @@ export class TelemetryPanel extends LitElement {
   }
 }
 
-customElements.define('aether-telemetry-panel', TelemetryPanel);
+customElements.define('ether-telemetry-panel', TelemetryPanel);

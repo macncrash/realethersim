@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/hero.svg" alt="AETHER-SIM — a Lorenz attractor" width="100%">
+  <img src="docs/hero.svg" alt="ETHERSIM — a Lorenz attractor" width="100%">
 </p>
 
 <p align="center">
@@ -9,7 +9,7 @@
   <img src="https://img.shields.io/badge/tests-21%20passing-4ad6c8" alt="21 tests passing">
 </p>
 
-# AETHER-SIM
+# ETHERSIM
 
 Interactive, high-performance visualizer for complex dynamical systems — strange attractors,
 hierarchical hyper-oscillators, scale-invariant N-body, and cellular-automata "quantum foam" —

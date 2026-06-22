@@ -64,4 +64,4 @@ export class HierarchyTree extends LitElement {
   }
 }
 
-customElements.define('aether-hierarchy-tree', HierarchyTree);
+customElements.define('ether-hierarchy-tree', HierarchyTree);

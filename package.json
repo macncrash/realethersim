@@ -1,9 +1,9 @@
 {
-  "name": "aether-sim",
+  "name": "ethersim",
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "AETHER-SIM — interactive dynamical-systems visualizer (WebGPU + Three.js)",
+  "description": "ETHERSIM — interactive dynamical-systems visualizer (WebGPU + Three.js)",
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
