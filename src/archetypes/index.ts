@@ -1,5 +1,6 @@
 import { register } from '../core/registry';
 import { makeAttractorFactory, SYSTEMS } from './strangeAttractor';
+import { makeMapFactory, MAP_SYSTEMS } from './iteratedMap';
 import { hyperOscillatorFactory } from './hyperOscillator';
 import { nbodyFactory } from './nbody';
 import { quantumFoamFactory } from './quantumFoam';
@@ -13,6 +14,9 @@ export function registerArchetypes(): void {
   registered = true;
   for (const system of Object.values(SYSTEMS)) {
     register(makeAttractorFactory(system));
+  }
+  for (const system of Object.values(MAP_SYSTEMS)) {
+    register(makeMapFactory(system));
   }
   register(hyperOscillatorFactory);
   register(nbodyFactory);

@@ -204,9 +204,11 @@ class QuantumFoamArchetype implements Archetype {
 export const quantumFoamFactory: ArchetypeFactory = {
   id: 'quantumFoam',
   label: 'Quantum-Foam',
+  category: 'Foam',
   kind: 'flow',
   params: PARAM_SPEC,
   defaultParticleCount: 40_000, // 200×200 grid
+  defaultDt: 0.005,
   particleCountOptions: [16_384, 40_000, 65_536], // 128² / 200² / 256²
   create: (config) => new QuantumFoamArchetype(config),
 };

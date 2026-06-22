@@ -24,12 +24,14 @@ export function setGlobal<K extends keyof GlobalParams>(key: K, value: GlobalPar
   $global.setKey(key, value);
 }
 
-// Switch archetype (FR-3.1): adopt the new factory's default params + particle count.
+// Switch archetype (FR-3.1): adopt the new factory's default params, particle count, and dt
+// (each system has its own stable integration step).
 export function selectArchetype(id: string): void {
   if (id === $archetypeId.get()) return;
   const factory = getFactory(id);
   $params.set({ ...defaultParams(factory.params) });
   $global.setKey('particleCount', factory.defaultParticleCount);
+  $global.setKey('dt', factory.defaultDt);
   $archetypeId.set(id);
 }
 

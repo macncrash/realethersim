@@ -156,8 +156,10 @@ class HyperOscillatorArchetype implements Archetype {
 export const hyperOscillatorFactory: ArchetypeFactory = {
   id: 'hyperOscillator',
   label: 'Hyper-Oscillator',
+  category: 'Oscillator',
   kind: 'flow',
   params: PARAM_SPEC,
   defaultParticleCount: 80_000,
+  defaultDt: 0.006,
   create: (config) => new HyperOscillatorArchetype(config),
 };

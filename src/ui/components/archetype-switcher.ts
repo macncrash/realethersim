@@ -1,9 +1,12 @@
-import { LitElement, html, type TemplateResult } from 'lit';
+import { LitElement, html, nothing, type TemplateResult } from 'lit';
 import { StoreController } from '@nanostores/lit';
 import { $archetypeId, listFactories, selectArchetype } from '../store';
+import { getFactory } from '../../core/registry';
 
-// Live archetype switch (FR-3.1): no reload — selecting a tab updates the store, which the
-// engine turns into an atomic driver+scene rebuild.
+// Category tabs (FR-3.1) + a per-category system selector, so the catalog can grow to dozens of
+// systems without overflowing the tab bar. Each registered factory declares its `category`.
+const CATEGORY_ORDER = ['Attractor', 'Map', 'Oscillator', 'N-Body', 'Foam'];
+
 export class ArchetypeSwitcher extends LitElement {
   protected override createRenderRoot(): HTMLElement {
     return this;
@@ -11,19 +14,35 @@ export class ArchetypeSwitcher extends LitElement {
 
   private current = new StoreController(this, $archetypeId);
 
+  private categories(): string[] {
+    const present = new Set(listFactories().map((f) => f.category));
+    const ordered = CATEGORY_ORDER.filter((c) => present.has(c));
+    for (const c of present) if (!ordered.includes(c)) ordered.push(c);
+    return ordered;
+  }
+
+  private selectCategory(cat: string): void {
+    const first = listFactories().find((f) => f.category === cat);
+    if (first) selectArchetype(first.id);
+  }
+
   override render(): TemplateResult {
-    const active = this.current.value;
+    const activeId = this.current.value;
+    const activeCat = getFactory(activeId).category;
+    const systems = listFactories().filter((f) => f.category === activeCat);
     return html`
       <div class="section">
         <h4>Archetype</h4>
         <div class="tabs">
-          ${listFactories().map(
-            (f) => html`<button
-              class="tab ${f.id === active ? 'active' : ''}"
-              @click=${() => selectArchetype(f.id)}
-            >${f.label}</button>`,
+          ${this.categories().map(
+            (c) => html`<button class="tab ${c === activeCat ? 'active' : ''}" @click=${() => this.selectCategory(c)}>${c}</button>`,
           )}
         </div>
+        ${systems.length > 1
+          ? html`<select class="sysselect" @change=${(e: Event) => selectArchetype((e.target as HTMLSelectElement).value)}>
+              ${systems.map((f) => html`<option value=${f.id} ?selected=${f.id === activeId}>${f.label}</option>`)}
+            </select>`
+          : nothing}
       </div>
     `;
   }

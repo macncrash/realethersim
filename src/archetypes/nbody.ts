@@ -255,9 +255,11 @@ class NBodyArchetype implements Archetype {
 export const nbodyFactory: ArchetypeFactory = {
   id: 'nbody',
   label: 'N-Body',
+  category: 'N-Body',
   kind: 'flow',
   params: PARAM_SPEC,
   defaultParticleCount: 3000,
+  defaultDt: 0.012,
   particleCountOptions: [1000, 2000, 3000, 5000],
   create: (config) => new NBodyArchetype(config),
 };

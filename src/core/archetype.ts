@@ -76,9 +76,11 @@ export interface Archetype {
 export interface ArchetypeFactory {
   readonly id: string;
   readonly label: string;
+  readonly category: string; // UI grouping bucket (e.g. 'Attractor', 'Map', 'N-Body')
   readonly kind: ArchetypeKind;
   readonly params: ParamSpec[];
   readonly defaultParticleCount: number;
+  readonly defaultDt: number; // global dt applied when this system is selected (its stable step)
   readonly particleCountOptions?: number[]; // overrides the UI's default count choices (e.g. N-body caps lower)
   create(config: ArchetypeConfig): Archetype;
 }

@@ -19,6 +19,7 @@ export interface AttractorSystem {
   id: string;
   label: string;
   dim: number; // 3 for all classic attractors here
+  dt: number; // per-system integration step (set on the global dt when this system is selected)
   defaults: Record<string, number>; // system params (σ, ρ, β …)
   paramSpec: ParamSpec[]; // UI controls for this system
   deriv: Derivative;
@@ -33,6 +34,7 @@ export const LORENZ: AttractorSystem = {
   id: 'lorenz',
   label: 'Lorenz',
   dim: 3,
+  dt: 0.005,
   defaults: { sigma: 10, rho: 28, beta: 8 / 3 },
   paramSpec: [
     { key: 'sigma', label: 'σ', min: 0, max: 30, step: 0.1, default: 10 },
@@ -59,6 +61,7 @@ export const ROSSLER: AttractorSystem = {
   id: 'rossler',
   label: 'Rössler',
   dim: 3,
+  dt: 0.012,
   defaults: { a: 0.2, b: 0.2, c: 5.7 },
   paramSpec: [
     { key: 'a', min: 0, max: 0.5, step: 0.001, default: 0.2 },
@@ -85,6 +88,7 @@ export const AIZAWA: AttractorSystem = {
   id: 'aizawa',
   label: 'Aizawa',
   dim: 3,
+  dt: 0.008,
   defaults: { a: 0.95, b: 0.7, c: 0.6, d: 3.5, e: 0.25, f: 0.1 },
   paramSpec: [
     { key: 'a', min: 0, max: 2, step: 0.01, default: 0.95 },
@@ -117,6 +121,7 @@ export const THOMAS: AttractorSystem = {
   id: 'thomas',
   label: 'Thomas',
   dim: 3,
+  dt: 0.03,
   defaults: { b: 0.19 },
   paramSpec: [{ key: 'b', min: 0.05, max: 0.4, step: 0.005, default: 0.19 }],
   deriv: (o, x, p) => {
@@ -135,11 +140,82 @@ export const THOMAS: AttractorSystem = {
   pointSize: 0.016,
 };
 
+// Auto-build a slider spec spanning ±max(|v|,1) around each default — good enough for exploration.
+function autoParams(defaults: Record<string, number>): ParamSpec[] {
+  return Object.entries(defaults).map(([key, v]) => {
+    const span = Math.max(Math.abs(v), 1);
+    return { key, label: key, min: +(v - span).toFixed(4), max: +(v + span).toFixed(4), step: +(span / 100).toFixed(4), default: v };
+  });
+}
+
+const mid = (r: [number, number]): number => (r[0] + r[1]) / 2;
+
+interface FlowSpec {
+  id: string;
+  label: string;
+  defaults: Record<string, number>;
+  deriv: Derivative;
+  init: number[];
+  dt: number;
+  bounds: { x: [number, number]; y: [number, number]; z: [number, number] };
+  pointSize?: number;
+  spread?: number;
+}
+
+// Concise builder: derives render scale/center from the attractor's bounds and seeds a tight
+// cloud near a known on-attractor point.
+function makeFlow(o: FlowSpec): AttractorSystem {
+  const range = Math.max(o.bounds.x[1] - o.bounds.x[0], o.bounds.y[1] - o.bounds.y[0], o.bounds.z[1] - o.bounds.z[0]);
+  const scale = 3 / range;
+  const spread = o.spread ?? 0.6;
+  return {
+    id: o.id,
+    label: o.label,
+    dim: 3,
+    dt: o.dt,
+    defaults: o.defaults,
+    paramSpec: autoParams(o.defaults),
+    deriv: o.deriv,
+    seedPoint: o.init,
+    sampleInit: (out, off, rng) => {
+      for (let k = 0; k < 3; k++) out[off + k] = o.init[k] + (rng() - 0.5) * spread;
+    },
+    scale,
+    center: [mid(o.bounds.x), mid(o.bounds.y), mid(o.bounds.z)],
+    pointSize: o.pointSize ?? 0.012,
+  };
+}
+
+// 10 more attractor flows (equations + canonical params verified against the literature).
+const NEW_FLOWS: AttractorSystem[] = [
+  makeFlow({ id: 'halvorsen', label: 'Halvorsen', defaults: { a: 1.4 }, dt: 0.005, init: [-1.48, -1.51, 2.04], bounds: { x: [-9, 5], y: [-9, 5], z: [-9, 5] },
+    deriv: (o, x, p) => { o[0] = -p.a * x[0] - 4 * x[1] - 4 * x[2] - x[1] * x[1]; o[1] = -p.a * x[1] - 4 * x[2] - 4 * x[0] - x[2] * x[2]; o[2] = -p.a * x[2] - 4 * x[0] - 4 * x[1] - x[0] * x[0]; } }),
+  makeFlow({ id: 'chen', label: 'Chen', defaults: { a: 35, b: 3, c: 28 }, dt: 0.002, init: [-0.1, 0.5, -0.6], bounds: { x: [-30, 30], y: [-35, 35], z: [0, 60] },
+    deriv: (o, x, p) => { o[0] = p.a * (x[1] - x[0]); o[1] = (p.c - p.a) * x[0] - x[0] * x[2] + p.c * x[1]; o[2] = x[0] * x[1] - p.b * x[2]; } }),
+  makeFlow({ id: 'dadras', label: 'Dadras', defaults: { p: 3, o: 2.7, r: 1.7, c: 2, e: 9 }, dt: 0.008, init: [1.1, 2.1, -2], bounds: { x: [-25, 25], y: [-12, 12], z: [-15, 15] },
+    deriv: (out, x, P) => { out[0] = x[1] - P.p * x[0] + P.o * x[1] * x[2]; out[1] = P.r * x[1] - x[0] * x[2] + x[2]; out[2] = P.c * x[0] * x[1] - P.e * x[2]; } }),
+  makeFlow({ id: 'lorenz84', label: 'Lorenz-84', defaults: { a: 0.25, b: 4, F: 8, G: 1 }, dt: 0.01, init: [1, 1, 1], bounds: { x: [-1.5, 3], y: [-3, 3], z: [-3, 3] },
+    deriv: (o, x, p) => { o[0] = -x[1] * x[1] - x[2] * x[2] - p.a * x[0] + p.a * p.F; o[1] = x[0] * x[1] - p.b * x[0] * x[2] - x[1] + p.G; o[2] = p.b * x[0] * x[1] + x[0] * x[2] - x[2]; } }),
+  makeFlow({ id: 'rabinovich-fabrikant', label: 'Rabinovich–Fabrikant', defaults: { a: 1.1, g: 0.87 }, dt: 0.004, init: [-1, 0, 0.5], spread: 0.15, bounds: { x: [-2.5, 2.5], y: [-2.5, 2.5], z: [0, 1.5] },
+    deriv: (o, x, p) => { o[0] = x[1] * (x[2] - 1 + x[0] * x[0]) + p.g * x[0]; o[1] = x[0] * (3 * x[2] + 1 - x[0] * x[0]) + p.g * x[1]; o[2] = -2 * x[2] * (p.a + x[0] * x[1]); } }),
+  makeFlow({ id: 'sprott-linz-f', label: 'Sprott-Linz F', defaults: { a: 0.5 }, dt: 0.01, init: [0.1, 0, 0], bounds: { x: [-2.5, 3], y: [-3, 3], z: [0, 6] },
+    deriv: (o, x, p) => { o[0] = x[1] + x[2]; o[1] = -x[0] + p.a * x[1]; o[2] = x[0] * x[0] - x[2]; } }),
+  makeFlow({ id: 'wang-four-wing', label: 'Wang Four-Wing', defaults: { a: 0.2, b: -0.01, c: -0.4, d: -1 }, dt: 0.01, init: [1, 1, 1], bounds: { x: [-15, 15], y: [-15, 15], z: [-8, 30] },
+    deriv: (o, x, p) => { o[0] = p.a * x[0] + x[1] * x[2]; o[1] = p.b * x[0] + p.c * x[1] - x[0] * x[2]; o[2] = -x[2] + p.d * x[0] * x[1]; } }),
+  makeFlow({ id: 'bouali', label: 'Bouali', defaults: { a: 3, b: 2.2, c: 1, d: 0.001 }, dt: 0.01, init: [1, 0.1, 0.1], bounds: { x: [-3.5, 3.5], y: [-1, 2], z: [-3, 3] },
+    deriv: (o, x, p) => { o[0] = p.a * x[0] * (1 - x[1]) - p.b * x[2]; o[1] = -p.c * x[1] * (1 - x[0] * x[0]); o[2] = p.d * x[0]; } }),
+  makeFlow({ id: 'nose-hoover', label: 'Nosé–Hoover', defaults: { a: 1 }, dt: 0.01, init: [0, 5, 0], bounds: { x: [-4, 4], y: [-4, 4], z: [-4, 4] },
+    deriv: (o, x, p) => { o[0] = x[1]; o[1] = -x[0] + x[1] * x[2]; o[2] = p.a - x[1] * x[1]; } }),
+  makeFlow({ id: 'chua', label: 'Chua (cubic)', defaults: { alpha: 10, beta: 14.2857, c0: -1 / 6, c1: 1 / 16 }, dt: 0.01, init: [0.3, 0, 0], bounds: { x: [-3, 3], y: [-0.6, 0.6], z: [-4, 4] },
+    deriv: (o, x, p) => { o[0] = p.alpha * (x[1] - x[0] - (p.c1 * x[0] * x[0] * x[0] + p.c0 * x[0])); o[1] = x[0] - x[1] + x[2]; o[2] = -p.beta * x[1]; } }),
+];
+
 export const SYSTEMS: Record<string, AttractorSystem> = {
   lorenz: LORENZ,
   rossler: ROSSLER,
   aizawa: AIZAWA,
   thomas: THOMAS,
+  ...Object.fromEntries(NEW_FLOWS.map((s) => [s.id, s])),
 };
 
 class StrangeAttractorArchetype implements Archetype {
@@ -246,9 +322,11 @@ export function makeAttractorFactory(system: AttractorSystem): ArchetypeFactory 
   return {
     id: system.id,
     label: system.label,
+    category: 'Attractor',
     kind: 'flow',
     params: system.paramSpec,
     defaultParticleCount: 100_000,
+    defaultDt: system.dt,
     create: (config) => new StrangeAttractorArchetype(system, config),
   };
 }

@@ -18,8 +18,9 @@ mathematical archetypes, live-switchable, with fading trails, a structural hiera
 camera focus-tracking, JSON snapshots, and an optional fully GPU-resident compute path.
 
 ## Highlights
-- **Four archetypes behind one seam** — strange attractors (Lorenz / Rössler / Aizawa / Thomas),
-  the hierarchical hyper-oscillator, N-body, and quantum-foam — switchable live, no reload.
+- **A growing catalog behind one seam** — 14 strange attractors, 10 classic iterated maps, the
+  hierarchical hyper-oscillator, N-body, and quantum-foam (**27 systems**), grouped by category and
+  switchable live, no reload. Adding one is a single file + one `register()` call.
 - **Decoupled simulation** — the integrator runs in a Web Worker over a SharedArrayBuffer
   double-buffer (with a main-thread fallback), independent of the render frame rate.
 - **Optional GPU compute** — every archetype can run entirely on the GPU via Three.js **TSL**
@@ -37,10 +38,18 @@ not stock art. Each runs on the CPU worker path and, optionally, fully on the GP
 ### Strange attractors
 <p align="center"><img src="docs/gallery.svg" alt="Lorenz, Rössler, Aizawa, Thomas" width="100%"></p>
 
-Classic chaotic flows — Lorenz, Rössler, Aizawa, Thomas — integrated as a 100k-particle RK4
-ensemble. Correctness is gated on the Benettin Lyapunov exponent, not visual plausibility.
-**Next:** more systems (Clifford / de Jong maps, Halvorsen, Dadras, Chen) and live
-Lyapunov-spectrum + Kaplan–Yorke dimension telemetry.
+Fourteen chaotic flows — Lorenz, Rössler, Aizawa, Thomas, Halvorsen, Chen, Dadras, Lorenz-84,
+Rabinovich–Fabrikant, Sprott-Linz F, Wang four-wing, Bouali, Nosé–Hoover, Chua — each a
+100k-particle RK4 ensemble with its own stable timestep. Correctness is gated on the Benettin
+Lyapunov exponent, computed live (e.g. Lorenz ≈ 0.906, Chen ≈ 2.0), not visual plausibility.
+**Next:** live Lyapunov-spectrum + Kaplan–Yorke dimension; GPU kernels for the new flows.
+
+### Iterated maps
+Ten classic discrete maps — Clifford, de Jong, Svensson, Hopalong, Gumowski–Mira, Tinkerbell,
+Ikeda, Hénon, Bedhead, and the 3D Pickover — each a 100k-point cloud that settles onto the
+attractor, with fading trails tracing the filaments.
+**Next:** GPU iteration for the maps; more families (Lozi, standard/Chirikov) and escape-time
+fractal coloring.
 
 ### Hierarchical hyper-oscillator
 <p align="center"><img src="docs/arch-hyper.svg" alt="Nested epicycle swarm" width="62%"></p>

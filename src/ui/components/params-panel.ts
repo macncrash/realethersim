@@ -59,7 +59,7 @@ export class ParamsPanel extends LitElement {
     }
 
     const gf = pane.addFolder({ title: 'Global' });
-    gf.addBinding(globals, 'dt', { min: 0.0005, max: 0.02, step: 0.0005 }).on('change', (e) => setGlobal('dt', e.value as number));
+    gf.addBinding(globals, 'dt', { min: 0.0005, max: 0.05, step: 0.0005 }).on('change', (e) => setGlobal('dt', e.value as number));
     gf.addBinding(globals, 'particleCount', { label: 'particles', options: countOptions(g.particleCount, factory.particleCountOptions) }).on('change', (e) => setGlobal('particleCount', e.value as number));
     gf.addBinding(globals, 'trailLength', { label: 'trail', min: 0, max: 1000, step: 10 }).on('change', (e) => setGlobal('trailLength', e.value as number));
     gf.addBinding(globals, 'gpuCompute', { label: 'GPU compute' }).on('change', (e) => setGlobal('gpuCompute', e.value as boolean));
