@@ -6,7 +6,7 @@
   <img src="https://img.shields.io/badge/license-MIT-3aa0ff.svg" alt="MIT License">
   <img src="https://img.shields.io/badge/WebGPU-Three.js%20r184-4ad6c8" alt="WebGPU / Three.js">
   <img src="https://img.shields.io/badge/TypeScript-strict-7aa8ff" alt="TypeScript strict">
-  <img src="https://img.shields.io/badge/tests-56%20passing-4ad6c8" alt="56 tests passing">
+  <img src="https://img.shields.io/badge/tests-65%20passing-4ad6c8" alt="65 tests passing">
 </p>
 
 # ETHERSIM
@@ -18,19 +18,22 @@ mathematical archetypes, live-switchable, with fading trails, a structural hiera
 camera focus-tracking, JSON snapshots, and an optional fully GPU-resident compute path.
 
 ## Highlights
-- **A growing catalog behind one seam** — 14 strange attractors, 10 iterated maps, an emergent
-  **Life** family (Particle Life, Boids, slime mold), **Fluid** (point vortices) and **Field**
-  systems (Gray-Scott foam, excitable-medium waves), plus the hyper-oscillator and N-body —
-  **32 systems across 7 categories**, switchable live, no reload. Adding one is a single file +
-  one `register()` call.
+- **A growing catalog behind one seam** — 14 strange attractors, 10 iterated maps, a **Fractal**
+  family (Barnsley fern + IFS chaos-game, Mandelbrot/Julia/Burning-Ship escape-time, DLA), an
+  emergent **Life** family (Particle Life, Boids, slime mold), **Fluid** (point vortices) and
+  **Field** systems (Gray-Scott foam, excitable-medium waves, Lenia), plus the hyper-oscillator and
+  N-body — **41 systems across 8 categories**, switchable live, no reload. Adding one is a single
+  file + one `register()` call.
+- **Learn as you go** — a built-in **Learn panel** (About / Math / Code) explains every system in
+  plain English, renders its governing equations with **KaTeX** (with your live slider values
+  substituted in), shows the core source, and links out to references.
 - **Decoupled simulation** — the integrator runs in a Web Worker over a SharedArrayBuffer
   double-buffer (with a main-thread fallback), independent of the render frame rate.
-- **Every system runs on the GPU** — all 14 attractors, 10 iterated maps, the Life family
-  (Particle Life, Boids, slime mold), point vortices, both field systems (Gray-Scott foam,
-  excitable medium), the hyper-oscillator and N-body each have a fully GPU-resident **TSL** compute
-  path: per-particle RK4, map iteration, brute-force `Loop` flocking/particle-life, an
-  atomic-scatter slime trail field, softened Biot–Savart vortices, integer grid CA / Gray-Scott
-  reaction-diffusion, and all-pairs N-body. The **GPU compute** toggle is live for the whole catalog.
+- **Every system runs on the GPU** — all 41 systems have a fully GPU-resident **TSL** compute path:
+  per-particle RK4 (attractors), map iteration, chaos-game IFS, per-pixel escape-time fractals with
+  live zoom, brute-force `Loop` flocking/particle-life, an atomic-scatter slime trail field, softened
+  Biot–Savart vortices, ring-kernel Lenia + Gray-Scott / integer-grid CA, walker-aggregation DLA, and
+  all-pairs N-body. The **GPU compute** toggle is live for the whole catalog.
 - **Fading world-space trails**, a **hierarchy tree** with particle highlighting and
   **macro→micro camera focus-tracking**, **logarithmic depth/zoom**, and **versioned JSON
   snapshots**.
@@ -55,7 +58,14 @@ Lyapunov exponent, computed live (e.g. Lorenz ≈ 0.906, Chen ≈ 2.0), not visu
 Ten classic discrete maps — Clifford, de Jong, Svensson, Hopalong, Gumowski–Mira, Tinkerbell,
 Ikeda, Hénon, Bedhead, and the 3D Pickover — each a 100k-point cloud that settles onto the
 attractor, with fading trails tracing the filaments.
-**Next:** more families (Lozi, standard/Chirikov) and escape-time fractal coloring.
+**Next:** more families (Lozi, standard/Chirikov).
+
+### Fractals
+Three flavours: **IFS chaos-game** attractors (Barnsley fern, Sierpiński triangle/carpet, Heighway
+dragon) built by random affine contractions; **escape-time** sets (Mandelbrot, Julia, Burning Ship)
+as a per-cell grid whose smooth escape count is recomputed every frame on the GPU for live pan/zoom;
+and **diffusion-limited aggregation** (DLA), random walkers freezing into coral/lightning dendrites.
+**Next:** a per-pixel fragment-shader plane for crisper deep zoom; fractal flames; L-systems.
 
 ### Particle Life
 K species in a toroidal cube governed by a random **asymmetric interaction matrix** — universal
@@ -105,8 +115,8 @@ coupling variants, collisions/mergers, and GPU-side clusters.
 
 A Gray-Scott reaction-diffusion field on a toroidal grid driving a displaced point lattice
 (exposed via `readField()`) — mitosis / coral / maze patterns and emergent foam.
-**Next:** more presets + Lenia continuous CA, feeding `readField()` into the other archetypes
-(gradient advection), and 3D reaction-diffusion.
+**Next:** more presets, feeding `readField()` into the other archetypes (gradient advection), and
+3D reaction-diffusion.
 
 ### Excitable medium (spiral waves)
 A Greenberg–Hastings cyclic cellular automaton (rest → excited → refractory → rest) on a toroidal
@@ -114,9 +124,15 @@ grid — self-organising travelling and spiral waves, a Belousov–Zhabotinsky l
 construction (integer states), so it never blows up.
 **Next:** FitzHugh–Nagumo / Gierer–Meinhardt siblings, phase colouring.
 
+### Lenia (smooth life)
+A continuous cellular automaton: the field is convolved with a smooth ring kernel each step, then
+nudged by a Gaussian growth function and clamped to [0,1] — generalising Conway's Life to smooth
+space, time, and states, yielding lifelike gliders and self-organising cells.
+**Next:** the Orbium glider seed + a preset zoo; multi-channel Lenia.
+
 ## Stack
 TypeScript (strict) · Vite · **Three.js r184** (`WebGPURenderer`, WebGPU-first) · **Lit** web
-components · nanostores · Tweakpane · zod · vitest. Authoritative state is CPU **f64**; the GPU
+components · nanostores · Tweakpane · KaTeX · zod · vitest. Authoritative state is CPU **f64**; the GPU
 renders **f32** (WGSL has no f64) — the split that satisfies "double-precision sim with
 single-precision fallback".
 
