@@ -22,6 +22,10 @@ const LAUNCH = 0.46; // walkers respawn within this fraction of W around centre 
 const HIDDEN_Y = -30; // empty cells parked below the camera (off-screen, |y| stays render-bounded)
 const NEI = [
   [-1, -1], [0, -1], [1, -1], [-1, 0], [1, 0], [-1, 1], [0, 1], [1, 1],
+]; // 8-neighbour Moore stencil — used for the sticking/adjacency test
+// 4-neighbour (von Neumann) random-walk steps; ordered to match the GPU kernel exactly.
+const STEP = [
+  [1, 0], [-1, 0], [0, 1], [0, -1],
 ];
 
 const PARAM_SPEC: ParamSpec[] = [
@@ -107,9 +111,9 @@ class DlaArchetype implements Archetype {
         this.respawn(i);
         continue;
       }
-      const dir = (rng() * 8) | 0;
-      wx = (wx + NEI[dir][0] + w) % w;
-      wy = (wy + NEI[dir][1] + w) % w;
+      const dir = (rng() * 4) | 0; // 4-neighbour walk (matches the GPU kernel)
+      wx = (wx + STEP[dir][0] + w) % w;
+      wy = (wy + STEP[dir][1] + w) % w;
       walk[i * 2] = wx;
       walk[i * 2 + 1] = wy;
     }

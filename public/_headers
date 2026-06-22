@@ -1,6 +1,13 @@
-# Cross-origin isolation — required for the SharedArrayBuffer worker sim path.
-# Applied by Cloudflare Pages / Netlify (this file is copied into the build output).
-# Without it the app still runs (worker falls back to the main thread; GPU compute is unaffected).
+# Security + cross-origin-isolation headers. Applied by Cloudflare Pages / Netlify (this file is
+# copied into the build output). COOP/COEP enable the SharedArrayBuffer worker path; without them the
+# app still runs (worker falls back to the main thread; GPU compute is unaffected).
+#
+# The app is fully self-contained — no network calls, no external resources — so a strict, self-only
+# CSP costs nothing. 'unsafe-inline' is needed for style only (inline <style> + Tweakpane/KaTeX inject
+# styles at runtime); scripts are same-origin ES modules (the inline modulepreload polyfill is off).
 /*
   Cross-Origin-Opener-Policy: same-origin
   Cross-Origin-Embedder-Policy: require-corp
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'none'
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: no-referrer

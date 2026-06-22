@@ -14,6 +14,10 @@ export default defineConfig({
   worker: { format: 'es' },
   build: {
     target: 'esnext',
+    sourcemap: false, // explicit: never ship sourcemaps (they can embed local absolute paths)
+    // No inline module-preload polyfill, so the production HTML has zero inline <script> and a
+    // strict `script-src 'self'` CSP holds (the app targets modern WebGPU/WebGL browsers anyway).
+    modulePreload: { polyfill: false },
     rollupOptions: {
       input: {
         main: resolve(__dirname, 'index.html'),
