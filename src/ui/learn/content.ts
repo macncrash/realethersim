@@ -28,8 +28,9 @@ export interface SystemDoc {
 // docs). Kept separate so the generated data can be regenerated without touching the panel logic.
 import { SYSTEM_DOCS as GENERATED } from './docs.generated';
 import { FRACTAL_DOCS } from './docs.fractals';
+import { EXTRA_DOCS } from './docs.extra';
 
-export const SYSTEM_DOCS: Record<string, SystemDoc> = { ...GENERATED, ...FRACTAL_DOCS };
+export const SYSTEM_DOCS: Record<string, SystemDoc> = { ...GENERATED, ...FRACTAL_DOCS, ...EXTRA_DOCS };
 
 export function getDoc(id: string): SystemDoc | null {
   return SYSTEM_DOCS[id] ?? null;

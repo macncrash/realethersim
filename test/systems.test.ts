@@ -48,6 +48,6 @@ describe('all registered systems are finite, bounded, and non-degenerate', () =>
       expect(finite, 'positions finite').toBe(true);
       expect(maxAbs, 'bounded in render space').toBeLessThan(50);
       expect(spread, 'non-degenerate spread').toBeGreaterThan(1e-5);
-    });
+    }, 20_000); // generous timeout: convolution systems (Lenia) are heavy at 800 steps
   }
 });
