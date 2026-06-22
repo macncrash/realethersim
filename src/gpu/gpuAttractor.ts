@@ -69,6 +69,108 @@ export const GPU_SYSTEMS: Record<string, GpuSystem> = {
     center: [0, 0, 0],
     pointSize: 0.016,
   },
+  // The 10 newer flows — same per-particle RK4 path, TSL twins of the CPU derivatives. A tight
+  // seed cloud (seedRange ~1) around the on-attractor init point; scale/center match the CPU bounds.
+  halvorsen: {
+    paramKeys: ['a'],
+    defaults: { a: 1.4 },
+    deriv: (X, u) =>
+      vec3(
+        u.a.mul(X.x).negate().sub(X.y.mul(4)).sub(X.z.mul(4)).sub(X.y.mul(X.y)),
+        u.a.mul(X.y).negate().sub(X.z.mul(4)).sub(X.x.mul(4)).sub(X.z.mul(X.z)),
+        u.a.mul(X.z).negate().sub(X.x.mul(4)).sub(X.y.mul(4)).sub(X.x.mul(X.x)),
+      ),
+    seedRange: [1, 1, 1], seedOffset: [-1.48, -1.51, 2.04], scale: 0.214, center: [-2, -2, -2], pointSize: 0.012,
+  },
+  chen: {
+    paramKeys: ['a', 'b', 'c'],
+    defaults: { a: 35, b: 3, c: 28 },
+    deriv: (X, u) =>
+      vec3(
+        u.a.mul(X.y.sub(X.x)),
+        u.c.sub(u.a).mul(X.x).sub(X.x.mul(X.z)).add(u.c.mul(X.y)),
+        X.x.mul(X.y).sub(u.b.mul(X.z)),
+      ),
+    seedRange: [1, 1, 1], seedOffset: [-0.1, 0.5, -0.6], scale: 0.0429, center: [0, 0, 30], pointSize: 0.012,
+  },
+  dadras: {
+    paramKeys: ['p', 'o', 'r', 'c', 'e'],
+    defaults: { p: 3, o: 2.7, r: 1.7, c: 2, e: 9 },
+    deriv: (X, u) =>
+      vec3(
+        X.y.sub(u.p.mul(X.x)).add(u.o.mul(X.y).mul(X.z)),
+        u.r.mul(X.y).sub(X.x.mul(X.z)).add(X.z),
+        u.c.mul(X.x).mul(X.y).sub(u.e.mul(X.z)),
+      ),
+    seedRange: [1, 1, 1], seedOffset: [1.1, 2.1, -2], scale: 0.06, center: [0, 0, 0], pointSize: 0.012,
+  },
+  lorenz84: {
+    paramKeys: ['a', 'b', 'F', 'G'],
+    defaults: { a: 0.25, b: 4, F: 8, G: 1 },
+    deriv: (X, u) =>
+      vec3(
+        X.y.mul(X.y).negate().sub(X.z.mul(X.z)).sub(u.a.mul(X.x)).add(u.a.mul(u.F)),
+        X.x.mul(X.y).sub(u.b.mul(X.x).mul(X.z)).sub(X.y).add(u.G),
+        u.b.mul(X.x).mul(X.y).add(X.x.mul(X.z)).sub(X.z),
+      ),
+    seedRange: [0.6, 0.6, 0.6], seedOffset: [1, 1, 1], scale: 0.5, center: [0.75, 0, 0], pointSize: 0.012,
+  },
+  'rabinovich-fabrikant': {
+    paramKeys: ['a', 'g'],
+    defaults: { a: 1.1, g: 0.87 },
+    deriv: (X, u) =>
+      vec3(
+        X.y.mul(X.z.sub(1).add(X.x.mul(X.x))).add(u.g.mul(X.x)),
+        X.x.mul(X.z.mul(3).add(1).sub(X.x.mul(X.x))).add(u.g.mul(X.y)),
+        X.z.mul(-2).mul(u.a.add(X.x.mul(X.y))),
+      ),
+    seedRange: [0.3, 0.3, 0.3], seedOffset: [-1, 0, 0.5], scale: 0.6, center: [0, 0, 0.75], pointSize: 0.012,
+  },
+  'sprott-linz-f': {
+    paramKeys: ['a'],
+    defaults: { a: 0.5 },
+    deriv: (X, u) => vec3(X.y.add(X.z), X.x.negate().add(u.a.mul(X.y)), X.x.mul(X.x).sub(X.z)),
+    seedRange: [1, 1, 1], seedOffset: [0.1, 0, 0], scale: 0.5, center: [0.25, 0, 3], pointSize: 0.012,
+  },
+  'wang-four-wing': {
+    paramKeys: ['a', 'b', 'c', 'd'],
+    defaults: { a: 0.2, b: -0.01, c: -0.4, d: -1 },
+    deriv: (X, u) =>
+      vec3(
+        u.a.mul(X.x).add(X.y.mul(X.z)),
+        u.b.mul(X.x).add(u.c.mul(X.y)).sub(X.x.mul(X.z)),
+        X.z.negate().add(u.d.mul(X.x).mul(X.y)),
+      ),
+    seedRange: [1, 1, 1], seedOffset: [1, 1, 1], scale: 0.079, center: [0, 0, 11], pointSize: 0.012,
+  },
+  bouali: {
+    paramKeys: ['a', 'b', 'c', 'd'],
+    defaults: { a: 3, b: 2.2, c: 1, d: 0.001 },
+    deriv: (X, u) =>
+      vec3(
+        u.a.mul(X.x).mul(float(1).sub(X.y)).sub(u.b.mul(X.z)),
+        u.c.negate().mul(X.y).mul(float(1).sub(X.x.mul(X.x))),
+        u.d.mul(X.x),
+      ),
+    seedRange: [1, 1, 1], seedOffset: [1, 0.1, 0.1], scale: 0.4286, center: [0, 0.5, 0], pointSize: 0.012,
+  },
+  'nose-hoover': {
+    paramKeys: ['a'],
+    defaults: { a: 1 },
+    deriv: (X, u) => vec3(X.y, X.x.negate().add(X.y.mul(X.z)), u.a.sub(X.y.mul(X.y))),
+    seedRange: [1, 1, 1], seedOffset: [0, 5, 0], scale: 0.375, center: [0, 0, 0], pointSize: 0.012,
+  },
+  chua: {
+    paramKeys: ['alpha', 'beta', 'c0', 'c1'],
+    defaults: { alpha: 10, beta: 14.2857, c0: -1 / 6, c1: 1 / 16 },
+    deriv: (X, u) =>
+      vec3(
+        u.alpha.mul(X.y.sub(X.x).sub(u.c1.mul(X.x).mul(X.x).mul(X.x).add(u.c0.mul(X.x)))),
+        X.x.sub(X.y).add(X.z),
+        u.beta.negate().mul(X.y),
+      ),
+    seedRange: [1, 1, 1], seedOffset: [0.3, 0, 0], scale: 0.375, center: [0, 0, 0], pointSize: 0.012,
+  },
 };
 
 function buildAttractor(sys: GpuSystem, count: number, dt0: number): GpuSim {

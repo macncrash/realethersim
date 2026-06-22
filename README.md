@@ -25,8 +25,10 @@ camera focus-tracking, JSON snapshots, and an optional fully GPU-resident comput
   one `register()` call.
 - **Decoupled simulation** — the integrator runs in a Web Worker over a SharedArrayBuffer
   double-buffer (with a main-thread fallback), independent of the render frame rate.
-- **Optional GPU compute** — every archetype can run entirely on the GPU via Three.js **TSL**
-  compute kernels (per-particle RK4, all-pairs N-body `Loop`, Gray-Scott grid).
+- **Optional GPU compute** — all 14 attractors plus the hyper-oscillator, N-body, and quantum-foam
+  run entirely on the GPU via Three.js **TSL** compute kernels (per-particle RK4, all-pairs N-body
+  `Loop`, Gray-Scott grid). The toggle greys out (n/a) for the CPU-only systems (maps, Life, Fluid,
+  excitable medium) — GPU kernels for those are on the roadmap.
 - **Fading world-space trails**, a **hierarchy tree** with particle highlighting and
   **macro→micro camera focus-tracking**, **logarithmic depth/zoom**, and **versioned JSON
   snapshots**.

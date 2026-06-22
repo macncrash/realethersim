@@ -3,6 +3,7 @@ import { StoreController } from '@nanostores/lit';
 import { Pane } from 'tweakpane';
 import { $archetypeId, $global, $params, setGlobal, setParam } from '../store';
 import { getFactory } from '../../core/registry';
+import { hasGpu } from '../../gpu';
 
 // Particle-count options, always including the active archetype's current count so the select
 // never renders blank (archetypes can default to non-standard counts, e.g. 80k). Archetypes may
@@ -62,7 +63,9 @@ export class ParamsPanel extends LitElement {
     gf.addBinding(globals, 'dt', { min: 0.0005, max: 0.05, step: 0.0005 }).on('change', (e) => setGlobal('dt', e.value as number));
     gf.addBinding(globals, 'particleCount', { label: 'particles', options: countOptions(g.particleCount, factory.particleCountOptions) }).on('change', (e) => setGlobal('particleCount', e.value as number));
     gf.addBinding(globals, 'trailLength', { label: 'trail', min: 0, max: 1000, step: 10 }).on('change', (e) => setGlobal('trailLength', e.value as number));
-    gf.addBinding(globals, 'gpuCompute', { label: 'GPU compute' }).on('change', (e) => setGlobal('gpuCompute', e.value as boolean));
+    // Only enable the GPU toggle for systems that actually have a GPU compute kernel; otherwise
+    // it would silently no-op (CPU fallback) and look broken.
+    gf.addBinding(globals, 'gpuCompute', { label: hasGpu(id) ? 'GPU compute' : 'GPU compute (n/a)', disabled: !hasGpu(id) }).on('change', (e) => setGlobal('gpuCompute', e.value as boolean));
 
     this.pane = pane;
   }
