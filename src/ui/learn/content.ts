@@ -24,11 +24,12 @@ export interface SystemDoc {
   links: DocLink[];
 }
 
-// Filled by src/ui/learn/docs.generated.ts (authored content). Kept separate so the generated
-// data can be regenerated without touching the panel logic.
+// Filled by docs.generated.ts (authored content, regenerable) + docs.fractals.ts (hand-curated IFS
+// docs). Kept separate so the generated data can be regenerated without touching the panel logic.
 import { SYSTEM_DOCS as GENERATED } from './docs.generated';
+import { FRACTAL_DOCS } from './docs.fractals';
 
-export const SYSTEM_DOCS: Record<string, SystemDoc> = GENERATED;
+export const SYSTEM_DOCS: Record<string, SystemDoc> = { ...GENERATED, ...FRACTAL_DOCS };
 
 export function getDoc(id: string): SystemDoc | null {
   return SYSTEM_DOCS[id] ?? null;

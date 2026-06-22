@@ -15,7 +15,7 @@ describe('all registered systems are finite, bounded, and non-degenerate', () =>
   it('has a sizeable catalog across categories', () => {
     expect(factories.length).toBeGreaterThanOrEqual(30);
     const cats = new Set(factories.map((f) => f.category));
-    for (const c of ['Attractor', 'Map', 'Life', 'Fluid', 'Field', 'Oscillator', 'N-Body']) expect(cats.has(c)).toBe(true);
+    for (const c of ['Attractor', 'Map', 'Fractal', 'Life', 'Fluid', 'Field', 'Oscillator', 'N-Body']) expect(cats.has(c)).toBe(true);
   });
 
   for (const f of factories) {
