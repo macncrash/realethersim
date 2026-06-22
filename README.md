@@ -18,10 +18,11 @@ mathematical archetypes, live-switchable, with fading trails, a structural hiera
 camera focus-tracking, JSON snapshots, and an optional fully GPU-resident compute path.
 
 ## Highlights
-- **A growing catalog behind one seam** — 14 strange attractors, 10 iterated maps, a 3-system
-  emergent **Life** family (Particle Life, Boids, slime mold), the hierarchical hyper-oscillator,
-  N-body, and quantum-foam (**30 systems**), grouped by category and switchable live, no reload.
-  Adding one is a single file + one `register()` call.
+- **A growing catalog behind one seam** — 14 strange attractors, 10 iterated maps, an emergent
+  **Life** family (Particle Life, Boids, slime mold), **Fluid** (point vortices) and **Field**
+  systems (Gray-Scott foam, excitable-medium waves), plus the hyper-oscillator and N-body —
+  **32 systems across 7 categories**, switchable live, no reload. Adding one is a single file +
+  one `register()` call.
 - **Decoupled simulation** — the integrator runs in a Web Worker over a SharedArrayBuffer
   double-buffer (with a main-thread fallback), independent of the render frame rate.
 - **Optional GPU compute** — every archetype can run entirely on the GPU via Three.js **TSL**
@@ -74,6 +75,12 @@ travel, so emergent **transport networks** — veins, cells, voids — appear in
 This is the archetype that exercises the agent↔field feedback (`readField()`).
 **Next:** food sources / obstacles, multi-species networks, a GPU compute version.
 
+### Point Vortices
+A handful of ± vortices induce a 2D velocity field (softened Biot–Savart, toroidal); thousands of
+massless tracers are advected by it, so the streamlines reveal the flow — eddies pair, orbit, and
+shed. Bounded by softening + wrap (can't blow up).
+**Next:** vortex sheets, leapfrogging rings, 3D vortex filaments.
+
 ### Hierarchical hyper-oscillator
 <p align="center"><img src="docs/arch-hyper.svg" alt="Nested epicycle swarm" width="62%"></p>
 
@@ -97,6 +104,12 @@ A Gray-Scott reaction-diffusion field on a toroidal grid driving a displaced poi
 (exposed via `readField()`) — mitosis / coral / maze patterns and emergent foam.
 **Next:** more presets + Lenia continuous CA, feeding `readField()` into the other archetypes
 (gradient advection), and 3D reaction-diffusion.
+
+### Excitable medium (spiral waves)
+A Greenberg–Hastings cyclic cellular automaton (rest → excited → refractory → rest) on a toroidal
+grid — self-organising travelling and spiral waves, a Belousov–Zhabotinsky look. Bounded by
+construction (integer states), so it never blows up.
+**Next:** FitzHugh–Nagumo / Gierer–Meinhardt siblings, phase colouring.
 
 ## Stack
 TypeScript (strict) · Vite · **Three.js r184** (`WebGPURenderer`, WebGPU-first) · **Lit** web
