@@ -6,7 +6,7 @@
   <img src="https://img.shields.io/badge/license-MIT-3aa0ff.svg" alt="MIT License">
   <img src="https://img.shields.io/badge/WebGPU-Three.js%20r184-4ad6c8" alt="WebGPU / Three.js">
   <img src="https://img.shields.io/badge/TypeScript-strict-7aa8ff" alt="TypeScript strict">
-  <img src="https://img.shields.io/badge/tests-21%20passing-4ad6c8" alt="21 tests passing">
+  <img src="https://img.shields.io/badge/tests-56%20passing-4ad6c8" alt="56 tests passing">
 </p>
 
 # ETHERSIM
@@ -25,10 +25,11 @@ camera focus-tracking, JSON snapshots, and an optional fully GPU-resident comput
   one `register()` call.
 - **Decoupled simulation** — the integrator runs in a Web Worker over a SharedArrayBuffer
   double-buffer (with a main-thread fallback), independent of the render frame rate.
-- **Optional GPU compute** — all 14 attractors plus the hyper-oscillator, N-body, and quantum-foam
-  run entirely on the GPU via Three.js **TSL** compute kernels (per-particle RK4, all-pairs N-body
-  `Loop`, Gray-Scott grid). The toggle greys out (n/a) for the CPU-only systems (maps, Life, Fluid,
-  excitable medium) — GPU kernels for those are on the roadmap.
+- **Optional GPU compute** — all 14 attractors and 10 iterated maps, plus the hyper-oscillator,
+  N-body, and quantum-foam, run entirely on the GPU via Three.js **TSL** compute kernels
+  (per-particle RK4, map iteration, all-pairs N-body `Loop`, Gray-Scott grid). The toggle greys
+  out (n/a) for the remaining CPU-only systems (Life, Fluid, excitable medium) — GPU kernels for
+  those are on the roadmap.
 - **Fading world-space trails**, a **hierarchy tree** with particle highlighting and
   **macro→micro camera focus-tracking**, **logarithmic depth/zoom**, and **versioned JSON
   snapshots**.
@@ -37,8 +38,8 @@ camera focus-tracking, JSON snapshots, and an optional fully GPU-resident comput
 
 ## Archetypes
 The images below are rendered **from this project's own integrators** — real trajectories and
-fields, not stock art. Every system runs on the CPU worker path; the original archetypes
-(attractors, hyper-oscillator, N-body, foam) also have an optional fully GPU-resident path via TSL.
+fields, not stock art. Every system runs on the CPU worker path; the attractors, iterated maps,
+hyper-oscillator, N-body, and foam also have an optional fully GPU-resident path via TSL.
 
 ### Strange attractors
 <p align="center"><img src="docs/gallery.svg" alt="Lorenz, Rössler, Aizawa, Thomas" width="100%"></p>
@@ -47,14 +48,13 @@ Fourteen chaotic flows — Lorenz, Rössler, Aizawa, Thomas, Halvorsen, Chen, Da
 Rabinovich–Fabrikant, Sprott-Linz F, Wang four-wing, Bouali, Nosé–Hoover, Chua — each a
 100k-particle RK4 ensemble with its own stable timestep. Correctness is gated on the Benettin
 Lyapunov exponent, computed live (e.g. Lorenz ≈ 0.906, Chen ≈ 2.0), not visual plausibility.
-**Next:** live Lyapunov-spectrum + Kaplan–Yorke dimension; GPU kernels for the new flows.
+**Next:** live Lyapunov-spectrum + Kaplan–Yorke dimension.
 
 ### Iterated maps
 Ten classic discrete maps — Clifford, de Jong, Svensson, Hopalong, Gumowski–Mira, Tinkerbell,
 Ikeda, Hénon, Bedhead, and the 3D Pickover — each a 100k-point cloud that settles onto the
 attractor, with fading trails tracing the filaments.
-**Next:** GPU iteration for the maps; more families (Lozi, standard/Chirikov) and escape-time
-fractal coloring.
+**Next:** more families (Lozi, standard/Chirikov) and escape-time fractal coloring.
 
 ### Particle Life
 K species in a toroidal cube governed by a random **asymmetric interaction matrix** — universal

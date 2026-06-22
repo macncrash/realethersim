@@ -1,5 +1,6 @@
 import type { GpuFactory, GpuSim } from './types';
 import { GPU_SYSTEMS, makeGpuAttractor } from './gpuAttractor';
+import { GPU_MAPS, makeGpuMap } from './gpuMap';
 import { gpuHyperOscillator } from './gpuHyperOscillator';
 import { gpuNbody } from './gpuNbody';
 import { gpuFoam } from './gpuFoam';
@@ -11,6 +12,7 @@ const GPU_FACTORIES: Record<string, GpuFactory> = {
   quantumFoam: gpuFoam,
 };
 for (const id of Object.keys(GPU_SYSTEMS)) GPU_FACTORIES[id] = makeGpuAttractor(id);
+for (const id of Object.keys(GPU_MAPS)) GPU_FACTORIES[id] = makeGpuMap(id);
 
 export function hasGpu(id: string): boolean {
   return id in GPU_FACTORIES;
