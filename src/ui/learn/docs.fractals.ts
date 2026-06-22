@@ -67,4 +67,68 @@ for (j of [0,1,2]) for (i of [0,1,2]) if (!(i===1 && j===1))
   maps.push({ a: 1/3, b: 0, c: 0, d: 1/3, e: i/3, f: j/3 });`,
     links: [{ label: 'Sierpiński carpet (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Sierpi%C5%84ski_carpet' }, IFS_LINK],
   },
+  mandelbrot: {
+    title: 'Mandelbrot Set',
+    about:
+      'The most famous fractal. For each point c in the complex plane, iterate z → z² + c starting from z = 0; c belongs to the set (coloured black) if the orbit never escapes to infinity. The boundary is infinitely intricate and self-similar — you can zoom forever and keep finding new structure. Colour encodes how fast each outside point escapes.',
+    howItWorks:
+      'Every pixel is a complex number c; the shader iterates z² + c and colours by the smooth escape iteration count. On the GPU the whole grid is recomputed each frame, so pan/zoom reveals fresh detail.',
+    equations: [{ label: 'c = pixel, z starts at 0; escapes when |z| > 2', latex: 'z_{n+1} = z_n^{2} + c,\\qquad z_0 = 0' }],
+    params: [
+      { key: 'centerRe', symbol: 'x_0', meaning: 'view center (real axis)' },
+      { key: 'centerIm', symbol: 'y_0', meaning: 'view center (imaginary axis)' },
+      { key: 'scale', symbol: 's', meaning: 'half-width of the view — shrink to zoom in' },
+      { key: 'maxIter', symbol: 'N', meaning: 'iteration budget; higher = finer boundary detail' },
+    ],
+    code: `// per pixel c = (cre, cim); count iterations of z = z² + c until |z|² > 4
+zr = 0; zi = 0; n = 0;
+while (n < maxIter && zr*zr + zi*zi <= 4) {
+  [zr, zi] = [zr*zr - zi*zi + cre, 2*zr*zi + cim];
+  n++;
+}
+// smooth colour = n + 1 - log2(log|z|)`,
+    links: [{ label: 'Mandelbrot set (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Mandelbrot_set' }],
+  },
+  julia: {
+    title: 'Julia Set',
+    about:
+      'The Mandelbrot set’s twin: iterate the same z → z² + c, but now c is a FIXED constant and the starting z is the pixel. Each value of c gives a completely different Julia set — connected blobs, dust, dragons, spirals — and the Mandelbrot set is exactly the map of which c values give connected Julia sets. Sweep c to morph between them.',
+    howItWorks: 'Every pixel is the initial z; the constant c is the same for the whole image. Change c (cr, ci) to morph the fractal continuously.',
+    equations: [{ label: 'z starts at the pixel; c is fixed', latex: 'z_{n+1} = z_n^{2} + c,\\qquad c = c_r + i\\,c_i' }],
+    params: [
+      { key: 'cRe', symbol: 'c_r', meaning: 'the fixed constant c (real part) — defines which Julia set' },
+      { key: 'cIm', symbol: 'c_i', meaning: 'the fixed constant c (imaginary part)' },
+      { key: 'centerRe', symbol: 'x_0', meaning: 'view center (real axis)' },
+      { key: 'centerIm', symbol: 'y_0', meaning: 'view center (imaginary axis)' },
+      { key: 'scale', symbol: 's', meaning: 'half-width of the view — shrink to zoom in' },
+      { key: 'maxIter', symbol: 'N', meaning: 'iteration budget; higher = finer detail' },
+    ],
+    code: `// per pixel z0 = (zre, zim); c = (cr, ci) is constant for the whole image
+n = 0;
+while (n < maxIter && zr*zr + zi*zi <= 4) {
+  [zr, zi] = [zr*zr - zi*zi + cr, 2*zr*zi + ci];
+  n++;
+}`,
+    links: [{ label: 'Julia set (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Julia_set' }],
+  },
+  'burning-ship': {
+    title: 'Burning Ship',
+    about:
+      'A Mandelbrot variant with one twist: take the absolute value of z’s real and imaginary parts before squaring. That tiny change breaks the smooth symmetry and produces sharp, flame-like "ship" structures along the real axis — zoom into the antenna near (−1.75, 0) to find the iconic burning ship.',
+    howItWorks: 'Same escape-time loop as Mandelbrot, but each step folds z into the positive quadrant first (|Re|, |Im|), which creates the angular, ship-like detail.',
+    equations: [{ label: 'absolute value before squaring', latex: 'z_{n+1} = \\bigl(|\\mathrm{Re}\\,z_n| + i\\,|\\mathrm{Im}\\,z_n|\\bigr)^{2} + c' }],
+    params: [
+      { key: 'centerRe', symbol: 'x_0', meaning: 'view center (real axis)' },
+      { key: 'centerIm', symbol: 'y_0', meaning: 'view center (imaginary axis)' },
+      { key: 'scale', symbol: 's', meaning: 'half-width of the view — shrink to zoom in' },
+      { key: 'maxIter', symbol: 'N', meaning: 'iteration budget; higher = finer detail' },
+    ],
+    code: `// like Mandelbrot, but abs() the parts each step
+while (n < maxIter && zr*zr + zi*zi <= 4) {
+  ar = Math.abs(zr); ai = Math.abs(zi);
+  [zr, zi] = [ar*ar - ai*ai + cre, 2*ar*ai + cim];
+  n++;
+}`,
+    links: [{ label: 'Burning Ship fractal (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Burning_Ship_fractal' }],
+  },
 };

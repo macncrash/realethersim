@@ -3,6 +3,8 @@ import { GPU_SYSTEMS, makeGpuAttractor } from './gpuAttractor';
 import { GPU_MAPS, makeGpuMap } from './gpuMap';
 import { makeGpuIfs } from './gpuFractalIFS';
 import { IFS_SYSTEMS } from '../archetypes/fractalIFS';
+import { makeGpuEscape } from './gpuEscapeFractal';
+import { ESCAPE_SYSTEMS } from '../archetypes/escapeFractal';
 import { gpuHyperOscillator } from './gpuHyperOscillator';
 import { gpuNbody } from './gpuNbody';
 import { gpuFoam } from './gpuFoam';
@@ -26,6 +28,7 @@ const GPU_FACTORIES: Record<string, GpuFactory> = {
 for (const id of Object.keys(GPU_SYSTEMS)) GPU_FACTORIES[id] = makeGpuAttractor(id);
 for (const id of Object.keys(GPU_MAPS)) GPU_FACTORIES[id] = makeGpuMap(id);
 for (const id of Object.keys(IFS_SYSTEMS)) GPU_FACTORIES[id] = makeGpuIfs(id);
+for (const id of Object.keys(ESCAPE_SYSTEMS)) GPU_FACTORIES[id] = makeGpuEscape(id);
 
 export function hasGpu(id: string): boolean {
   return id in GPU_FACTORIES;

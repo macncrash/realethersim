@@ -2,6 +2,7 @@ import { register } from '../core/registry';
 import { makeAttractorFactory, SYSTEMS } from './strangeAttractor';
 import { makeMapFactory, MAP_SYSTEMS } from './iteratedMap';
 import { makeIfsFactory, IFS_SYSTEMS } from './fractalIFS';
+import { makeEscapeFactory, ESCAPE_SYSTEMS } from './escapeFractal';
 import { hyperOscillatorFactory } from './hyperOscillator';
 import { nbodyFactory } from './nbody';
 import { quantumFoamFactory } from './quantumFoam';
@@ -26,6 +27,9 @@ export function registerArchetypes(): void {
   }
   for (const system of Object.values(IFS_SYSTEMS)) {
     register(makeIfsFactory(system));
+  }
+  for (const system of Object.values(ESCAPE_SYSTEMS)) {
+    register(makeEscapeFactory(system));
   }
   register(hyperOscillatorFactory);
   register(nbodyFactory);
