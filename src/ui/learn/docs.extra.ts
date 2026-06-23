@@ -53,6 +53,47 @@ if (anyNeighbourStuck && random() < stickiness) {
       { label: 'Witten & Sander 1981 (original paper)', url: 'https://journals.aps.org/prl/abstract/10.1103/PhysRevLett.47.1400' },
     ],
   },
+  kuramoto: {
+    title: 'Kuramoto Synchronisation',
+    about:
+      'Why do fireflies flash in unison, metronomes on a table drift into lockstep, and the cells of ' +
+      'a heart beat together? Yoshiki Kuramoto’s 1975 model is the answer: a population of oscillators, ' +
+      'each ticking at its own natural frequency, nudging one another through their average. Below a ' +
+      'critical coupling they ignore each other and drift; past it, order erupts spontaneously and they ' +
+      'snap into sync. Crank K up and watch the cylinder zip shut.',
+    howItWorks:
+      'Each oscillator i has a phase θᵢ and a fixed natural frequency ωᵢ (drawn here from a bell curve). ' +
+      'Instead of every pair pulling on every other pair, all the pulling is summed into one global ' +
+      '"mean field" — the order parameter r·e^{iψ}, the centroid of all the phases on the unit circle. ' +
+      'r runs from 0 (total disorder) to 1 (perfect sync). Each oscillator is then pulled toward the ' +
+      'mean phase with strength K·r. We map phase to angle around a cylinder and natural frequency to ' +
+      'height, so the slow/fast wings keep drifting while the middle locks.',
+    equations: [
+      { label: 'oscillator dynamics', latex: '\\dot{\\theta_i} = \\omega_i + \\frac{K}{N}\\sum_{j} \\sin(\\theta_j - \\theta_i)' },
+      { label: 'order parameter (mean field)', latex: 'r\\,e^{i\\psi} = \\frac{1}{N}\\sum_{j} e^{i\\theta_j}' },
+      { label: 'mean-field form (what we integrate)', latex: '\\dot{\\theta_i} = \\omega_i + K\\,r\\,\\sin(\\psi - \\theta_i)' },
+    ],
+    params: [
+      { key: 'coupling', symbol: 'K', meaning: 'coupling strength — the master knob; cross the critical value and sync erupts' },
+      { key: 'omega0', symbol: '\\omega_0', meaning: 'mean natural frequency — how fast the synced cluster rotates' },
+      { key: 'spread', symbol: '\\sigma', meaning: 'spread of natural frequencies — more disorder needs more coupling to sync' },
+    ],
+    code: `// global mean field over all oscillators (no all-pairs loop):
+let mc = 0, ms = 0;
+for (const t of theta) { mc += Math.cos(t); ms += Math.sin(t); }
+mc /= N; ms /= N;                       // order parameter (cos, sin)
+// each oscillator is pulled toward the mean phase:
+for (let i = 0; i < N; i++) {
+  const omega = omega0 + spread * g[i];           // its natural frequency
+  const dtheta = omega + K * (ms * Math.cos(theta[i]) - mc * Math.sin(theta[i]));
+  theta[i] += dtheta * dt;
+}`,
+    links: [
+      { label: 'Kuramoto model (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Kuramoto_model' },
+      { label: 'Strogatz — From Kuramoto to Crawford (2000)', url: 'https://www.sciencedirect.com/science/article/abs/pii/S0167278900000944' },
+      { label: 'Steven Strogatz — Sync (TED talk)', url: 'https://www.ted.com/talks/steven_strogatz_the_science_of_sync' },
+    ],
+  },
   lozi: {
     title: 'Lozi Map',
     about:

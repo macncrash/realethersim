@@ -15,6 +15,7 @@ import { gpuBoids } from './gpuBoids';
 import { gpuSlimeMold } from './gpuSlimeMold';
 import { gpuPointVortices } from './gpuPointVortices';
 import { gpuExcitableMedium } from './gpuExcitableMedium';
+import { gpuKuramoto } from './gpuKuramoto';
 
 // Registry of GPU-compute factories by archetype id (parallel to the CPU archetype registry).
 const GPU_FACTORIES: Record<string, GpuFactory> = {
@@ -28,6 +29,7 @@ const GPU_FACTORIES: Record<string, GpuFactory> = {
   slimeMold: gpuSlimeMold,
   pointVortices: gpuPointVortices,
   excitableMedium: gpuExcitableMedium,
+  kuramoto: gpuKuramoto,
 };
 for (const id of Object.keys(GPU_SYSTEMS)) GPU_FACTORIES[id] = makeGpuAttractor(id);
 for (const id of Object.keys(GPU_MAPS)) GPU_FACTORIES[id] = makeGpuMap(id);
