@@ -89,14 +89,13 @@ export class KarmanArchetype implements Archetype {
         // equilibrium init: uniform rightward flow, ρ = 1
         const base = c * 9;
         for (let i = 0; i < 9; i++) this.f[base + i] = this.feq(i, 1, U0, 0);
-        // static base position (XY plane); colour a downstream rainbow
+        // static base position (horizontal XZ plane; vorticity becomes height); downstream rainbow
         this.positions[c * 3] = x * scaleX - halfW;
-        this.positions[c * 3 + 1] = y * scaleX - halfH;
-        this.positions[c * 3 + 2] = 0;
+        this.positions[c * 3 + 1] = 0;
+        this.positions[c * 3 + 2] = y * scaleX - halfH;
         hslToRgb(0.58 - (x / W) * 0.5, 0.7, inCyl ? 0.15 : 0.55, this.colors, c * 3);
       }
     }
-    void halfH;
   }
 
   private feq(i: number, rho: number, ux: number, uy: number): number {
@@ -205,7 +204,7 @@ export class KarmanArchetype implements Archetype {
         // ω = ∂uy/∂x − ∂ux/∂y (central difference)
         const w = (uy[c + 1] - uy[c - 1]) * 0.5 - (ux[c + W] - ux[c - W]) * 0.5;
         vort[c] = w;
-        pos[c * 3 + 2] = w * Z_SCALE;
+        pos[c * 3 + 1] = w * Z_SCALE; // relief height (Y); field lies in the XZ plane
       }
     }
   }
