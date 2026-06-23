@@ -408,7 +408,13 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
       const ctx = cv.getContext('2d');
       if (!ctx) return;
       const img = ctx.createImageData(w, h);
-      for (let r = 0; r < h; r++) img.data.set(buf.subarray((h - 1 - r) * w * 4, (h - r) * w * 4), r * w * 4); // RT is bottom-up
+      // WebGPU pads each readback row to a 256-byte boundary; WebGL2 packs tightly. Detect which,
+      // then copy each row from its real (padded) source offset — otherwise rows drift and shear.
+      const stride = buf.length === w * h * 4 ? w * 4 : Math.ceil((w * 4) / 256) * 256;
+      for (let r = 0; r < h; r++) {
+        const src = (h - 1 - r) * stride; // flip Y (readback is bottom-up)
+        img.data.set(buf.subarray(src, src + w * 4), r * w * 4);
+      }
       ctx.putImageData(img, 0, 0);
 
       // --- overlay: ETHERSIM + version (bottom-left), system/params/camera (bottom-right) ---

@@ -59,14 +59,14 @@ export class SnapshotControls extends LitElement {
         <h4>Snapshot</h4>
         <div class="row" style="gap:6px;flex-wrap:wrap;justify-content:flex-start">
           <button @click=${() => this.exportSnapshot()}>Export</button>
-          <button @click=${() => void $engine.get()?.exportImage()}>Save Image</button>
+          <button @click=${() => void $engine.get()?.exportImage()}>Screenshot</button>
           <label class="filebtn" style="background:#14203a;border:1px solid var(--panel-border);border-radius:6px;padding:6px 10px;cursor:pointer">
             Import
             <input type="file" accept="application/json,image/png" @change=${(e: Event) => this.importFile(e)} />
           </label>
           <button @click=${() => $engine.get()?.togglePause()}>Pause</button>
         </div>
-        <div class="hint" style="opacity:.5;font-size:11px;margin-top:6px">Save Image embeds the full setup — re-import the PNG to recreate it.</div>
+        <div class="hint" style="opacity:.5;font-size:11px;margin-top:6px">Screenshot embeds the full setup — re-import the PNG to recreate it.</div>
       </div>
     `;
   }
