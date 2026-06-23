@@ -94,6 +94,50 @@ for (let i = 0; i < N; i++) {
       { label: 'Steven Strogatz — Sync (TED talk)', url: 'https://www.ted.com/talks/steven_strogatz_the_science_of_sync' },
     ],
   },
+  chimera: {
+    title: 'Chimera States',
+    about:
+      'A chimera state is dynamical-systems heresy: take a ring of identical oscillators, couple them ' +
+      'all in exactly the same way, and — instead of all syncing or all drifting — the ring ' +
+      'spontaneously splits into a synchronised arc living right next to an incoherent, chaotic arc. ' +
+      'Order and disorder coexisting on a perfectly symmetric ring. Discovered by Kuramoto & ' +
+      'Battogtokh in 2002 and named (after the mythological part-lion-part-serpent) by Abrams & ' +
+      'Strogatz in 2004; later seen in real chemical, mechanical, and optical experiments.',
+    howItWorks:
+      'Identical oscillators sit on a ring and couple NONLOCALLY — each feels its neighbours through a ' +
+      'broad cosine kernel — with a phase lag α just under π/2. From a localized random kick the ring ' +
+      'breaks symmetry: one arc locks into a smooth phase profile while the other never settles. The ' +
+      'cosine kernel lets the nonlocal sum collapse into six global order-parameter sums, so it runs ' +
+      'O(N). We draw a ring "crown" — angle = position, height = sin θ — so the coherent arc is a ' +
+      'smooth band and the incoherent arc is jagged.',
+    equations: [
+      {
+        label: 'nonlocal coupling on the ring',
+        latex: '\\dot{\\theta_i} = \\omega - \\frac{1}{N}\\sum_{j} G(x_i - x_j)\\,\\sin(\\theta_i - \\theta_j + \\alpha)',
+      },
+      { label: 'cosine coupling kernel', latex: 'G(x) = 1 + A\\cos x' },
+      { label: 'chimera regime', latex: '\\alpha \\lesssim \\tfrac{\\pi}{2}, \\qquad A > 0' },
+    ],
+    params: [
+      { key: 'alpha', symbol: '\\alpha', meaning: 'phase lag (frustration); chimeras live just below π/2' },
+      { key: 'kernelA', symbol: 'A', meaning: 'kernel anisotropy — how nonlocal/contrasted the coupling is' },
+      { key: 'coupling', symbol: 'K', meaning: 'overall coupling strength' },
+    ],
+    code: `// cosine kernel ⇒ six global sums, so the nonlocal coupling is O(N):
+let Sc=0,Ss=0, Scc=0,Scs=0, Ssc=0,Sss=0;
+for (let j=0;j<N;j++){ const c=cos(th[j]),s=sin(th[j]);
+  Sc+=c; Ss+=s; Scc+=cosx[j]*c; Scs+=cosx[j]*s; Ssc+=sinx[j]*c; Sss+=sinx[j]*s; }
+// each oscillator integrates against the shared sums:
+const termC = Sc/N + A*cosx[i]*Scc/N + A*sinx[i]*Ssc/N;
+const termS = Ss/N + A*cosx[i]*Scs/N + A*sinx[i]*Sss/N;
+const Ci = sin(th[i]+alpha)*termC - cos(th[i]+alpha)*termS;
+th[i] -= K * Ci * dt;`,
+    links: [
+      { label: 'Chimera states (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Chimera_state' },
+      { label: 'Abrams & Strogatz 2004 — Chimera states for coupled oscillators', url: 'https://journals.aps.org/prl/abstract/10.1103/PhysRevLett.93.174102' },
+      { label: 'Kuramoto & Battogtokh 2002 (original)', url: 'https://www.j-npcs.org/abstracts/vol2002/v5no4/v5no4p380.html' },
+    ],
+  },
   lozi: {
     title: 'Lozi Map',
     about:
