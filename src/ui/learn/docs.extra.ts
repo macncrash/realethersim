@@ -138,6 +138,43 @@ th[i] -= K * Ci * dt;`,
       { label: 'Kuramoto & Battogtokh 2002 (original)', url: 'https://www.j-npcs.org/abstracts/vol2002/v5no4/v5no4p380.html' },
     ],
   },
+  karman: {
+    title: 'Kármán Vortex Street',
+    about:
+      'Drive a steady flow past a blunt body — a bridge pier, a chimney, a cylinder — and above a ' +
+      'critical speed the wake stops being steady: it sheds vortices alternately from each side, ' +
+      'spinning in opposite directions, in a beautifully periodic double row. Théodore von Kármán ' +
+      'explained its stability in 1911. It’s why flags flutter, power lines "sing", and why the ' +
+      'Tacoma Narrows bridge tore itself apart.',
+    howItWorks:
+      'This is real CFD: a Lattice-Boltzmann solver (D2Q9). Instead of tracking velocity directly it ' +
+      'evolves nine particle-population densities per cell — collide them toward local equilibrium, ' +
+      'stream them to neighbours, bounce them off the cylinder — and the Navier–Stokes flow emerges. ' +
+      'We colour each cell by its vorticity (the local spin), so the shed vortices light up red and ' +
+      'blue. Drag Reynolds up and the wake transitions from steady, to gently waving, to full shedding.',
+    equations: [
+      { label: 'lattice Boltzmann (BGK collision + streaming)', latex: 'f_i(\\mathbf{x}+\\mathbf{e}_i, t+1) = f_i - \\tfrac{1}{\\tau}\\,(f_i - f_i^{\\,eq})' },
+      { label: 'equilibrium distribution', latex: 'f_i^{\\,eq} = w_i\\,\\rho\\left[1 + 3(\\mathbf{e}_i\\!\\cdot\\!\\mathbf{u}) + \\tfrac{9}{2}(\\mathbf{e}_i\\!\\cdot\\!\\mathbf{u})^2 - \\tfrac{3}{2}|\\mathbf{u}|^2\\right]' },
+      { label: 'Reynolds & Strouhal numbers', latex: '\\mathrm{Re} = \\frac{U D}{\\nu}, \\qquad \\mathrm{St} = \\frac{f D}{U} \\approx 0.2' },
+      { label: 'viscosity ↔ relaxation time', latex: '\\nu = \\tfrac{1}{3}\\left(\\tau - \\tfrac{1}{2}\\right)' },
+    ],
+    params: [
+      { key: 'reynolds', symbol: '\\mathrm{Re}', meaning: 'Reynolds number = inertia/viscosity; raise it to push from steady flow into vortex shedding' },
+      { key: 'speed', symbol: 'U', meaning: 'inflow speed (lattice units); sets how fast vortices shed and travel' },
+    ],
+    code: `// D2Q9 lattice Boltzmann, per cell, per step:
+// 1) macroscopic moments
+rho = sum(f);  ux = sum(f*ex)/rho;  uy = sum(f*ey)/rho;
+// 2) collide toward equilibrium (BGK), τ from Reynolds
+for (i=0;i<9;i++) f[i] += (feq(i, rho, ux, uy) - f[i]) / tau;
+// 3) stream to neighbours; bounce back off the cylinder + walls
+fnew[c][i] = isSolid(c - e_i) ? f[c][opp[i]] : f[c - e_i][i];
+// colour by vorticity ω = ∂uy/∂x − ∂ux/∂y  → red / blue`,
+    links: [
+      { label: 'Kármán vortex street (Wikipedia)', url: 'https://en.wikipedia.org/wiki/K%C3%A1rm%C3%A1n_vortex_street' },
+      { label: 'Lattice Boltzmann methods (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Lattice_Boltzmann_methods' },
+    ],
+  },
   lozi: {
     title: 'Lozi Map',
     about:
