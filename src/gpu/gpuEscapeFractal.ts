@@ -28,6 +28,7 @@ function buildGpuEscape(id: string, count: number): GpuSim {
     centerIm: uniform(sys.defaults.centerIm),
     scale: uniform(sys.defaults.scale),
     maxIter: uniform(sys.defaults.maxIter),
+    relief: uniform(sys.defaults.relief ?? 0.6),
   };
   if (julia) {
     u.cRe = uniform(sys.defaults.cRe);
@@ -77,13 +78,18 @@ function buildGpuEscape(id: string, count: number): GpuSim {
   const cb: GpuNode = t.add(0.38).mul(TAU).cos().mul(0.5).add(0.5);
   const escaped: GpuNode = step(0.5, s);
 
+  // 3D relief: extrude each cell along Z by its (sqrt-compressed) smooth escape value, turning the
+  // flat image into an orbitable glowing landscape; peaks read brighter as a depth cue.
+  const height: GpuNode = s.max(0).sqrt().mul(u.relief).mul(0.16);
+  const lift: GpuNode = height.mul(0.5).add(0.7).clamp(0.7, 1.4);
+
   const material = new PointsNodeMaterial();
   material.transparent = false;
   material.depthWrite = false;
   material.size = sys.pointSize; // world-sized points so the grid reads as a solid image (no gaps)
   material.sizeAttenuation = true;
-  material.positionNode = vec3(fx, fy, 0);
-  material.colorNode = vec3(cr, cg, cb).mul(escaped);
+  material.positionNode = vec3(fx, fy, height);
+  material.colorNode = vec3(cr, cg, cb).mul(escaped).mul(lift);
 
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(n * 3), 3));

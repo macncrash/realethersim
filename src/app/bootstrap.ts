@@ -33,6 +33,11 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
   const useWorker = caps.crossOriginIsolated && typeof SharedArrayBuffer !== 'undefined';
   $telemetry.setKey('backend', `${backend} · ${useWorker ? 'worker+SAB' : 'main-thread'}`);
 
+  // GPU compute is the capable default on the WebGPU backend (far more particles, smoother). The
+  // WebGL2 fallback can't run TSL compute passes, so it stays on the CPU path there. Listeners
+  // aren't attached yet, so this just seeds the initial state; users can still toggle it off.
+  if (backend === 'webgpu') $global.setKey('gpuCompute', true);
+
   const scene = new THREE.Scene();
   scene.background = theme.background;
   const { camera, controls } = createCamera(canvas);

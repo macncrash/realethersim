@@ -19,6 +19,11 @@ const ITER_OPTIONS = { '64': 64, '128': 128, '192': 192, '256': 256 };
 
 type Kind = 'mandelbrot' | 'julia' | 'burning-ship';
 
+// 3D relief: extrude each cell along Z by its smooth escape value, turning the flat image into an
+// orbitable glowing landscape (0 = the classic flat view). Shared across all escape systems.
+const RELIEF: ParamSpec = { key: 'relief', label: '3D relief', min: 0, max: 1.5, step: 0.01, default: 0.6 };
+const RELIEF_K = 0.16; // height = sqrt(escape) · relief · RELIEF_K  (sqrt compresses the tall boundary)
+
 export interface EscapeSystem {
   id: string;
   label: string;
@@ -31,17 +36,18 @@ export interface EscapeSystem {
 export const ESCAPE_SYSTEMS: Record<string, EscapeSystem> = {
   mandelbrot: {
     id: 'mandelbrot', label: 'Mandelbrot', kind: 'mandelbrot', pointSize: 0.012,
-    defaults: { centerRe: -0.5, centerIm: 0, scale: 1.5, maxIter: 128 },
+    defaults: { centerRe: -0.5, centerIm: 0, scale: 1.5, maxIter: 128, relief: 0.6 },
     paramSpec: [
       { key: 'centerRe', label: 'center x', min: -2.5, max: 1, step: 0.0005, default: -0.5 },
       { key: 'centerIm', label: 'center y', min: -1.5, max: 1.5, step: 0.0005, default: 0 },
       { key: 'scale', label: 'zoom ½-width', min: 0.0002, max: 2.5, step: 0.0002, default: 1.5 },
       { key: 'maxIter', label: 'iterations', min: 32, max: 256, step: 1, default: 128, options: ITER_OPTIONS },
+      RELIEF,
     ],
   },
   julia: {
     id: 'julia', label: 'Julia', kind: 'julia', pointSize: 0.012,
-    defaults: { cRe: -0.8, cIm: 0.156, centerRe: 0, centerIm: 0, scale: 1.6, maxIter: 128 },
+    defaults: { cRe: -0.8, cIm: 0.156, centerRe: 0, centerIm: 0, scale: 1.6, maxIter: 128, relief: 0.6 },
     paramSpec: [
       { key: 'cRe', label: 'c real', min: -2, max: 2, step: 0.0005, default: -0.8 },
       { key: 'cIm', label: 'c imag', min: -2, max: 2, step: 0.0005, default: 0.156 },
@@ -49,16 +55,18 @@ export const ESCAPE_SYSTEMS: Record<string, EscapeSystem> = {
       { key: 'centerIm', label: 'center y', min: -2, max: 2, step: 0.0005, default: 0 },
       { key: 'scale', label: 'zoom ½-width', min: 0.0002, max: 2, step: 0.0002, default: 1.6 },
       { key: 'maxIter', label: 'iterations', min: 32, max: 256, step: 1, default: 128, options: ITER_OPTIONS },
+      RELIEF,
     ],
   },
   'burning-ship': {
     id: 'burning-ship', label: 'Burning Ship', kind: 'burning-ship', pointSize: 0.012,
-    defaults: { centerRe: -0.5, centerIm: -0.5, scale: 1.5, maxIter: 128 },
+    defaults: { centerRe: -0.5, centerIm: -0.5, scale: 1.5, maxIter: 128, relief: 0.6 },
     paramSpec: [
       { key: 'centerRe', label: 'center x', min: -2, max: 1.5, step: 0.0005, default: -0.5 },
       { key: 'centerIm', label: 'center y', min: -2.2, max: 1, step: 0.0005, default: -0.5 },
       { key: 'scale', label: 'zoom ½-width', min: 0.0002, max: 2, step: 0.0002, default: 1.5 },
       { key: 'maxIter', label: 'iterations', min: 32, max: 256, step: 1, default: 128, options: ITER_OPTIONS },
+      RELIEF,
     ],
   },
 };
@@ -126,6 +134,7 @@ class EscapeFractalArchetype implements Archetype {
     const maxIter = Math.round(p.maxIter ?? system.defaults.maxIter);
     const cR = p.cRe ?? system.defaults.cRe ?? 0;
     const cI = p.cIm ?? system.defaults.cIm ?? 0;
+    const relief = p.relief ?? system.defaults.relief ?? 0.6;
     const half = EXTENT / 2;
 
     for (let gy = 0; gy < w; gy++) {
@@ -133,12 +142,20 @@ class EscapeFractalArchetype implements Archetype {
         const i = gy * w + gx;
         const nx = (gx / (w - 1)) * 2 - 1;
         const ny = (gy / (w - 1)) * 2 - 1;
-        this.positions[i * 3] = nx * half;
-        this.positions[i * 3 + 1] = ny * half;
-        this.positions[i * 3 + 2] = 0;
         const s = escape(system.kind, nx * scale + centerRe, ny * scale + centerIm, cR, cI, maxIter);
         this.escapeBuf[i] = s;
+        // 3D relief: lift each exterior cell by its (sqrt-compressed) escape value.
+        const h = Math.sqrt(Math.max(s, 0)) * relief * RELIEF_K;
+        this.positions[i * 3] = nx * half;
+        this.positions[i * 3 + 1] = ny * half;
+        this.positions[i * 3 + 2] = h;
         palette(s, this.colors, i * 3);
+        if (s > 0) {
+          const lift = Math.min(1.4, 0.7 + h * 0.5); // peaks read brighter → depth cue
+          this.colors[i * 3] *= lift;
+          this.colors[i * 3 + 1] *= lift;
+          this.colors[i * 3 + 2] *= lift;
+        }
       }
     }
   }
