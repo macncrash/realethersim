@@ -15,7 +15,7 @@ const OPP = [0, 3, 4, 1, 2, 7, 8, 5, 6];
 const UMAX2 = 0.16 * 0.16;
 const TAU_MIN = 0.515;
 const CHANNEL_W = 3.2;
-const COLOR_SCALE = 18; // vorticity → colour intensity
+const COLOR_SCALE = 42; // vorticity → colour intensity
 const KEYS = ['reynolds', 'speed'];
 const DEFAULTS: Record<string, number> = { reynolds: 180, speed: 0.08 };
 
@@ -163,12 +163,15 @@ export const gpuKarman: GpuFactory = (count, _dt0, params): GpuSim => {
   const v = vortAttr.mul(COLOR_SCALE).clamp(-1, 1);
 
   const material = new PointsNodeMaterial();
-  material.transparent = false;
+  material.transparent = true;
   material.depthWrite = false;
-  material.size = scaleX * 1.7;
+  material.blending = THREE.AdditiveBlending; // glow like the other systems
+  material.opacity = 0.95;
+  material.size = scaleX * 3.6; // big overlap so the grid reads as a solid field, not speckles
   material.sizeAttenuation = true;
   material.positionNode = vec3(px, 0, py); // horizontal field: elevated default camera views it top-down
-  material.colorNode = vec3(1.0, 0.42, 0.12).mul(v.max(0)).add(vec3(0.18, 0.5, 1.0).mul(v.min(0).negate()));
+  // red(+)/blue(−) by vorticity, brightened so the shed vortices pop against black
+  material.colorNode = vec3(1.0, 0.45, 0.13).mul(v.max(0)).add(vec3(0.2, 0.55, 1.0).mul(v.min(0).negate())).mul(1.9);
 
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(cells * 3), 3));

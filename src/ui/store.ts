@@ -41,6 +41,8 @@ export interface Telemetry {
   substeps: number;
   backend: string;
   lle: number;
+  camPos: [number, number, number]; // camera world position (so a view is reproducible)
+  camTarget: [number, number, number]; // orbit target
 }
 
 export const $telemetry = map<Telemetry>({
@@ -49,6 +51,8 @@ export const $telemetry = map<Telemetry>({
   substeps: 0,
   backend: '…',
   lle: NaN,
+  camPos: [0, 0, 0],
+  camTarget: [0, 0, 0],
 });
 
 export const $engine = atom<Engine | null>(null);

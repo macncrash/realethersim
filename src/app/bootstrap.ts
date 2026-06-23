@@ -18,6 +18,8 @@ import { createGpu, hasGpu, type GpuSim } from '../gpu';
 import { isRaymarch, getFactory } from '../core/registry';
 import { createRaymarch, type RaymarchPass } from '../render/raymarch';
 import { RAYMARCH_SYSTEMS } from '../archetypes/raymarchFractal';
+import { APP_VERSION } from '../version';
+import { embedText } from '../state/pngMeta';
 import { detectCapabilities } from './capabilities';
 import type { Engine } from './engine';
 import { $archetypeId, $engine, $global, $hierarchy, $params, $selectedNode, $telemetry } from '../ui/store';
@@ -229,6 +231,12 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
     teardownGpu(); // force a fresh GPU sim for the new archetype / particle count
     teardownRaymarch(); // force a fresh raymarch pass (e.g. switching between 3D fractals)
     applyMode(); // re-establish raymarch vs GPU vs CPU
+    // The Kármán field is a flat horizontal sheet — frame it near top-down (the classic CFD view).
+    if ($archetypeId.get() === 'karman') {
+      controls.target.set(0, 0, 0);
+      camera.position.set(0, 3.2, 0.85);
+      controls.update();
+    }
     scheduleLle();
   }
 
@@ -330,6 +338,8 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
       $telemetry.setKey('fps', frames / (now - windowStart));
       $telemetry.setKey('particles', gpuSim ? gpuSim.particleCount : driver.particleCount);
       $telemetry.setKey('substeps', gpuSim ? gpuSim.substeps : driver.substeps());
+      $telemetry.setKey('camPos', [camera.position.x, camera.position.y, camera.position.z]);
+      $telemetry.setKey('camTarget', [controls.target.x, controls.target.y, controls.target.z]);
       frames = 0;
       windowStart = now;
     }
@@ -375,6 +385,72 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
       camera.position.set(px, py, pz);
       controls.target.set(tx, ty, tz);
       controls.update();
+    },
+    async exportImage(): Promise<void> {
+      // Render the current view into an offscreen target (the WebGPU swap-chain isn't readable),
+      // sRGB so it matches the screen, then composite a branded overlay and embed the snapshot.
+      const sizeV = new THREE.Vector2();
+      renderer.getDrawingBufferSize(sizeV);
+      const w = Math.max(1, sizeV.x | 0);
+      const h = Math.max(1, sizeV.y | 0);
+      const rt = new THREE.RenderTarget(w, h);
+      rt.texture.colorSpace = THREE.SRGBColorSpace;
+      const prev = renderer.getRenderTarget();
+      renderer.setRenderTarget(rt);
+      await renderer.renderAsync(scene, camera);
+      const buf = (await renderer.readRenderTargetPixelsAsync(rt, 0, 0, w, h)) as Uint8Array;
+      renderer.setRenderTarget(prev);
+      rt.dispose();
+
+      const cv = document.createElement('canvas');
+      cv.width = w;
+      cv.height = h;
+      const ctx = cv.getContext('2d');
+      if (!ctx) return;
+      const img = ctx.createImageData(w, h);
+      for (let r = 0; r < h; r++) img.data.set(buf.subarray((h - 1 - r) * w * 4, (h - r) * w * 4), r * w * 4); // RT is bottom-up
+      ctx.putImageData(img, 0, 0);
+
+      // --- overlay: ETHERSIM + version (bottom-left), system/params/camera (bottom-right) ---
+      const id = driver.archetypeId;
+      const label = getFactory(id).label;
+      const p = $params.get();
+      const paramStr = Object.entries(p)
+        .slice(0, 5)
+        .map(([k, v]) => `${k} ${(+v).toFixed(2)}`)
+        .join('   ');
+      const cam = `cam ${camera.position.x.toFixed(2)}, ${camera.position.y.toFixed(2)}, ${camera.position.z.toFixed(2)}`;
+      const fs = Math.max(11, Math.round(h * 0.016));
+      const pad = Math.round(h * 0.03);
+      ctx.shadowColor = 'rgba(0,0,0,0.85)';
+      ctx.shadowBlur = fs * 0.5;
+      ctx.textBaseline = 'alphabetic';
+      ctx.textAlign = 'left';
+      ctx.font = `600 ${Math.round(fs * 1.5)}px ui-monospace, "SF Mono", Menlo, monospace`;
+      ctx.fillStyle = 'rgba(120,232,220,0.95)';
+      ctx.fillText('ETHERSIM', pad, h - pad - fs * 1.3);
+      ctx.font = `${Math.round(fs * 0.85)}px ui-monospace, monospace`;
+      ctx.fillStyle = 'rgba(200,220,240,0.6)';
+      ctx.fillText(`v${APP_VERSION}  ·  ethersim.ai`, pad, h - pad);
+      ctx.textAlign = 'right';
+      ctx.font = `${Math.round(fs * 1.1)}px ui-monospace, monospace`;
+      ctx.fillStyle = 'rgba(225,238,252,0.9)';
+      ctx.fillText(label, w - pad, h - pad - fs * 2.6);
+      ctx.font = `${Math.round(fs * 0.85)}px ui-monospace, monospace`;
+      ctx.fillStyle = 'rgba(185,205,228,0.65)';
+      ctx.fillText(paramStr, w - pad, h - pad - fs * 1.3);
+      ctx.fillText(cam, w - pad, h - pad);
+
+      // PNG → embed the full snapshot as a tEXt chunk (the image can recreate the sim) → download.
+      const blob: Blob = await new Promise((res) => cv.toBlob((b) => res(b as Blob), 'image/png'));
+      const bytes = new Uint8Array(await blob.arrayBuffer());
+      const withMeta = embedText(bytes, 'ethersim', JSON.stringify(this.exportSnapshot()));
+      const url = URL.createObjectURL(new Blob([withMeta as unknown as BlobPart], { type: 'image/png' }));
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `ethersim-${id}-${Date.now()}.png`;
+      a.click();
+      URL.revokeObjectURL(url);
     },
     togglePause(): boolean {
       paused = !paused;

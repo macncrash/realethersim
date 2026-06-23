@@ -14,6 +14,7 @@ export class TelemetryPanel extends LitElement {
   override render(): TemplateResult {
     const t = this.telemetry.value;
     const lle = Number.isNaN(t.lle) ? '—' : t.lle.toFixed(4);
+    const v3 = (a: [number, number, number]): string => a.map((n) => n.toFixed(2)).join(', ');
     return html`
       <div class="section">
         <h4>Telemetry</h4>
@@ -22,6 +23,8 @@ export class TelemetryPanel extends LitElement {
         <div class="row"><span>substeps / frame</span><span class="v">${t.substeps}</span></div>
         <div class="row"><span>backend</span><span class="v">${t.backend}</span></div>
         <div class="row"><span>largest Lyapunov</span><span class="v">${lle}</span></div>
+        <div class="row"><span>camera xyz</span><span class="v">${v3(t.camPos)}</span></div>
+        <div class="row"><span>target xyz</span><span class="v">${v3(t.camTarget)}</span></div>
       </div>
     `;
   }

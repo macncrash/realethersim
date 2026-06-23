@@ -6,6 +6,9 @@ export interface Engine {
   readonly backend: string;
   exportSnapshot(): Snapshot;
   importSnapshot(snap: Snapshot): void;
+  // Render a PNG of the current view with a branded overlay + the full snapshot embedded as
+  // metadata, then download it. The image alone can recreate the simulation.
+  exportImage(): Promise<void>;
   togglePause(): boolean; // returns the new paused state
   reset(): void;
   // Highlight a contiguous particle range (hierarchy-tree selection). Pass null to clear.

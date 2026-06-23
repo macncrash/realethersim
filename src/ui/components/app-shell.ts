@@ -1,5 +1,6 @@
 import { LitElement, html, type TemplateResult } from 'lit';
 import { bootstrap } from '../../app/bootstrap';
+import { APP_VERSION } from '../../version';
 import './archetype-switcher';
 import './params-panel';
 import './hierarchy-tree';
@@ -32,7 +33,7 @@ export class EtherApp extends LitElement {
       <div class="layout">
         <canvas class="view"></canvas>
         <aside class="panel">
-          <h1 class="brand">ETHERSIM</h1>
+          <h1 class="brand">ETHERSIM <span style="font-size:.5em;font-weight:400;opacity:.45;letter-spacing:0">v${APP_VERSION}</span></h1>
           <ether-archetype-switcher></ether-archetype-switcher>
           <ether-params-panel></ether-params-panel>
           <ether-hierarchy-tree></ether-hierarchy-tree>
