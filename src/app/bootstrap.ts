@@ -13,7 +13,11 @@ import { buildSnapshot } from '../state/snapshot';
 import type { Snapshot, SnapshotCamera } from '../state/schema';
 import { MainThreadDriver, type SimDriver } from '../sim/driver';
 import { WorkerDriver } from '../sim/workerDriver';
+import { NullDriver } from '../sim/nullDriver';
 import { createGpu, hasGpu, type GpuSim } from '../gpu';
+import { isRaymarch, getFactory } from '../core/registry';
+import { createRaymarch, type RaymarchPass } from '../render/raymarch';
+import { RAYMARCH_SYSTEMS } from '../archetypes/raymarchFractal';
 import { detectCapabilities } from './capabilities';
 import type { Engine } from './engine';
 import { $archetypeId, $engine, $global, $hierarchy, $params, $selectedNode, $telemetry } from '../ui/store';
@@ -75,6 +79,9 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
 
   async function makeDriver(): Promise<SimDriver> {
     const id = $archetypeId.get();
+    // Sphere-traced fractals never run as a point sim: hand back an inert driver so the worker is
+    // never asked to instantiate one, while keeping `driver` non-null for the rest of bootstrap.
+    if (isRaymarch(id)) return new NullDriver(id, getFactory(id).label);
     const g = $global.get();
     const p = $params.get();
     return useWorker
@@ -127,8 +134,45 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
       $global.setKey('gpuCompute', false);
     }
   }
-  // Toggle visibility/driver between CPU and GPU paths without tearing down the CPU pipeline.
+  // --- sphere-traced 3D fractals: a full-screen distance-estimator pass, orbited by the camera ---
+  let raymarch: RaymarchPass | null = null;
+  function teardownRaymarch(): void {
+    if (!raymarch) return;
+    scene.remove(raymarch.mesh);
+    raymarch.dispose();
+    raymarch = null;
+  }
+  function setupRaymarch(): void {
+    teardownRaymarch();
+    const id = $archetypeId.get();
+    const sys = RAYMARCH_SYSTEMS[id];
+    if (!sys) return;
+    try {
+      raymarch = createRaymarch(sys, backend);
+      raymarch.setParams($params.get());
+      scene.add(raymarch.mesh);
+      // frame the fractal: target origin, pull the camera back to a sensible distance
+      controls.target.set(0, 0, 0);
+      camera.position.set(0.55, 0.42, 1).normalize().multiplyScalar(raymarch.cameraDistance);
+      controls.update();
+    } catch (err) {
+      console.error('[ethersim] raymarch init failed', err);
+      teardownRaymarch();
+    }
+  }
+
+  // Toggle visibility/driver between CPU, GPU, and raymarch paths without tearing down the pipeline.
   function applyMode(): void {
+    if (isRaymarch($archetypeId.get())) {
+      driver.setPaused(true);
+      cloud.points.visible = false;
+      trailCloud.setVisible(false);
+      teardownGpu();
+      if (!raymarch) setupRaymarch();
+      $telemetry.setKey('backend', `${backend} · raymarch`);
+      return;
+    }
+    teardownRaymarch();
     const useGpu = gpuRequested();
     driver.setPaused(useGpu ? true : paused);
     cloud.points.visible = !useGpu;
@@ -178,7 +222,8 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
     $hierarchy.set(driver.hierarchy);
     $selectedNode.set(null); // clear selection/highlight for the new archetype
     teardownGpu(); // force a fresh GPU sim for the new archetype / particle count
-    applyMode(); // re-establish GPU vs CPU
+    teardownRaymarch(); // force a fresh raymarch pass (e.g. switching between 3D fractals)
+    applyMode(); // re-establish raymarch vs GPU vs CPU
     scheduleLle();
   }
 
@@ -226,6 +271,7 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
   $params.listen((p) => {
     driver.setParams(p, $global.get().dt);
     gpuSim?.setParams({ ...p, dt: $global.get().dt });
+    raymarch?.setParams(p);
     scheduleLle();
   });
 
@@ -255,7 +301,9 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
     timer.update();
     const dt = Math.min(timer.getDelta(), 0.05); // clamp residual large deltas
 
-    if (gpuSim) {
+    if (raymarch) {
+      if (!paused) raymarch.update(timer.getElapsed()); // drive shader animation (frozen while paused)
+    } else if (gpuSim) {
       if (!paused) {
         for (let s = 0; s < gpuSim.substeps; s++) {
           for (const pass of gpuSim.steps) renderer.compute(pass); // submitted, not awaited

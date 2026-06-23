@@ -18,7 +18,9 @@ describe('all registered systems are finite, bounded, and non-degenerate', () =>
     for (const c of ['Attractor', 'Map', 'Fractal', 'Life', 'Fluid', 'Field', 'Oscillator', 'N-Body']) expect(cats.has(c)).toBe(true);
   });
 
-  for (const f of factories) {
+  // Raymarch (3D sphere-traced) fractals have no point cloud — they're rendered by a fragment
+  // shader (src/render/raymarch.ts) and intentionally throw on create(). Validated separately below.
+  for (const f of factories.filter((f) => f.kind !== 'raymarch')) {
     it(`${f.category} · ${f.id}`, () => {
       const dt = f.defaultDt;
       const params = resolveParams(defaultParams(f.params), dt);
@@ -50,4 +52,26 @@ describe('all registered systems are finite, bounded, and non-degenerate', () =>
       expect(spread, 'non-degenerate spread').toBeGreaterThan(1e-5);
     }, 20_000); // generous timeout: convolution systems (Lenia) are heavy at 800 steps
   }
+
+  // Raymarch fractals: metadata is sound, they're under Fractal, expose params, and must NOT be
+  // instantiated as point sims (bootstrap routes them to the shader renderer + an inert driver).
+  describe('raymarch (3D) fractals', () => {
+    const raymarch = factories.filter((f) => f.kind === 'raymarch');
+
+    it('registers the 3D fractal suite under Fractal', () => {
+      const ids = new Set(raymarch.map((f) => f.id));
+      for (const id of ['mandelbulb', 'qjulia', 'mandelbox', 'menger']) expect(ids.has(id)).toBe(true);
+      for (const f of raymarch) {
+        expect(f.category).toBe('Fractal');
+        expect(f.params.length).toBeGreaterThan(0);
+      }
+    });
+
+    for (const f of raymarch) {
+      it(`${f.id} refuses point-sim instantiation`, () => {
+        const params = resolveParams(defaultParams(f.params), f.defaultDt);
+        expect(() => f.create({ particleCount: 512, seed: 11, params })).toThrow();
+      });
+    }
+  });
 });

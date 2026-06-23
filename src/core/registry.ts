@@ -17,3 +17,11 @@ export function getFactory(id: string): ArchetypeFactory {
 export function listFactories(): ArchetypeFactory[] {
   return [...registry.values()];
 }
+
+// True for sphere-traced fractal archetypes (Mandelbulb, etc.): they render via a full-screen
+// raymarch pass, not the point/worker pipeline. bootstrap uses this to route them to the
+// raymarch renderer and an inert NullDriver (so the sim worker never instantiates one).
+export function isRaymarch(id: string): boolean {
+  const f = registry.get(id);
+  return !!f && f.kind === 'raymarch';
+}

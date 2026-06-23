@@ -13,6 +13,7 @@ import { excitableMediumFactory } from './excitableMedium';
 import { pointVorticesFactory } from './pointVortices';
 import { leniaFactory } from './lenia';
 import { dlaFactory } from './dla';
+import { makeRaymarchFactory, RAYMARCH_SYSTEMS } from './raymarchFractal';
 
 // Side-effect registration. Importing this module wires every archetype into the registry.
 // Adding a new archetype = add a file + one register() call here.
@@ -43,4 +44,7 @@ export function registerArchetypes(): void {
   register(pointVorticesFactory);
   register(leniaFactory);
   register(dlaFactory);
+  for (const system of Object.values(RAYMARCH_SYSTEMS)) {
+    register(makeRaymarchFactory(system));
+  }
 }

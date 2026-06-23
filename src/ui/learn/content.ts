@@ -29,8 +29,9 @@ export interface SystemDoc {
 import { SYSTEM_DOCS as GENERATED } from './docs.generated';
 import { FRACTAL_DOCS } from './docs.fractals';
 import { EXTRA_DOCS } from './docs.extra';
+import { RAYMARCH_DOCS } from './docs.raymarch';
 
-export const SYSTEM_DOCS: Record<string, SystemDoc> = { ...GENERATED, ...FRACTAL_DOCS, ...EXTRA_DOCS };
+export const SYSTEM_DOCS: Record<string, SystemDoc> = { ...GENERATED, ...FRACTAL_DOCS, ...EXTRA_DOCS, ...RAYMARCH_DOCS };
 
 export function getDoc(id: string): SystemDoc | null {
   return SYSTEM_DOCS[id] ?? null;

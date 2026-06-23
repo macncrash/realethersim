@@ -2,7 +2,7 @@
 // The Simulation Manager only ever calls this interface — it never inspects physics,
 // which is what makes adding an archetype pure fan-out (one file + one registry import).
 
-export type ArchetypeKind = 'flow' | 'map';
+export type ArchetypeKind = 'flow' | 'map' | 'raymarch';
 
 export interface NodeSpec {
   id: string;
