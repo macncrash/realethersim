@@ -19,7 +19,12 @@ export type RaymarchKind =
   | 'heart'
   | 'tanglecube'
   | 'goursat'
-  | 'barth';
+  | 'barth'
+  | 'kummer'
+  | 'clebsch'
+  | 'cayley'
+  | 'fischerKoch'
+  | 'schwarzCLP';
 
 export interface RaymarchSystem {
   id: string;
@@ -143,6 +148,29 @@ export const RAYMARCH_SYSTEMS: Record<string, RaymarchSystem> = {
   barth: {
     id: 'barth', label: 'Barth Sextic', sdf: 'barth', category: 'Surface',
     iters: 0, freq: 0.92, bound: 1.55, camDist: 3.7, maxSteps: 240, params: [ISO, COL, ANIM],
+  },
+
+  // ── algebraic node surfaces (Kummer/Clebsch/Cayley have gradient-vanishing pinch points → DE
+  //    overshoots like the heart, so they carry stepScale + maxStep) and two more TPMS (trig) ──
+  kummer: {
+    id: 'kummer', label: 'Kummer Surface', sdf: 'kummer', category: 'Surface',
+    iters: 0, freq: 0.8, bound: 2, camDist: 5.6, maxSteps: 260, stepScale: 0.35, maxStep: 0.04, params: [ISO, COL, ANIM],
+  },
+  clebsch: {
+    id: 'clebsch', label: 'Clebsch Cubic', sdf: 'clebsch', category: 'Surface',
+    iters: 0, freq: 0.62, bound: 2.4, camDist: 7, maxSteps: 240, stepScale: 0.4, maxStep: 0.05, params: [ISO, COL, ANIM],
+  },
+  cayley: {
+    id: 'cayley', label: 'Cayley Cubic', sdf: 'cayley', category: 'Surface',
+    iters: 0, freq: 0.42, bound: 2.3, camDist: 6.2, maxSteps: 240, stepScale: 0.4, maxStep: 0.04, params: [ISO, COL, ANIM],
+  },
+  fischerKoch: {
+    id: 'fischerKoch', label: 'Fischer-Koch S', sdf: 'fischerKoch', category: 'Surface',
+    iters: 0, freq: 1.3, bound: 4.4, camDist: 10.5, maxSteps: 180, params: [ISO, COL, ANIM],
+  },
+  schwarzCLP: {
+    id: 'schwarzCLP', label: 'Schwarz CLP', sdf: 'schwarzCLP', category: 'Surface',
+    iters: 0, freq: 1.3, bound: 4.4, camDist: 10.5, maxSteps: 190, stepScale: 0.6, params: [ISO, COL, ANIM],
   },
 };
 

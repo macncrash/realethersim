@@ -415,4 +415,247 @@ const F = (x,y,z) => { const a=x*x,b=y*y,c=z*z, s=a+b+c-1;
   return 4*(P*a-b)*(P*b-c)*(P*c-a) - 4.2360679*s*s; };`,
     links: [{ label: 'Barth surface (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Barth_surface' }],
   },
+  "kummer": {
+    "title": "Kummer Surface",
+    "about": "Ernst Kummer's 1864 quartic is the most singular surface its degree allows: a degree-4 surface can have at most 16 ordinary double points, and the Kummer surface achieves exactly that maximum. The 16 conical pinch points (nodes) sit in a strikingly symmetric arrangement, paired with 16 special tangent planes (tropes) in the famous 16₆ configuration. It is the quotient of a complex torus by sign-flip, which is why it haunts the theory of abelian varieties and theta functions.",
+    "howItWorks": "We render the level set F = isovalue of the affine (tetrahedroid) Kummer quartic directly: a core sphere term (x²+y²+z²−μ²)² is balanced against the product of four planes scaled by λ. With μ=1.3 the parameter λ=(3μ²−1)/(3−μ²)≈3.11 tunes the surface to its 16-real-node form. A ray-marcher finds where F crosses the isovalue and shades by the gradient ∇F. Because ∇F nearly vanishes at the 16 nodes, the step is heavily under-relaxed and hard-capped so the march doesn't overshoot the pinch points.",
+    "equations": [
+      {
+        "label": "Kummer quartic (affine)",
+        "latex": "\\left(x^2+y^2+z^2-\\mu^2\\right)^2 - \\lambda\\,\\textstyle\\prod_{i=1}^{4} \\Pi_i = c"
+      },
+      {
+        "label": "the four tropes",
+        "latex": "\\Pi = (1-z-\\sqrt2\\,x)(1-z+\\sqrt2\\,x)(1+z+\\sqrt2\\,y)(1+z-\\sqrt2\\,y)"
+      },
+      {
+        "label": "node-tuning parameter",
+        "latex": "\\lambda = \\dfrac{3\\mu^2 - 1}{3 - \\mu^2}, \\quad \\mu = 1.3 \\Rightarrow \\lambda \\approx 3.11"
+      },
+      {
+        "label": "16 nodes (maximal for a quartic)",
+        "latex": "\\#\\{\\,\\nabla F = 0,\\; F = 0\\,\\} = 16"
+      }
+    ],
+    "params": [
+      {
+        "key": "iso",
+        "symbol": "c",
+        "meaning": "isovalue; 0 is the singular 16-node Kummer, ±values smooth the pinch points open"
+      },
+      {
+        "key": "colShift",
+        "symbol": "\\phi",
+        "meaning": "hue offset of the core→edge colour gradient"
+      },
+      {
+        "key": "animate",
+        "symbol": "\\alpha",
+        "meaning": "gently sweeps the isovalue over time (0 = still)"
+      }
+    ],
+    "code": "const mu2 = 1.69, lambda = 3.1069, s2 = Math.SQRT2;\nconst F = (x, y, z) => {\n  const r = x*x + y*y + z*z - mu2;\n  const prod = (1 - z - s2*x) * (1 - z + s2*x)\n             * (1 + z + s2*y) * (1 + z - s2*y);\n  return r*r - lambda*prod;   // surface: F = isovalue\n};",
+    "links": [
+      {
+        "label": "Kummer surface (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Kummer_surface"
+      },
+      {
+        "label": "Kummer surface (MathWorld)",
+        "url": "https://mathworld.wolfram.com/KummerSurface.html"
+      }
+    ]
+  },
+  "clebsch": {
+    "title": "Clebsch Cubic",
+    "about": "The Clebsch diagonal cubic, found by Alfred Clebsch in 1871, is the most symmetric of all smooth cubic surfaces. Every smooth cubic contains exactly 27 straight lines, and the Clebsch is the unique one whose entire set of 27 lines is real and visible — they lace across its three rounded lobes in a perfectly symmetric weave. Ten special points (the Eckardt points) each lie where three of those lines cross, giving it a beauty prized since the 19th century, when plaster models of it sat in every serious mathematics department.",
+    "howItWorks": "We render the zero set of a single cubic polynomial F(x,y,z) as a lit isosurface. Because a cubic is unbounded, the ray-march is clipped to a bounding sphere and only the recognisable central body is shown. The gradient of this degree-3 field swings over two orders of magnitude across the surface, so the |F−iso|/|∇F| step estimate is under-relaxed and hard-capped to stop the ray overshooting the flatter sheets. The isovalue knob slides through nearby cubics, fattening the lobes or pinching the necks where the lines bunch up.",
+    "equations": [
+      {
+        "label": "Clebsch diagonal cubic (affine form)",
+        "latex": "81(x^3+y^3+z^3) - 189\\!\\!\\sum_{i\\neq j}\\!x_i^2 x_j + 54\\,xyz - 126(xy+yz+zx) + 9(x^2+y^2+z^2) + 9(x+y+z) - 1 = c"
+      },
+      {
+        "label": "symmetric (projective) form",
+        "latex": "\\sum_{i=0}^{4} x_i^{3} = 0, \\qquad \\sum_{i=0}^{4} x_i = 0"
+      },
+      {
+        "label": "the 27 lines",
+        "latex": "\\#\\{\\text{lines on a smooth cubic}\\} = 27,\\ \\text{all real here}"
+      }
+    ],
+    "params": [
+      {
+        "key": "iso",
+        "symbol": "c",
+        "meaning": "isovalue; 0 is the true Clebsch cubic, nearby values fatten the lobes or pinch the necks"
+      },
+      {
+        "key": "colShift",
+        "symbol": "\\phi",
+        "meaning": "hue offset of the core→edge colour gradient"
+      },
+      {
+        "key": "animate",
+        "symbol": "\\alpha",
+        "meaning": "gently sweeps the isovalue over time (0 = still)"
+      }
+    ],
+    "code": "// affine real Clebsch cubic; surface is F = isovalue\nconst F = (x,y,z) => {\n  const x2=x*x, y2=y*y, z2=z*z;\n  return 81*(x*x2 + y*y2 + z*z2)\n    - 189*(x2*y + x2*z + y2*x + y2*z + z2*x + z2*y)\n    + 54*x*y*z - 126*(x*y + y*z + z*x)\n    + 9*(x2 + y2 + z2) + 9*(x + y + z) - 1;\n};",
+    "links": [
+      {
+        "label": "Clebsch surface (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Clebsch_surface"
+      },
+      {
+        "label": "Clebsch Diagonal Cubic (MathWorld)",
+        "url": "https://mathworld.wolfram.com/ClebschDiagonalCubic.html"
+      },
+      {
+        "label": "27 lines on a cubic surface (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Cubic_surface"
+      }
+    ]
+  },
+  "cayley": {
+    "title": "Cayley Cubic",
+    "about": "Cayley's nodal cubic is the cubic surface carrying the maximum number of singular points a cubic can have: four ordinary double points (nodes), arranged with the symmetry of a tetrahedron. Discovered by Arthur Cayley in the 1860s, it is the degree-3 champion of nodal surfaces, the cubic analogue of the Kummer quartic and Barth sextic. Three of its lines are the coordinate axes themselves, which meet the curving sheets exactly at the four pinch points.",
+    "howItWorks": "We render the zero set of the cubic polynomial F directly as a lit isosurface: a ray is marched until F crosses the isovalue, and the surface is shaded by its gradient ∇F. Because the gradient vanishes at the four nodes, the distance estimate |F−iso|/|∇F| can blow up there, so the march step is under-relaxed and hard-capped (exactly like the heart surface) to stop it overshooting straight through a pinch point.",
+    "equations": [
+      {
+        "label": "Cayley nodal cubic",
+        "latex": "-5\\,\\big(x^2(y+z)+y^2(x+z)+z^2(x+y)\\big) + 2\\,(xy+yz+zx) = c"
+      },
+      {
+        "label": "expanded form",
+        "latex": "-5\\sum_{\\text{sym}} x^2 y \\; + \\; 2(xy+yz+zx) = c"
+      },
+      {
+        "label": "diagonal section x=y=z=t",
+        "latex": "F(t,t,t) = -30\\,t^3 + 6\\,t^2 = 6t^2(1-5t)"
+      },
+      {
+        "label": "node condition",
+        "latex": "F = 0 \\ \\text{and}\\ \\nabla F = 0 \\ \\Rightarrow\\ 4\\ \\text{nodes}"
+      }
+    ],
+    "params": [
+      {
+        "key": "iso",
+        "symbol": "c",
+        "meaning": "isovalue; c = 0 is the singular cubic, nonzero values smooth the nodes into little necks or holes"
+      },
+      {
+        "key": "colShift",
+        "symbol": "\\phi",
+        "meaning": "hue offset of the core→edge colour gradient"
+      },
+      {
+        "key": "animate",
+        "symbol": "\\alpha",
+        "meaning": "gently sweeps the isovalue over time (0 = still)"
+      }
+    ],
+    "code": "// surface: F = isovalue. Four nodes (incl. the origin) in a tetrahedron.\nconst F = (x, y, z) =>\n  -5 * (x*x*(y+z) + y*y*(x+z) + z*z*(x+y))\n  + 2 * (x*y + y*z + z*x);",
+    "links": [
+      {
+        "label": "Cayley's nodal cubic (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Cayley%27s_nodal_cubic_surface"
+      },
+      {
+        "label": "Cubic surface (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Cubic_surface"
+      },
+      {
+        "label": "Nodal surfaces — Wolf Barth / IMAGINARY",
+        "url": "https://imaginary.org/gallery/herwig-hauser-classic"
+      }
+    ]
+  },
+  "fischerKoch": {
+    "title": "Fischer-Koch S",
+    "about": "The Fischer-Koch S is a triply-periodic minimal surface with orthorhombic symmetry, named for crystallographers Werner Fischer and Elke Koch who catalogued it among the balanced minimal surfaces tiling space by crystallographic groups. Its single labyrinth threads through space in a sinuous, S-shaped weave - unlike the gyroid's two interlocking channels, here one channel snakes back through itself. It belongs to the same family of self-supporting, zero-mean-curvature lattices prized for 3D-printed metamaterials and bone-scaffold geometries.",
+    "howItWorks": "We render the level set F = isovalue of a short trigonometric nodal approximation rather than meshing it. For each pixel a ray is marched until the field F crosses the isovalue, and the surface is lit by its gradient. The field mixes a second-harmonic cosine on one axis with first-harmonic sin and cos on the other two, cyclically, producing the characteristic S-weave. The isovalue knob fattens or thins the channel; at 0 the surface is balanced.",
+    "equations": [
+      {
+        "label": "Fischer-Koch S level set",
+        "latex": "\\cos 2x\\,\\sin y\\,\\cos z + \\cos 2y\\,\\sin z\\,\\cos x + \\cos 2z\\,\\sin x\\,\\cos y = c"
+      },
+      {
+        "label": "minimal surface (zero mean curvature)",
+        "latex": "H = \\tfrac{1}{2}(\\kappa_1 + \\kappa_2) = 0"
+      }
+    ],
+    "params": [
+      {
+        "key": "iso",
+        "symbol": "c",
+        "meaning": "isovalue (level set); 0 is the balanced surface, ±values thicken or thin the single labyrinth"
+      },
+      {
+        "key": "colShift",
+        "symbol": "\\phi",
+        "meaning": "hue offset of the core→edge colour gradient"
+      },
+      {
+        "key": "animate",
+        "symbol": "\\alpha",
+        "meaning": "gently breathes the isovalue over time (0 = still)"
+      }
+    ],
+    "code": "// implicit field; the surface is F = isovalue\nconst F = (p) => Math.cos(2*p.x)*Math.sin(p.y)*Math.cos(p.z)\n              + Math.cos(2*p.y)*Math.sin(p.z)*Math.cos(p.x)\n              + Math.cos(2*p.z)*Math.sin(p.x)*Math.cos(p.y);\n// raymarch it as a distance estimate, normal = ∇F:\nconst de = Math.abs(F(p) - iso) / length(grad(F, p));   // |F−iso| / |∇F|",
+    "links": [
+      {
+        "label": "Triply periodic minimal surface (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Triply_periodic_minimal_surface"
+      },
+      {
+        "label": "Fischer-Koch surfaces - minimal surface catalogue",
+        "url": "https://en.wikipedia.org/wiki/Minimal_surface"
+      }
+    ]
+  },
+  "schwarzCLP": {
+    "title": "Schwarz CLP",
+    "about": "The Schwarz CLP — \"Crossed Layers of Parallels\" — is a triply-periodic minimal surface from Hermann Schwarz's family. As its name promises, it is built from stacked layers of parallel ribbons, with successive layers crossed at right angles so the whole structure interlocks into a continuous, infinitely connected sheet. Unlike the chunky cubic networks of Schwarz P or the diamond labyrinths of Schwarz D, CLP has a distinctly woven, fabric-like character.",
+    "howItWorks": "We render the level set F = isovalue of a short trigonometric field directly, instead of meshing it. For each pixel a ray is marched until F crosses the isovalue, and the surface is shaded by its gradient grad F. The nodal approximation cos(2x)cos(z) + cos(2y)sin(z) is the standard tetragonal Schwarz CLP form: it is pi-periodic in x and y and 2pi-periodic in z (the layering axis), reflecting CLP's tetragonal cell. The cos(2x)/cos(2y) factors lay down the crossed parallel ribbons while the z phase (cos z vs sin z) rotates successive layers by a quarter period so they interlock. At isovalue 0 the two sides are volume-balanced (verified: equal pos/neg counts), and the surface is a good minimal-surface approximation (measured mean |H| ~= 0.06, comparable to other nodal TPMS).",
+    "equations": [
+      {
+        "label": "Schwarz CLP level set (tetragonal nodal approx)",
+        "latex": "\\cos 2x \\, \\cos z + \\cos 2y \\, \\sin z = c"
+      },
+      {
+        "label": "minimal surface (zero mean curvature)",
+        "latex": "H = \\tfrac{1}{2}(\\kappa_1 + \\kappa_2) = 0"
+      }
+    ],
+    "params": [
+      {
+        "key": "iso",
+        "symbol": "c",
+        "meaning": "isovalue (level set); 0 is the balanced CLP, ±values thicken one side of the woven sheet"
+      },
+      {
+        "key": "colShift",
+        "symbol": "\\phi",
+        "meaning": "hue offset of the core→edge colour gradient"
+      },
+      {
+        "key": "animate",
+        "symbol": "\\alpha",
+        "meaning": "gently breathes the isovalue over time (0 = still)"
+      }
+    ],
+    "code": "// implicit field; the surface is F = isovalue\nconst F = (p) => Math.cos(2*p.x)*Math.cos(p.z) + Math.cos(2*p.y)*Math.sin(p.z);\n// raymarch it as a distance estimate, normal = grad(F):\nconst de = Math.abs(F(p) - iso) / length(grad(F, p));   // |F-iso| / |grad F|",
+    "links": [
+      {
+        "label": "Schwarz minimal surface (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Schwarz_minimal_surface"
+      },
+      {
+        "label": "Triply periodic minimal surface (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Triply_periodic_minimal_surface"
+      }
+    ]
+  },
 };

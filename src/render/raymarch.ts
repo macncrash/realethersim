@@ -134,11 +134,58 @@ const surfaceField = (kind: string, c: Node): Node => {
     const s = x2.add(y2).add(z2).sub(1);
     return t1.mul(t2).mul(t3).mul(4).sub(s.mul(s).mul(4.2360679));
   }
+  if (kind === 'kummer') {
+    // Kummer quartic (tetrahedroid), mu = 1.3 → 16 real nodes. s2 = sqrt(2).
+    const mu2 = float(1.69); // mu = 1.3
+    const lambda = float(3.1069); // (3*mu^2 - 1)/(3 - mu^2) at mu=1.3
+    const s2 = float(1.4142135624);
+    const r = x.mul(x).add(y.mul(y)).add(z.mul(z)).sub(mu2);
+    const p1 = float(1).sub(z).sub(s2.mul(x));
+    const p2 = float(1).sub(z).add(s2.mul(x));
+    const p3 = float(1).add(z).add(s2.mul(y));
+    const p4 = float(1).add(z).sub(s2.mul(y));
+    const prod = p1.mul(p2).mul(p3).mul(p4);
+    return r.mul(r).sub(lambda.mul(prod)); // (x²+y²+z²-μ²)² - λ·∏(planes)
+  }
+  if (kind === 'clebsch') {
+    // Clebsch diagonal cubic — affine real form containing all 27 lines.
+    const x2 = x.mul(x), y2 = y.mul(y), z2 = z.mul(z);
+    const x3 = x2.mul(x), y3 = y2.mul(y), z3 = z2.mul(z);
+    const cubes = x3.add(y3).add(z3);
+    const mixed = x2.mul(y).add(x2.mul(z))
+      .add(y2.mul(x)).add(y2.mul(z))
+      .add(z2.mul(x)).add(z2.mul(y));
+    const prod = x.mul(y).mul(z);
+    const pairs = x.mul(y).add(y.mul(z)).add(z.mul(x));
+    const sq = x2.add(y2).add(z2);
+    const lin = x.add(y).add(z);
+    return cubes.mul(81)
+      .sub(mixed.mul(189))
+      .add(prod.mul(54))
+      .sub(pairs.mul(126))
+      .add(sq.mul(9))
+      .add(lin.mul(9))
+      .sub(1); // 81Σx³ − 189Σx²y + 54xyz − 126Σxy + 9Σx² + 9Σx − 1
+  }
+  if (kind === 'cayley') {
+    // Cayley's nodal cubic — 4 ordinary double points in tetrahedral arrangement.
+    const x2 = x.mul(x), y2 = y.mul(y), z2 = z.mul(z);
+    const cubic = x2.mul(y.add(z)).add(y2.mul(x.add(z))).add(z2.mul(x.add(y)));
+    const quad = x.mul(y).add(y.mul(z)).add(z.mul(x));
+    return cubic.mul(-5).add(quad.mul(2)); // -5·Σx²(y+z) + 2·Σxy
+  }
+  if (kind === 'fischerKoch')
+    return cos(x.mul(2)).mul(sin(y)).mul(cos(z))
+      .add(cos(y.mul(2)).mul(sin(z)).mul(cos(x)))
+      .add(cos(z.mul(2)).mul(sin(x)).mul(cos(y))); // Fischer-Koch S nodal approximation
+  if (kind === 'schwarzCLP')
+    return cos(x.mul(2)).mul(cos(z)).add(cos(y.mul(2)).mul(sin(z))); // Schwarz CLP: cos2x·cosz + cos2y·sinz
   return cheb8(x).add(cheb8(y)).add(cheb8(z)); // default (unreachable for registered kinds)
 };
 const SURFACE_KINDS = [
   'gyroid', 'schwarzP', 'schwarzD', 'schoenIWP', 'neovius', 'chmutov',
   'heart', 'tanglecube', 'goursat', 'barth',
+  'kummer', 'clebsch', 'cayley', 'fischerKoch', 'schwarzCLP',
 ];
 
 function makeMap(sys: RaymarchSystem, u: Record<string, Node>, uTime: Node): Node {

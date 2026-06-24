@@ -276,4 +276,402 @@ const r = 1 + amp*Math.sin(m*phi)*Math.sin(k*theta);
 point(r*st*Math.cos(phi), r*Math.cos(theta), r*st*Math.sin(phi));`,
     links: [{ label: 'Spherical harmonics (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Spherical_harmonics' }],
   },
+  "boy": {
+    "title": "Boy's Surface",
+    "about": "Boy's surface is what you get when you try to turn the real projective plane RP² — a sphere with antipodal points glued together — into a smooth shape in ordinary 3D space. Werner Boy discovered in 1901 that it can be done without any creases or pinch points, only gentle self-intersection, settling a question his advisor David Hilbert thought was impossible. The result is a strangely beautiful three-lobed form with perfect 3-fold symmetry, like a Klein bottle's more graceful cousin.",
+    "howItWorks": "The whole surface is drawn from a single closed formula found by François Apéry in 1986. Two angles u and v, each running over [0, π], are fed through three rational-trigonometric expressions that share one common denominator. Because that denominator never reaches zero, every point lands at a finite place — the surface immerses cleanly, folding through itself three times to form the lobes. The bulge knob scales the denominator's oscillation, swelling or relaxing the lobes while keeping everything finite.",
+    "equations": [
+      {
+        "label": "shared denominator",
+        "latex": "D = 2 - \\beta\\sqrt{2}\\,\\sin(3u)\\sin(2v)"
+      },
+      {
+        "label": "Apéry's immersion",
+        "latex": "\\begin{aligned} x &= \\tfrac{1}{D}\\big(\\sqrt2\\cos 2u\\,\\cos^2 v + \\cos u\\,\\sin 2v\\big) \\\\ y &= \\tfrac{1}{D}\\big(\\sqrt2\\sin 2u\\,\\cos^2 v - \\sin u\\,\\sin 2v\\big) \\\\ z &= \\tfrac{3\\cos^2 v}{D} \\end{aligned}"
+      },
+      {
+        "label": "domain",
+        "latex": "u \\in [0,\\pi],\\quad v \\in [0,\\pi]"
+      }
+    ],
+    "params": [
+      {
+        "key": "bulge",
+        "symbol": "\\beta",
+        "meaning": "scales the denominator's oscillation; 1 is the true Boy surface, lower values relax the lobes (kept ≤ 1 so the denominator stays positive)"
+      }
+    ],
+    "code": "const u = a*Math.PI, v = b*Math.PI;            // a,b ∈ [0,1] grid\nconst cv2 = Math.cos(v)**2, s2v = Math.sin(2*v);\nconst D = 2 - bulge*Math.SQRT2*Math.sin(3*u)*s2v;\npoint(\n  (Math.SQRT2*Math.cos(2*u)*cv2 + Math.cos(u)*s2v)/D,\n  3*cv2/D - 1.5,                               // centred up axis\n  (Math.SQRT2*Math.sin(2*u)*cv2 - Math.sin(u)*s2v)/D,\n);",
+    "links": [
+      {
+        "label": "Boy's surface (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Boy%27s_surface"
+      },
+      {
+        "label": "Boy Surface (MathWorld)",
+        "url": "https://mathworld.wolfram.com/BoySurface.html"
+      },
+      {
+        "label": "Real projective plane (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Real_projective_plane"
+      }
+    ]
+  },
+  "roman": {
+    "title": "Roman Surface",
+    "about": "Discovered by Jakob Steiner in Rome in 1844, the Roman surface is one of the simplest ways to push the projective plane RP² into ordinary 3D space. It is the image of the unit sphere under the deceptively tiny quadratic map (x,y,z) → (yz, zx, xy), which folds every antipodal pair of sphere points onto the same point. The result is a rounded tetrahedral blob with three lines of self-intersection that cross at the centre and six pinch (Whitney) points at the tips.",
+    "howItWorks": "Each grid cell (θ, φ) gives a point (a,b,c) on the unit sphere, and the three pairwise products bc, ca, ab become the output coordinates. Because the map is even in each pair of antipodal points, the sphere wraps twice and the surface intersects itself along the coordinate axes. The fold and pinch knobs scale the product terms, exaggerating the lobes and the central pinch.",
+    "equations": [
+      {
+        "label": "unit sphere",
+        "latex": "(a,b,c) = (\\sin\\theta\\cos\\varphi,\\; \\sin\\theta\\sin\\varphi,\\; \\cos\\theta)"
+      },
+      {
+        "label": "Steiner map",
+        "latex": "(x,y,z) = (b\\,c,\\; c\\,a,\\; a\\,b)"
+      },
+      {
+        "label": "implicit form",
+        "latex": "x^2y^2 + y^2z^2 + z^2x^2 = x\\,y\\,z"
+      }
+    ],
+    "params": [
+      {
+        "key": "fold",
+        "symbol": "f",
+        "meaning": "scales the bc and ab lobes — stretches the surface in two of its three axes"
+      },
+      {
+        "key": "pinch",
+        "symbol": "p",
+        "meaning": "scales the ca term — sharpens or softens the central self-intersection"
+      }
+    ],
+    "code": "const theta = s*Math.PI, phi = t*2*Math.PI;   // s,t ∈ [0,1] grid\nconst a = Math.sin(theta)*Math.cos(phi);\nconst b = Math.sin(theta)*Math.sin(phi);\nconst c = Math.cos(theta);\npoint(b*c*fold, c*a*pinch, a*b*fold);",
+    "links": [
+      {
+        "label": "Roman surface (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Roman_surface"
+      },
+      {
+        "label": "Roman Surface (MathWorld)",
+        "url": "https://mathworld.wolfram.com/RomanSurface.html"
+      }
+    ]
+  },
+  "hopf": {
+    "title": "Hopf Fibration",
+    "about": "The Hopf fibration is the most famous map in topology: it threads the 3-sphere S³ with a family of circles (fibers), one over each point of the ordinary 2-sphere, so that no two circles ever cross yet every pair is linked. Stereographically projected into ordinary space, those fibers become a nested family of interlocking Villarceau circles riding on tori — a structure that shows up in quantum spin states, magnetic monopoles, and twistor theory. Each glowing ring here is one fiber; rings from neighbouring base points clasp like links in chain mail.",
+    "howItWorks": "A grid coordinate u selects the base latitude η on the 2-sphere (which torus you land on) together with a base azimuth φ₀, while v = ψ runs once around the fiber circle. From (η, ψ, φ₀) we build a point on S³ = {(q₁,q₂,q₃,q₄)} and then stereographically project from the q₄ = 1 pole down into R³. The latitude η is held inside [0.30, (π/2−0.30)·spread] so the projection denominator 1−q₄ never reaches zero and the largest torus stays bounded.",
+    "equations": [
+      {
+        "label": "fiber on S³",
+        "latex": "(q_1,q_2,q_3,q_4) = (\\cos\\eta\\,\\cos\\psi,\\; \\cos\\eta\\,\\sin\\psi,\\; \\sin\\eta\\,\\cos(\\psi+\\varphi_0),\\; \\sin\\eta\\,\\sin(\\psi+\\varphi_0))"
+      },
+      {
+        "label": "stereographic projection",
+        "latex": "(x,y,z) = \\frac{1}{1 - q_4}\\,(q_1,\\; q_2,\\; q_3)"
+      },
+      {
+        "label": "Hopf map (base point on S²)",
+        "latex": "(q_1,q_2,q_3,q_4)\\;\\longmapsto\\;\\big(2(q_1q_3+q_2q_4),\\; 2(q_2q_3-q_1q_4),\\; q_1^2+q_2^2-q_3^2-q_4^2\\big)"
+      }
+    ],
+    "params": [
+      {
+        "key": "tori",
+        "symbol": "N",
+        "meaning": "how many nested tori (discrete latitude bands η) are drawn; each is swept over its full base azimuth and fiber"
+      },
+      {
+        "key": "spread",
+        "symbol": "s",
+        "meaning": "scales the largest latitude ηₘₐₓ = (π/2−0.15)·s; near 1 the outermost torus swells (and the projection grows), smaller s tightens the nest"
+      }
+    ],
+    "code": "const NB = Math.round(tori);\nconst aa = a*NB, bi = Math.min(NB-1, Math.floor(aa)), phi0 = (aa-bi)*2*Math.PI;\nconst eta = 0.18 + ((bi+0.5)/NB) * ((Math.PI/2-0.15)*spread - 0.18);\nconst psi = b * 2*Math.PI;\nconst ce = Math.cos(eta), se = Math.sin(eta);\nconst q1 = ce*Math.cos(psi),  q2 = ce*Math.sin(psi);\nconst q3 = se*Math.cos(psi+phi0), q4 = se*Math.sin(psi+phi0);\nconst d = 1 - q4;                 // q4 < 1 always => d > 0\npoint(q1/d, q2/d, q3/d);         // stereographic projection from the q4=1 pole",
+    "links": [
+      {
+        "label": "Hopf fibration (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Hopf_fibration"
+      },
+      {
+        "label": "Villarceau circles (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Villarceau_circles"
+      },
+      {
+        "label": "Hopf fibration (Wolfram MathWorld)",
+        "url": "https://mathworld.wolfram.com/HopfMap.html"
+      }
+    ]
+  },
+  "orbital": {
+    "title": "Spherical Harmonic",
+    "about": "Spherical harmonics Y_lm are the natural vibration patterns of a sphere — the angular shapes behind atomic orbitals, planetary gravity fields, and the cosmic microwave background. Here the radius at each direction is set to the magnitude of the harmonic, |Y_lm|, so the surface swells out into the harmonic's lobes: l=1 a dumbbell, l=3 a stack of rings, l=4 a flower of petals. Two integers tune it — the degree l counts how busy the pattern is, the order m how those nodes wrap around the equator versus the poles.",
+    "howItWorks": "For each direction (theta from a pole, phi around the equator) we evaluate the real spherical harmonic Y_lm using a hardcoded associated Legendre polynomial P_l^|m|(cos theta) times a cos(m·phi) or sin(|m|·phi) wave, with the standard normalization. The radius is r = |Y_lm| + base, where the small base radius fills in the nodal zeros so the shell stays closed instead of pinching to a point. m is clamped to the valid range [-l, l]; positive m uses the cosine wave, negative m the sine.",
+    "equations": [
+      {
+        "label": "real spherical harmonic",
+        "latex": "Y_{lm}(\\theta,\\varphi) = K_{lm}\\,P_l^{|m|}(\\cos\\theta)\\begin{cases}\\cos(m\\varphi) & m\\ge 0\\\\ \\sin(|m|\\varphi) & m<0\\end{cases}"
+      },
+      {
+        "label": "normalization",
+        "latex": "K_{lm} = \\sqrt{\\tfrac{2l+1}{4\\pi}\\,\\tfrac{(l-|m|)!}{(l+|m|)!}}\\;\\big(m=0\\,?\\,1:\\sqrt2\\big)"
+      },
+      {
+        "label": "radius as orbital",
+        "latex": "r(\\theta,\\varphi) = \\big|Y_{lm}(\\theta,\\varphi)\\big| + r_0"
+      },
+      {
+        "label": "surface point",
+        "latex": "\\big(r\\sin\\theta\\cos\\varphi,\\; r\\cos\\theta,\\; r\\sin\\theta\\sin\\varphi\\big)"
+      },
+      {
+        "label": "example P_lm (l=3)",
+        "latex": "P_3^0 = \\tfrac12 x(5x^2-3),\\quad P_3^3 = -15(1-x^2)^{3/2},\\quad x=\\cos\\theta"
+      }
+    ],
+    "params": [
+      {
+        "key": "l",
+        "symbol": "l",
+        "meaning": "degree (1..4): how many lobes/rings — higher l is busier (l=3 stacked lobes, l=4 flower)"
+      },
+      {
+        "key": "m",
+        "symbol": "m",
+        "meaning": "order, clamped to [-l, l]: |m| sets equatorial nodes; sign picks the cos(mφ) vs sin(|m|φ) pattern"
+      },
+      {
+        "key": "base",
+        "symbol": "r_0",
+        "meaning": "base radius added at the harmonic's zeros so the shell stays closed instead of pinching"
+      }
+    ],
+    "code": "// real Y_lm magnitude as radius; P_lm hardcoded for l=1..4\nconst phi = a*2*Math.PI, theta = b*Math.PI, x = Math.cos(theta), s = Math.sqrt(1 - x*x);\nconst am = Math.abs(m);\nlet P; // associated Legendre P_l^|m|(x)\nif (l === 3) P = am===0 ? 0.5*x*(5*x*x-3) : am===3 ? -15*s*(1-x*x) : /* ... */ 0;\nlet ratio = 1; for (let k = l-am+1; k <= l+am; k++) ratio /= k;\nconst K = Math.sqrt((2*l+1)/(4*Math.PI)*ratio) * (m===0 ? 1 : Math.SQRT2);\nconst ang = m>0 ? Math.cos(m*phi) : m<0 ? Math.sin(am*phi) : 1;\nconst r = Math.abs(K*P*ang) + base;\npoint(r*s*Math.cos(phi), r*x, r*s*Math.sin(phi));",
+    "links": [
+      {
+        "label": "Spherical harmonics (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Spherical_harmonics"
+      },
+      {
+        "label": "Associated Legendre polynomials (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Associated_Legendre_polynomials"
+      },
+      {
+        "label": "Table of spherical harmonics (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Table_of_spherical_harmonics"
+      },
+      {
+        "label": "Spherical Harmonic (MathWorld)",
+        "url": "https://mathworld.wolfram.com/SphericalHarmonic.html"
+      }
+    ]
+  },
+  "maurerRose": {
+    "title": "Maurer Rose",
+    "about": "In 1987 Peter Maurer noticed that if you take an ordinary rose curve r = sin(nθ) but only visit it at evenly spaced angular stops — every d degrees — and connect those stops with straight lines, the long chords leap across the flower and weave a startling lace-like web. The same petals appear, now overlaid with a geometric net that changes character completely with each integer choice of n and d. It is one equation, two whole numbers, and a polyline — yet it looks like cut crystal.",
+    "howItWorks": "Walk an index k from 0 to 360. At each step the angle is θ = k·d degrees, and the point sits on the rose at radius sin(nθ). Successive points are joined by straight chords rather than following the smooth curve, so when d does not divide 360 evenly the path skips around the flower, layering chord over chord into the web. A small vertical lift turns the flat lace into a gently rippled 3D sheet, which is then swept into a thin glowing tube.",
+    "equations": [
+      {
+        "label": "rose radius",
+        "latex": "r(\\theta) = \\sin(n\\,\\theta)"
+      },
+      {
+        "label": "sample angles (degrees)",
+        "latex": "\\theta_k = k\\,d\\cdot\\tfrac{\\pi}{180}, \\quad k = 0,1,\\dots,360"
+      },
+      {
+        "label": "vertex k",
+        "latex": "\\big(r(\\theta_k)\\cos\\theta_k,\\; \\ell\\sin\\tfrac{n\\theta_k}{2},\\; r(\\theta_k)\\sin\\theta_k\\big)"
+      },
+      {
+        "label": "edges (chords)",
+        "latex": "P_k \\to P_{k+1}\\ \\text{straight segments form the web}"
+      }
+    ],
+    "params": [
+      {
+        "key": "petals",
+        "symbol": "n",
+        "meaning": "rose frequency — gives n petals when n is odd, 2n petals when n is even"
+      },
+      {
+        "key": "d",
+        "symbol": "d",
+        "meaning": "angular step in degrees between successive sample points; the engine of the web — coprimality with 360 sets how densely the chords interlace"
+      },
+      {
+        "key": "lift",
+        "symbol": "\\ell",
+        "meaning": "vertical displacement that lifts the flat lace into a rippled 3D sheet (0 = flat)"
+      },
+      {
+        "key": "tube",
+        "symbol": "\\rho",
+        "meaning": "radius of the glowing tube swept along the polyline"
+      }
+    ],
+    "code": "const DEG = Math.PI/180;\nfunction vert(k, n, d, lift) {\n  const th = k * d * DEG;\n  const r = Math.sin(n * th);\n  return [r*Math.cos(th), lift*Math.sin(n*th*0.5), r*Math.sin(th)];\n}\n// polyline: connect vert(0..360) with straight chords, then sweep a tube\nfor (let k = 0; k < 360; k++) drawChord(vert(k,n,d,lift), vert(k+1,n,d,lift));",
+    "links": [
+      {
+        "label": "Maurer rose (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Maurer_rose"
+      },
+      {
+        "label": "Rose / rhodonea curve (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Rose_(mathematics)"
+      },
+      {
+        "label": "Rose curve (MathWorld)",
+        "url": "https://mathworld.wolfram.com/Rose.html"
+      }
+    ]
+  },
+  "enneper": {
+    "title": "Enneper Surface",
+    "about": "One of the oldest known minimal surfaces, written down by Alfred Enneper in 1864 — a soap-film shape that locally minimises area, yet is defined by nothing more than cubic polynomials. As you widen its domain it curls back and passes through itself, weaving a six-petalled saddle with a striking three-fold symmetry. It is the textbook example of a minimal surface that is complete but not embedded: beautiful, self-intersecting, and entirely free of trigonometry.",
+    "howItWorks": "Two grid coordinates u and v range over a square. Each maps to a point by three short polynomials — x and y mix a cubic with a cross term, while z is the difference of squares u²−v² that gives the saddle. Because everything is polynomial there are no divisions or logarithms to blow up: every sample is finite. Push 'extent' past about 1.4 and the surface begins to overlap itself, opening the classic folded look.",
+    "equations": [
+      {
+        "label": "Enneper surface",
+        "latex": "\\begin{aligned} x &= u - \\tfrac{u^3}{3} + u v^2 \\\\ y &= v - \\tfrac{v^3}{3} + v u^2 \\\\ z &= u^2 - v^2 \\end{aligned}"
+      },
+      {
+        "label": "minimal (zero mean curvature)",
+        "latex": "H = \\tfrac{1}{2}(\\kappa_1 + \\kappa_2) = 0"
+      },
+      {
+        "label": "Weierstrass data",
+        "latex": "f = 1,\\quad g = w,\\quad \\mathbf{r}(w) = \\operatorname{Re}\\!\\int \\big(1-g^2,\\; i(1+g^2),\\; 2g\\big)\\,f\\,dw"
+      }
+    ],
+    "params": [
+      {
+        "key": "extent",
+        "symbol": "A",
+        "meaning": "half-width of the (u,v) domain; below ~1.4 it stays embedded, above it the surface folds through itself"
+      },
+      {
+        "key": "fold",
+        "symbol": "\\lambda",
+        "meaning": "weights the u v² and v u² cross terms — 1 is the true minimal surface, lower flattens the folds"
+      }
+    ],
+    "code": "const u = (a*2 - 1)*extent, v = (b*2 - 1)*extent;   // a,b ∈ [0,1] grid\nconst u2 = u*u, v2 = v*v;\npoint(u - u2*u/3 + fold*u*v2,\n      v - v2*v/3 + fold*v*u2,\n      u2 - v2);",
+    "links": [
+      {
+        "label": "Enneper surface (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Enneper_surface"
+      },
+      {
+        "label": "Enneper's Minimal Surface (MathWorld)",
+        "url": "https://mathworld.wolfram.com/EnnepersMinimalSurface.html"
+      },
+      {
+        "label": "Minimal surface (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Minimal_surface"
+      }
+    ]
+  },
+  "breather": {
+    "title": "Breather Surface",
+    "about": "A breather is a soliton that stays put and pulses — it oscillates in place rather than travelling. This surface is its geometric incarnation: the pseudospherical (constant negative curvature) surface corresponding to a breather solution of the sine-Gordon equation. A single parameter aa, between 0 and 1, sets the width of the localized bulge, and the surface ripples out into symmetric wave-like lobes that fade smoothly to a flat sheet far from the centre.",
+    "howItWorks": "Two coordinates u and v sweep a grid. With w = sqrt(1 - aa^2), every point is a ratio of hyperbolic functions of aa*u (which localize the feature) and trigonometric functions of v and w*v (which set the oscillation). The shared denominator aa*((w cosh(aa u))^2 + (aa sin(w v))^2) is bounded below by aa*w^2 > 0 over the whole domain, so the surface is everywhere smooth and finite — no spikes to clip. The x-coordinate carries a -u term that shears the lobes along the axis.",
+    "equations": [
+      {
+        "label": "width parameter",
+        "latex": "w = \\sqrt{1 - a^2}, \\qquad 0 < a < 1"
+      },
+      {
+        "label": "denominator (always positive)",
+        "latex": "D = a\\big( (w\\cosh a u)^2 + (a\\sin w v)^2 \\big)"
+      },
+      {
+        "label": "x",
+        "latex": "x = -u + \\frac{2(1 - a^2)\\,\\cosh(a u)\\,\\sinh(a u)}{D}"
+      },
+      {
+        "label": "y",
+        "latex": "y = \\frac{2w\\cosh(a u)\\,\\big(-w\\cos v\\cos w v - \\sin v\\sin w v\\big)}{D}"
+      },
+      {
+        "label": "z",
+        "latex": "z = \\frac{2w\\cosh(a u)\\,\\big(-w\\sin v\\cos w v + \\cos v\\sin w v\\big)}{D}"
+      }
+    ],
+    "params": [
+      {
+        "key": "aa",
+        "symbol": "a",
+        "meaning": "soliton width parameter in (0,1); smaller a stretches the breather wider and taller, larger a tightens it"
+      },
+      {
+        "key": "extent",
+        "symbol": "L",
+        "meaning": "half-width of the sampled (u,v) square; larger values reveal more of the surrounding lobes"
+      }
+    ],
+    "code": "const aa = 0.4, w = Math.sqrt(1 - aa*aa);\nconst u = (a*2 - 1)*L, v = (b*2 - 1)*L;   // a,b in [0,1] grid\nconst ch = Math.cosh(aa*u), sh = Math.sinh(aa*u);\nconst swv = Math.sin(w*v), cwv = Math.cos(w*v), sv = Math.sin(v), cv = Math.cos(v);\nconst D = aa*((w*ch)**2 + (aa*swv)**2);\npoint(\n  -u + 2*(1 - aa*aa)*ch*sh / D,\n  2*w*ch*(-w*cv*cwv - sv*swv) / D,\n  2*w*ch*(-w*sv*cwv + cv*swv) / D);",
+    "links": [
+      {
+        "label": "Breather (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Breather"
+      },
+      {
+        "label": "Breather surface (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Breather_surface"
+      },
+      {
+        "label": "Sine-Gordon equation (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Sine-Gordon_equation"
+      },
+      {
+        "label": "Breather surface (MathWorld)",
+        "url": "https://mathworld.wolfram.com/BreatherSurface.html"
+      }
+    ]
+  },
+  "kuen": {
+    "title": "Kuen Surface",
+    "about": "Kuen's surface is one of the most beautiful surfaces of constant negative curvature: at every point it curves like a saddle by exactly the same amount (Gaussian curvature K = -1), yet it folds into elegant overlapping petals rather than an infinite trumpet. It is a Backlund transform of the pseudosphere, sharing its hyperbolic geometry while wrapping it into a compact, flower-like shell. Like all such surfaces it cannot be embedded smoothly without an edge, so the petals meet along sharp cuspidal seams.",
+    "howItWorks": "A parameter u sweeps around the surface, generating the curling petals through the terms cos u + u sin u and sin u - u cos u, while v runs from the flared outer lobes down toward a logarithmic cusp. The shared denominator 1 + u² sin² v is what pins the curvature to exactly -1 everywhere; the height adds a ln(tan(v/2)) term, the same tractrix-style profile seen in the pseudosphere. The reach knob extends how far u winds (more petals); the funnel knob sets where v starts, trading lobe flare against cusp depth.",
+    "equations": [
+      {
+        "label": "common denominator",
+        "latex": "D = 1 + u^2\\sin^2 v"
+      },
+      {
+        "label": "Kuen surface",
+        "latex": "\\begin{aligned} x &= \\frac{2(\\cos u + u\\sin u)\\sin v}{D}, \\quad y = \\frac{2(\\sin u - u\\cos u)\\sin v}{D} \\\\ z &= \\ln\\tan\\tfrac{v}{2} + \\frac{2\\cos v}{D} \\end{aligned}"
+      },
+      {
+        "label": "constant curvature",
+        "latex": "K = -1 \\quad \\text{(everywhere)}"
+      }
+    ],
+    "params": [
+      {
+        "key": "reach",
+        "symbol": "A",
+        "meaning": "extent of u ∈ [-A, A]; larger A winds in more overlapping petals"
+      },
+      {
+        "key": "funnel",
+        "symbol": "v_0",
+        "meaning": "lower bound of v; smaller values deepen the central cusp, larger flare the lobes"
+      }
+    ],
+    "code": "const u = (a*2 - 1)*reach, v = funnel + b*(2.1 - funnel); // a,b ∈ [0,1] grid\nconst sv = Math.sin(v), D = 1 + u*u*sv*sv;\nconst lg = Math.log(Math.tan(v/2));\npoint(2*(Math.cos(u)+u*Math.sin(u))*sv/D,\n      2*(Math.sin(u)-u*Math.cos(u))*sv/D,\n      lg + 2*Math.cos(v)/D);",
+    "links": [
+      {
+        "label": "Kuen surface (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Kuen_surface"
+      },
+      {
+        "label": "Kuen's Surface (MathWorld)",
+        "url": "https://mathworld.wolfram.com/KuensSurface.html"
+      }
+    ]
+  },
 };
