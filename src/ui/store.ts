@@ -32,6 +32,7 @@ export function selectArchetype(id: string): void {
   $params.set({ ...defaultParams(factory.params) });
   $global.setKey('particleCount', factory.defaultParticleCount);
   $global.setKey('dt', factory.defaultDt);
+  $global.setKey('trailLength', factory.defaultTrail ?? DEFAULT_GLOBAL.trailLength);
   $archetypeId.set(id);
 }
 

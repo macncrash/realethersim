@@ -16,6 +16,7 @@ import { dlaFactory } from './dla';
 import { kuramotoFactory } from './kuramoto';
 import { chimeraFactory } from './chimera';
 import { karmanFactory } from './karman';
+import { makeParametricFactory, PARAMETRIC_SYSTEMS } from './parametric';
 import { makeRaymarchFactory, RAYMARCH_SYSTEMS } from './raymarchFractal';
 
 // Side-effect registration. Importing this module wires every archetype into the registry.
@@ -50,6 +51,9 @@ export function registerArchetypes(): void {
   register(kuramotoFactory);
   register(chimeraFactory);
   register(karmanFactory);
+  for (const system of Object.values(PARAMETRIC_SYSTEMS)) {
+    register(makeParametricFactory(system));
+  }
   for (const system of Object.values(RAYMARCH_SYSTEMS)) {
     register(makeRaymarchFactory(system));
   }

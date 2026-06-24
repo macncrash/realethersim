@@ -30,8 +30,9 @@ import { SYSTEM_DOCS as GENERATED } from './docs.generated';
 import { FRACTAL_DOCS } from './docs.fractals';
 import { EXTRA_DOCS } from './docs.extra';
 import { RAYMARCH_DOCS } from './docs.raymarch';
+import { PARAMETRIC_DOCS } from './docs.parametric';
 
-export const SYSTEM_DOCS: Record<string, SystemDoc> = { ...GENERATED, ...FRACTAL_DOCS, ...EXTRA_DOCS, ...RAYMARCH_DOCS };
+export const SYSTEM_DOCS: Record<string, SystemDoc> = { ...GENERATED, ...FRACTAL_DOCS, ...EXTRA_DOCS, ...RAYMARCH_DOCS, ...PARAMETRIC_DOCS };
 
 export function getDoc(id: string): SystemDoc | null {
   return SYSTEM_DOCS[id] ?? null;

@@ -82,6 +82,7 @@ export interface ArchetypeFactory {
   readonly defaultParticleCount: number;
   readonly defaultDt: number; // global dt applied when this system is selected (its stable step)
   readonly particleCountOptions?: number[]; // overrides the UI's default count choices (e.g. N-body caps lower)
+  readonly defaultTrail?: number; // trail length applied on selection (0 for static systems — no motion)
   create(config: ArchetypeConfig): Archetype;
 }
 
