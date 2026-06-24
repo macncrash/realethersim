@@ -29,7 +29,12 @@ export type RaymarchKind =
   | 'whitneyUmbrella'
   | 'tooth'
   | 'lidinoid'
-  | 'dingDong';
+  | 'dingDong'
+  | 'dupinCyclide'
+  | 'orthocircle'
+  | 'decocube'
+  | 'endrassOctic'
+  | 'cassini';
 
 export interface RaymarchSystem {
   id: string;
@@ -198,6 +203,31 @@ export const RAYMARCH_SYSTEMS: Record<string, RaymarchSystem> = {
   dingDong: {
     id: 'dingDong', label: 'Ding-Dong Surface', sdf: 'dingDong', category: 'Surface',
     iters: 0, freq: 0.95, bound: 2.3, camDist: 5.2, maxSteps: 260, stepScale: 0.4, maxStep: 0.035, params: [ISO, COL, ANIM],
+  },
+
+
+  // ── batch 5: cyclides / ring lattices / Endrass octic / Cassini ──
+  dupinCyclide: {
+    id: 'dupinCyclide', label: "Dupin Ring Cyclide", sdf: 'dupinCyclide', category: 'Surface',
+    iters: 0, freq: 1.65, bound: 2.35, camDist: 5.2, maxSteps: 200, params: [ISO, COL, ANIM],
+  },
+  orthocircle: {
+    id: 'orthocircle', label: "Orthocircle", sdf: 'orthocircle', category: 'Surface',
+    // thin tubes + a steep degree-12 field: the |F|/|∇F| step overshoots the rods. Small cap to
+    // catch the thin rods, big step budget so far (zoomed-out) rays still cross the bound.
+    iters: 0, freq: 0.62, bound: 2.3, camDist: 5, maxSteps: 460, stepScale: 0.4, maxStep: 0.035, params: [ISO, COL, ANIM],
+  },
+  decocube: {
+    id: 'decocube', label: "Decocube", sdf: 'decocube', category: 'Surface',
+    iters: 0, freq: 0.5, bound: 2.3, camDist: 5.2, maxSteps: 340, stepScale: 0.5, maxStep: 0.06, params: [ISO, COL, ANIM],
+  },
+  endrassOctic: {
+    id: 'endrassOctic', label: "Endrass Octic", sdf: 'endrassOctic', category: 'Surface',
+    iters: 0, freq: 0.9, bound: 2.3, camDist: 5.2, maxSteps: 280, stepScale: 0.3, maxStep: 0.03, params: [ISO, COL, ANIM],
+  },
+  cassini: {
+    id: 'cassini', label: "Cassini Surface", sdf: 'cassini', category: 'Surface',
+    iters: 0, freq: 0.72, bound: 2.4, camDist: 5.4, maxSteps: 240, params: [ISO, COL, ANIM],
   },
 };
 

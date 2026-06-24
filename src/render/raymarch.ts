@@ -236,6 +236,79 @@ const surfaceField = (kind: string, c: Node): Node => {
     const Z2 = Z.mul(Z);
     return X.mul(X).add(Y.mul(Y)).sub(Z2).add(Z2.mul(Z)); // x²+y²−z²+z³
   }
+  if (kind === 'dupinCyclide') {
+    // Dupin ring cyclide — the inversion of a torus; every line of curvature is a circle.
+    // Quartic (x²+y²+z²+b²−d²)² − 4(aX−cd)² − 4b²y² with a=1.9, c=1, b²=a²−c²=2.61, d=1.4
+    // (a>d>c ⇒ ring cyclide). The body is off-axis (centre x≈−1), so X = x − 1 recentres it
+    // on the origin for the bounding sphere / radial trap. Smooth (min|∇F|≈4.6 ⇒ no nodes).
+    const a = float(1.9);
+    const X = x.sub(1.0); // recentre: ring spans x∈[−4.3,2.3] about x=−1
+    const s = X.mul(X).add(y.mul(y)).add(z.mul(z)).add(0.65); // …+ (b²−d²)=0.65
+    const t = X.mul(a).sub(1.4); // aX − c·d  (c·d = 1.4)
+    return s.mul(s).sub(t.mul(t).mul(4)).sub(y.mul(y).mul(10.44)); // s² − 4t² − 4b²y²  (4b²=10.44)
+  }
+  if (kind === 'orthocircle') {
+    // Orthocircle — three mutually orthogonal ring-tubes (a=0.075, b=3). Each factor
+    // ((u²+v²−1)²+w²) is a fattened unit ring in a coordinate plane; their product, minus
+    // a²(1+b·r²), fuses the three rings into one smooth degree-12 surface. ∇F stays bounded
+    // away from 0 on the surface (probe: |∇F|∈[0.14,0.79]), so no stepScale/maxStep needed.
+    const x2 = x.mul(x), y2 = y.mul(y), z2 = z.mul(z);
+    const r1 = x2.add(y2).sub(1), t1 = r1.mul(r1).add(z2); // ring in xy-plane (axis z)
+    const r2 = y2.add(z2).sub(1), t2 = r2.mul(r2).add(x2); // ring in yz-plane (axis x)
+    const r3 = z2.add(x2).sub(1), t3 = r3.mul(r3).add(y2); // ring in zx-plane (axis y)
+    const rr = x2.add(y2).add(z2);
+    // a² = 0.075² = 0.005625, a²·b = 0.005625·3 = 0.016875
+    return t1.mul(t2).mul(t3).sub(float(0.005625).add(rr.mul(0.016875))); // ∏ringᵢ − a²(1+b·r²)
+  }
+  if (kind === 'decocube') {
+    // Decocube — a rounded cube *frame* of 12 tube-edges, built as a product of three
+    // intersecting-torus factors. r = 0.82 sets the tube offset, a² = 0.0004 (a = 0.02) the
+    // tube thickness. Each factor ((·²+·²−r²)² + (·²−1)²) is a torus around one axis capped at ±1.
+    const x2 = x.mul(x), y2 = y.mul(y), z2 = z.mul(z);
+    const r2 = float(0.6724); // 0.82²
+    const a2 = float(0.0004); // a = 0.02
+    const f1 = x2.add(y2).sub(r2);
+    const f2 = y2.add(z2).sub(r2);
+    const f3 = z2.add(x2).sub(r2);
+    const zc = z2.sub(1), xc = x2.sub(1), yc = y2.sub(1);
+    const t1 = f1.mul(f1).add(zc.mul(zc));
+    const t2 = f2.mul(f2).add(xc.mul(xc));
+    const t3 = f3.mul(f3).add(yc.mul(yc));
+    return t1.mul(t2).mul(t3).sub(a2); // ∏ tori − a²  → the 12-edge cube frame
+  }
+  if (kind === 'endrassOctic') {
+    // Endraß octic — the degree-8 surface with 168 real nodes (the record for octics), w = 1.
+    // A product of four planes minus the square of a degree-4 polynomial in (x²+y²) and z; the
+    // √2 constants give the node cluster its 8-fold dihedral symmetry. ∇F vanishes at the 168
+    // nodes and the field swings ~10⁴× across the surface, so the DE step is strongly under-relaxed
+    // and hard-capped (like togliatti/barth/kummer) to avoid overshooting the pinch points.
+    const s2 = float(1.4142135624); // √2
+    const x2 = x.mul(x), y2 = y.mul(y), z2 = z.mul(z);
+    const z4 = z2.mul(z2);
+    const r2 = x2.add(y2);
+    const sum = x.add(y), dif = x.sub(y);
+    // 64·(x²−1)(y²−1)((x+y)²−2)((x−y)²−2)
+    const t1 = x2.sub(1)
+      .mul(y2.sub(1))
+      .mul(sum.mul(sum).sub(2))
+      .mul(dif.mul(dif).sub(2))
+      .mul(64);
+    // inner = −4(1+√2)(x²+y²)² + (8(2+√2)z² + 2(2+7√2))(x²+y²) − 16z⁴ + 8(1+2√2)z² − (1+12√2)
+    const inner = r2.mul(r2).mul(s2.add(1).mul(-4))
+      .add(z2.mul(s2.add(2).mul(8)).add(s2.mul(7).add(2).mul(2)).mul(r2))
+      .sub(z4.mul(16))
+      .add(z2.mul(s2.mul(2).add(1).mul(8)))
+      .sub(s2.mul(12).add(1));
+    return t1.sub(inner.mul(inner)); // 64·∏planes − inner²
+  }
+  if (kind === 'cassini') {
+    // Cassini oval of revolution. Long axis remapped to world-up (formula x → world y) so the
+    // peanut stands upright. a=1, b=1.1 ⇒ connected dumbbell; a⁴−b⁴ = −0.4641.
+    const X = y, Y = x, Z = z; // math-x (long axis) ← world y
+    const X2 = X.mul(X), Y2 = Y.mul(Y), Z2 = Z.mul(Z);
+    const r2 = X2.add(Y2).add(Z2);
+    return r2.mul(r2).sub(X2.sub(Y2).sub(Z2).mul(2)).sub(0.4641); // (x²+y²+z²)² − 2a²(x²−y²−z²) + a⁴−b⁴
+  }
   return cheb8(x).add(cheb8(y)).add(cheb8(z)); // default (unreachable for registered kinds)
 };
 const SURFACE_KINDS = [
@@ -243,6 +316,7 @@ const SURFACE_KINDS = [
   'heart', 'tanglecube', 'goursat', 'barth',
   'kummer', 'clebsch', 'cayley', 'fischerKoch', 'schwarzCLP',
   'togliatti', 'whitneyUmbrella', 'tooth', 'lidinoid', 'dingDong',
+  'dupinCyclide', 'orthocircle', 'decocube', 'endrassOctic', 'cassini',
 ];
 
 function makeMap(sys: RaymarchSystem, u: Record<string, Node>, uTime: Node): Node {

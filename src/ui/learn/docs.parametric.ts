@@ -1075,4 +1075,417 @@ point(r*st*Math.cos(phi), r*Math.cos(theta), r*st*Math.sin(phi));`,
       }
     ]
   },
+  "crossCap": {
+    "title": "Cross-Cap",
+    "about": "The cross-cap is the most economical way to push the real projective plane RP² — a sphere with every pair of antipodal points glued together — into ordinary 3D space. Unlike the smooth Boy's surface, it pays for its simplicity with two sharp pinch (Whitney) points joined by a short segment where the surface passes through itself. Cap a disk over this self-intersecting hood and you literally close a Möbius band into the non-orientable projective plane. It is the third member of the classic Boy–Roman–cross-cap trio, all three immersions of the very same surface.",
+    "howItWorks": "Two angles u and v, each running across [0, π], sweep a grid. The planar coordinates x = cos u·sin 2v and y = sin u·sin 2v wrap a doubled loop — sin 2v vanishes at v = 0, π/2, π, pinching the rim shut — while the height z = cos²v·sin²u (equivalently cos²v − cos²u·cos²v) is always ≥ 0 and collapses to a single segment along the axis, the line of double points running between the two pinch points. Everything is built from bounded sines and cosines, so every sample is finite; the raw z runs from 0 to 1 and is centred by subtracting one half. The width knob scales the planar hood, the height knob stretches the pinched spine.",
+    "equations": [
+      {
+        "label": "cross-cap immersion",
+        "latex": "\\begin{aligned} x &= \\cos u\\,\\sin 2v \\\\ y &= \\sin u\\,\\sin 2v \\\\ z &= \\cos^2 v - \\cos^2 u\\,\\cos^2 v \\end{aligned}"
+      },
+      {
+        "label": "height simplifies",
+        "latex": "z = \\cos^2 v\\,\\sin^2 u \\;\\ge\\; 0"
+      },
+      {
+        "label": "domain",
+        "latex": "u \\in [0,\\pi],\\quad v \\in [0,\\pi]"
+      },
+      {
+        "label": "double-point segment (sin 2v = 0)",
+        "latex": "x = y = 0,\\quad z = \\cos^2 v\\,\\sin^2 u"
+      }
+    ],
+    "params": [
+      {
+        "key": "width",
+        "symbol": "w",
+        "meaning": "scales the planar hood (x and z); widens or tightens the self-intersecting cap"
+      },
+      {
+        "key": "height",
+        "symbol": "h",
+        "meaning": "stretches the pinched spine along the up axis (the double-point segment), then re-centres it"
+      }
+    ],
+    "code": "const u = a*Math.PI, v = b*Math.PI;            // a,b ∈ [0,1] grid\nconst s2v = Math.sin(2*v), cv = Math.cos(v);\nconst su = Math.sin(u), cu = Math.cos(u);\nconst z = cv*cv * su*su;                        // = cos²v − cos²u·cos²v ≥ 0\npoint(\n  cu*s2v*width,\n  z*height - 0.5*height,                        // up axis, centred\n  su*s2v*width,\n);",
+    "links": [
+      {
+        "label": "Cross-cap (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Cross-cap"
+      },
+      {
+        "label": "Cross-Cap (MathWorld)",
+        "url": "https://mathworld.wolfram.com/Cross-Cap.html"
+      },
+      {
+        "label": "Real projective plane (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Real_projective_plane"
+      }
+    ]
+  },
+  "monkeySaddle": {
+    "title": "Monkey Saddle",
+    "about": "An ordinary saddle dips on two sides and rises on the other two — enough room for a rider's two legs. The monkey saddle adds a third dip, so a monkey can tuck in its tail as well: three valleys and three ridges meeting at a single flat point. It is the textbook example of a degenerate critical point where the second-derivative test fails completely, the surface flattening to third order before it commits to going up or down.",
+    "howItWorks": "The height is the real part of the complex cube z = x³ − 3xy², which in polar coordinates is simply r³·cos(3θ): the radius cubed, modulated by a three-fold cosine wave around the angle. We lay points on a disk — one grid axis is the radius fraction (scaled by reach R), the other the angle θ over a full turn — and lift each by that height onto the up axis. Because the height is an odd function of position, the surface is automatically centred on the origin. The legs knob swaps cos(3θ) for cos(kθ), turning the three monkey-saddle valleys into k valleys (k=2 is the plain saddle).",
+    "equations": [
+      {
+        "label": "monkey saddle (Cartesian)",
+        "latex": "z = x^3 - 3xy^2"
+      },
+      {
+        "label": "polar height field",
+        "latex": "z = r^k\\cos(k\\theta), \\qquad k = 3"
+      },
+      {
+        "label": "disk parametrization",
+        "latex": "\\big(r\\cos\\theta,\\; r^k\\cos(k\\theta),\\; r\\sin\\theta\\big), \\quad r\\in[0,R],\\ \\theta\\in[0,2\\pi)"
+      },
+      {
+        "label": "degenerate critical point",
+        "latex": "\\nabla z(0)=0,\\quad \\det\\,\\mathrm{Hess}\\,z(0)=0"
+      }
+    ],
+    "params": [
+      {
+        "key": "reach",
+        "symbol": "R",
+        "meaning": "radius of the sampled disk; the height grows as R^k, so larger R deepens the valleys steeply"
+      },
+      {
+        "key": "legs",
+        "symbol": "k",
+        "meaning": "number of descending valleys (and ridges); k=3 is the monkey saddle, k=2 the ordinary saddle, higher k adds more legs"
+      },
+      {
+        "key": "lift",
+        "symbol": "\\lambda",
+        "meaning": "vertical scale of the height field; flattens (low) or exaggerates (high) the saddle relief"
+      }
+    ],
+    "code": "const u = a, v = b*2*Math.PI;        // a,b ∈ [0,1] grid\nconst rad = u * R, k = Math.round(legs);\npoint(\n  rad*Math.cos(v),\n  lift * Math.pow(rad, k) * Math.cos(k*v),  // r^k cos(kθ), up axis\n  rad*Math.sin(v));",
+    "links": [
+      {
+        "label": "Monkey saddle (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Monkey_saddle"
+      },
+      {
+        "label": "Monkey Saddle (MathWorld)",
+        "url": "https://mathworld.wolfram.com/MonkeySaddle.html"
+      },
+      {
+        "label": "Saddle point (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Saddle_point"
+      }
+    ]
+  },
+  "supershape3D": {
+    "title": "Supershape 3D",
+    "about": "Johan Gielis's superformula generates starfish, flowers, diatoms, and crystals from one equation; its 3D spherical product turns those flat profiles into organic solids. This variant frees the two angles to carry their OWN rotational symmetry — m₁ lobes running pole-to-pole (latitude) and m₂ lobes running around the equator (longitude) — so the surface can be, say, a five-pointed star wrapped around a seven-fold body. Sweeping the dials morphs continuously through an enormous catalogue of seed-pods, sea-urchins, gems, and blobs.",
+    "howItWorks": "A radius is computed from each angle by the 1-D superformula: r₁ = R(θ; m₁, n₁, n₂, n₃) for the latitude θ ∈ [-π/2, π/2], and r₂ = R(φ; m₂, n₁, n₂, n₃) for the longitude φ ∈ [-π, π]. The two radii are combined by the spherical product — the same construction that builds an ordinary sphere from two circles — yielding the 3D point. m₁ and m₂ set how many lobes appear in each direction independently; the shared n₁ pinches the overall radius while n₂ and n₃ sharpen or bloat the lobe flanks. The radius helper clamps its output and guards the negative-base power and the (|cos|+|sin|)→0 division, so every sample stays finite.",
+    "equations": [
+      {
+        "label": "superformula radius",
+        "latex": "R(\\varphi; m) = \\Big( \\big|\\cos\\tfrac{m\\varphi}{4}\\big|^{n_2} + \\big|\\sin\\tfrac{m\\varphi}{4}\\big|^{n_3} \\Big)^{-1/n_1}"
+      },
+      {
+        "label": "independent symmetries",
+        "latex": "r_1 = R(\\theta; m_1), \\qquad r_2 = R(\\varphi; m_2)"
+      },
+      {
+        "label": "spherical product",
+        "latex": "\\begin{aligned} x &= r_2\\cos\\varphi\\;\\,r_1\\cos\\theta \\\\ y &= r_1\\sin\\theta \\\\ z &= r_2\\sin\\varphi\\;\\,r_1\\cos\\theta \\end{aligned}"
+      },
+      {
+        "label": "domain",
+        "latex": "\\theta \\in [-\\tfrac{\\pi}{2}, \\tfrac{\\pi}{2}], \\quad \\varphi \\in [-\\pi, \\pi]"
+      }
+    ],
+    "params": [
+      {
+        "key": "m1",
+        "symbol": "m_1",
+        "meaning": "latitude symmetry — number of lobes running pole to pole (θ direction)"
+      },
+      {
+        "key": "m2",
+        "symbol": "m_2",
+        "meaning": "longitude symmetry — number of lobes running around the equator (φ direction); m₁≠m₂ is what distinguishes this from the single-m superformula"
+      },
+      {
+        "key": "n1",
+        "symbol": "n_1",
+        "meaning": "overall pinch shared by both angles; small n₁ makes spiky stars, large n₁ rounds it toward a sphere"
+      },
+      {
+        "key": "n2",
+        "symbol": "n_2",
+        "meaning": "shapes one flank of every lobe"
+      },
+      {
+        "key": "n3",
+        "symbol": "n_3",
+        "meaning": "shapes the other flank; n₂≠n₃ breaks each lobe's mirror symmetry"
+      }
+    ],
+    "code": "function R(angle, m, n1, n2, n3) {              // 1-D superformula radius (clamped, NaN-safe)\n  const t = m*angle/4;\n  const s = Math.abs(Math.cos(t))**n2 + Math.abs(Math.sin(t))**n3;\n  return s < 1e-6 ? 0 : Math.min(s**(-1/Math.max(n1,1e-3)), 4);\n}\nconst phi = a*2*Math.PI - Math.PI, theta = b*Math.PI - Math.PI/2; // a,b ∈ [0,1] grid\nconst r1 = R(theta, m1, n1,n2,n3), r2 = R(phi, m2, n1,n2,n3);\nconst ct = r1*Math.cos(theta);\npoint(r2*Math.cos(phi)*ct, r1*Math.sin(theta), r2*Math.sin(phi)*ct);",
+    "links": [
+      {
+        "label": "Superformula (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Superformula"
+      },
+      {
+        "label": "Gielis 2003 (original paper)",
+        "url": "https://www.amjbot.org/doi/10.3732/ajb.90.3.333"
+      },
+      {
+        "label": "Superellipse (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Superellipse"
+      },
+      {
+        "label": "Superellipse (MathWorld)",
+        "url": "https://mathworld.wolfram.com/Superellipse.html"
+      }
+    ]
+  },
+  "bourSurface": {
+    "title": "Bour's Surface",
+    "about": "Bour's surface is a classical minimal surface — a soap-film shape that locally minimises area — named after Edmond Bour, who studied it in the 1860s. The order-2 member shown here is built from a single radial coordinate u raised to the power 1.5 against trigonometric functions of the angle v, folding into a graceful three-lobed form with perfect 3-fold symmetry. Like its cousins Enneper and Henneberg, it is complete but not embedded: as the domain widens the three petals sweep through one another, weaving a self-intersecting bloom.",
+    "howItWorks": "A grid coordinate u runs outward from the centre over [0, extent] and v winds once around. The planar x and y coordinates are an ordinary quadratic in u (a term linear in u plus a u^2 term at double the angle), while the height z is the fractional power (4/3)u^1.5 times cos(1.5v) — the piece that demands u >= 0, guarded with Math.max(0,u). Because the u^1.5 height and the doubled/halved angles all share a common rotation, the surface closes into three lobes. The raw shape drifts off-centre along +x, so a fixed offset of extent/2 - 1/8 (measured from the sampled bounding box) is added back to seat it on the origin; the flare knob scales the height lobes.",
+    "equations": [
+      {
+        "label": "Bour's surface (order 2)",
+        "latex": "\\begin{aligned} x &= u\\cos v - \\tfrac{u^2}{2}\\cos 2v \\\\ y &= -u\\sin v - \\tfrac{u^2}{2}\\sin 2v \\\\ z &= \\tfrac{4}{3}\\,u^{3/2}\\cos\\tfrac{3v}{2} \\end{aligned}"
+      },
+      {
+        "label": "domain",
+        "latex": "u \\in [0, A],\\quad v \\in [0, 2\\pi]"
+      },
+      {
+        "label": "minimal (zero mean curvature)",
+        "latex": "H = \\tfrac{1}{2}(\\kappa_1 + \\kappa_2) = 0"
+      },
+      {
+        "label": "Weierstrass data",
+        "latex": "f = 1,\\quad g = w^{1/2},\\quad \\mathbf{r}(w) = \\operatorname{Re}\\!\\int\\!\\big(1-g^2,\\; i(1+g^2),\\; 2g\\big)\\,f\\,dw"
+      }
+    ],
+    "params": [
+      {
+        "key": "extent",
+        "symbol": "A",
+        "meaning": "outer radius of the u domain [0, A]; below ~1.4 the lobes stay clear, above it they sweep through one another into the self-intersecting bloom"
+      },
+      {
+        "key": "flare",
+        "symbol": "\\lambda",
+        "meaning": "scales the (4/3)u^{3/2} height term — 1 is the true Bour surface, lower flattens the three lobes toward the plane"
+      }
+    ],
+    "code": "const u = a*extent, v = b*2*Math.PI;          // a,b ∈ [0,1] grid, u ≥ 0\nconst u15 = Math.pow(Math.max(0,u), 1.5);     // guard the fractional power\nconst u2h = u*u/2;\npoint(\n  u*Math.cos(v) - u2h*Math.cos(2*v) + (extent/2 - 0.125),  // centred x\n  -u*Math.sin(v) - u2h*Math.sin(2*v),\n  (4/3)*u15*Math.cos(1.5*v)*flare);",
+    "links": [
+      {
+        "label": "Bour's minimal surface (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Bour%27s_minimal_surface"
+      },
+      {
+        "label": "Minimal surface (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Minimal_surface"
+      },
+      {
+        "label": "Weierstrass–Enneper parameterization (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Weierstrass%E2%80%93Enneper_parameterization"
+      }
+    ]
+  },
+  "pluckerConoid": {
+    "title": "Plücker's Conoid",
+    "about": "Plücker's conoid — also called the cylindroid — is a ruled surface built from a family of straight horizontal lines, each passing through a central axis but tilted up or down depending on its compass direction. As you walk around the axis, the height of the rulings rises and falls like a wave, folding a flat disk into a set of saddle-shaped blades. The classic two-fold version is the graph of z = 2xy/(x²+y²), and it appears in screw geometry and the kinematics of rigid-body motion, where Julius Plücker first studied it in the 1860s.",
+    "howItWorks": "Two grid coordinates drive the surface. One, r, runs from the centre out to the rim along each straight ruling; the other, v, is the azimuth angle sweeping all the way around. The planar position is just the polar point (r·cos v, r·sin v), so the rulings fill a flat disk — but the height is set independently to amp·sin(n·v), so each ruling is lifted by an amount that depends only on its direction. Because n full oscillations fit into one trip around the circle, the disk folds into n up-and-down blades that all cross at the central axis. Everything is bounded trigonometry, so every sampled point is finite, and the symmetric domain keeps the shape centred on the origin.",
+    "equations": [
+      {
+        "label": "ruled surface",
+        "latex": "\\big(r\\cos v,\\; c\\,\\sin(n v),\\; r\\sin v\\big),\\quad r\\in[0,R],\\; v\\in[0,2\\pi]"
+      },
+      {
+        "label": "implicit form (n = 2)",
+        "latex": "z\\,(x^2 + y^2) = c\\cdot 2xy \\quad\\Longleftrightarrow\\quad z = c\\,\\sin 2v"
+      },
+      {
+        "label": "height as a function of azimuth",
+        "latex": "z(v) = c\\,\\sin(n v)\\ \\text{— independent of the radius } r"
+      }
+    ],
+    "params": [
+      {
+        "key": "folds",
+        "symbol": "n",
+        "meaning": "number of full height oscillations per turn — gives n up/down saddle blades (n=2 is the classic cylindroid)"
+      },
+      {
+        "key": "amp",
+        "symbol": "c",
+        "meaning": "vertical amplitude of the oscillation; how far the blades rise above and dip below the plane"
+      }
+    ],
+    "code": "const r = a*1.3, v = b*2*Math.PI;          // a,b ∈ [0,1] grid\npoint(r*Math.cos(v), amp*Math.sin(folds*v), r*Math.sin(v));",
+    "links": [
+      {
+        "label": "Plücker's conoid (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Pl%C3%BCcker%27s_conoid"
+      },
+      {
+        "label": "Plücker's Conoid (MathWorld)",
+        "url": "https://mathworld.wolfram.com/PlueckersConoid.html"
+      },
+      {
+        "label": "Ruled surface (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Ruled_surface"
+      }
+    ]
+  },
+  "sphericalSpiral": {
+    "title": "Spherical Spiral",
+    "about": "A spherical spiral winds smoothly from one pole of a sphere to the other while circling the axis many times — the path you would trace walking due 'northeast' forever across a globe, a curve closely related to the loxodrome (rhumb line) that sailors followed at a constant compass bearing. As the curve nears each pole the loops crowd tighter and tighter, packing into a dense whorl. Here that pole-to-pole thread is thickened into a glowing solid tube wound over the unit sphere.",
+    "howItWorks": "A single sweep parameter runs once over the curve and is remapped to a latitude φ from the south pole (−π/2) to the north pole (+π/2). At each latitude the point sits on the unit sphere at height sinφ, on a circle of radius cosφ, and that circle is spun through c full turns of longitude as φ climbs — so the curve spirals up the sphere c times. The centreline is then thickened into a tube by sweeping a small circle along it, oriented by the curve's analytic tangent (which never vanishes), so the tube stays smooth from pole to pole.",
+    "equations": [
+      {
+        "label": "latitude remap",
+        "latex": "\\varphi = \\tfrac{t}{2} - \\tfrac{\\pi}{2} \\in [-\\tfrac{\\pi}{2}, \\tfrac{\\pi}{2}], \\quad t \\in [0, 2\\pi]"
+      },
+      {
+        "label": "centreline",
+        "latex": "\\mathbf{C}(\\varphi) = \\big(\\cos\\varphi\\,\\cos c\\varphi,\\; \\sin\\varphi,\\; \\cos\\varphi\\,\\sin c\\varphi\\big)"
+      },
+      {
+        "label": "tangent (analytic)",
+        "latex": "\\mathbf{C}'(\\varphi) = \\big(-\\sin\\varphi\\cos c\\varphi - c\\cos\\varphi\\sin c\\varphi,\\; \\cos\\varphi,\\; -\\sin\\varphi\\sin c\\varphi + c\\cos\\varphi\\cos c\\varphi\\big)"
+      },
+      {
+        "label": "lies on the unit sphere",
+        "latex": "\\lVert\\mathbf{C}(\\varphi)\\rVert = 1"
+      }
+    ],
+    "params": [
+      {
+        "key": "turns",
+        "symbol": "c",
+        "meaning": "number of longitudinal turns the curve makes from pole to pole — higher c packs in tighter, denser loops"
+      },
+      {
+        "key": "tube",
+        "symbol": "\\rho",
+        "meaning": "radius of the solid tube swept along the spiral centreline (its visual thickness)"
+      }
+    ],
+    "code": "const C = (t) => { const phi = t/2 - Math.PI/2;        // [-π/2, π/2]\n  const cl = Math.cos(phi);\n  return [cl*Math.cos(c*phi), Math.sin(phi), cl*Math.sin(c*phi)]; };\nconst dC = (t) => { const phi = t/2 - Math.PI/2;\n  const cl = Math.cos(phi), sl = Math.sin(phi),\n        ca = Math.cos(c*phi), sa = Math.sin(c*phi);\n  return [-sl*ca - cl*c*sa, cl, -sl*sa + cl*c*ca]; };\nsweepTube(i, n, tube, out, o, C, dC);   // thicken centreline into a tube",
+    "links": [
+      {
+        "label": "Spherical spiral (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Spherical_spiral"
+      },
+      {
+        "label": "Rhumb line / loxodrome (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Rhumb_line"
+      },
+      {
+        "label": "Spherical Spiral (MathWorld)",
+        "url": "https://mathworld.wolfram.com/SphericalSpiral.html"
+      }
+    ]
+  },
+  "bohemianDome": {
+    "title": "Bohemian Dome",
+    "about": "The Bohemian dome is the surface swept out when a fixed circle glides so that its centre rides around an ellipse lying in a plane perpendicular to the circle. The result is a billowing, tent-like quartic that drapes over itself and folds through its own walls, producing two lobed cavities joined along a self-intersection. Despite the elaborate shape it is built from nothing but cosines and sines, so it is everywhere smooth and finite.",
+    "howItWorks": "Two angles drive the surface: u runs once around the rigid generating circle (radius a), and v runs once around the guiding ellipse (semi-axes b and c). For each (u, v) the circle is placed with its centre at the ellipse point, then a point is read off the circle. Because cos and sin stay bounded in [-1, 1], the coordinates never blow up; and because all three are odd-or-even oscillations about zero, the whole dome sits centred on the origin with no offset needed.",
+    "equations": [
+      {
+        "label": "Bohemian dome",
+        "latex": "\\begin{aligned} x &= a\\cos u \\\\ y &= b\\cos v + a\\sin u \\\\ z &= c\\sin v \\end{aligned}"
+      },
+      {
+        "label": "domain",
+        "latex": "u \\in [0, 2\\pi], \\quad v \\in [0, 2\\pi]"
+      },
+      {
+        "label": "construction",
+        "latex": "\\text{circle of radius } a \\text{ swept with its centre on the ellipse } (b\\cos v,\\, c\\sin v)"
+      }
+    ],
+    "params": [
+      {
+        "key": "a",
+        "symbol": "a",
+        "meaning": "radius of the rigid generating circle that is swept around"
+      },
+      {
+        "key": "b",
+        "symbol": "b",
+        "meaning": "semi-axis of the guiding ellipse along the dome's up axis; sets the dome height"
+      },
+      {
+        "key": "c",
+        "symbol": "c",
+        "meaning": "semi-axis of the guiding ellipse across the dome; sets its depth"
+      }
+    ],
+    "code": "const u = a*2*Math.PI, v = b*2*Math.PI;   // a,b ∈ [0,1] grid\npoint(\n  A*Math.cos(u),                          // A = circle radius\n  B*Math.cos(v) + A*Math.sin(u),          // B = ellipse up semi-axis (centred)\n  C*Math.sin(v));                         // C = ellipse depth semi-axis",
+    "links": [
+      {
+        "label": "Bohemian dome (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Bohemian_dome"
+      },
+      {
+        "label": "Bohemian Dome (MathWorld)",
+        "url": "https://mathworld.wolfram.com/BohemianDome.html"
+      }
+    ]
+  },
+  "conicalSpiral": {
+    "title": "Conical Spiral",
+    "about": "A conical spiral winds around the surface of an invisible cone, climbing toward its apex while its turning radius shrinks to a point — the geometry of a unicorn's horn, a snail's spike, or a tightly coiled spring squeezed onto a cone. Unlike a flat spiral it gains height as it turns, and unlike a cylindrical helix its loops grow ever smaller. Here the centreline is swept into a solid glowing tube so the whole tapering horn reads as a single ribboned form.",
+    "howItWorks": "A single parameter s runs from 0 (the wide base) to 1 (the sharp tip). The winding angle grows linearly, ang = a·2πs, so the curve makes `a` full turns; the radius tapers as rad = (1−s)·R₀, collapsing to zero at the tip; and the height climbs as (s−0.5)·H, which automatically centres the horn on the vertical axis. That centreline is then thickened into a round tube of the chosen radius, using an analytic tangent so the cross-section always faces squarely along the curve.",
+    "equations": [
+      {
+        "label": "winding angle & taper",
+        "latex": "\\varphi = 2\\pi a\\,s, \\qquad \\rho = (1-s)\\,R_0, \\qquad s\\in[0,1]"
+      },
+      {
+        "label": "centreline",
+        "latex": "C(s) = \\big(\\rho\\cos\\varphi,\\; (s-\\tfrac12)H,\\; \\rho\\sin\\varphi\\big)"
+      },
+      {
+        "label": "analytic tangent",
+        "latex": "C'(s) = \\big(-R_0\\cos\\varphi - 2\\pi a\\,\\rho\\sin\\varphi,\\; H,\\; -R_0\\sin\\varphi + 2\\pi a\\,\\rho\\cos\\varphi\\big)"
+      }
+    ],
+    "params": [
+      {
+        "key": "turns",
+        "symbol": "a",
+        "meaning": "number of full revolutions the spiral makes from base to tip — more turns coil it tighter"
+      },
+      {
+        "key": "tube",
+        "symbol": "\\rho_0",
+        "meaning": "radius of the swept tube (thickness of the horn)"
+      }
+    ],
+    "code": "const R0 = 1, H = 2.2;                       // base radius, height\nfor (let s = 0; s <= 1; s += 1/N) {          // s: base -> tip\n  const ang = turns * 2*Math.PI * s;\n  const rad = (1 - s) * R0;                   // taper to a point\n  point(rad*Math.cos(ang), (s - 0.5)*H, rad*Math.sin(ang));  // centred up axis\n}\n// each centreline point is swept into a round tube of radius `tube`",
+    "links": [
+      {
+        "label": "Conical spiral (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Conical_spiral"
+      },
+      {
+        "label": "Conical Spiral (MathWorld)",
+        "url": "https://mathworld.wolfram.com/ConicalSpiral.html"
+      },
+      {
+        "label": "Helix (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Helix"
+      }
+    ]
+  },
 };

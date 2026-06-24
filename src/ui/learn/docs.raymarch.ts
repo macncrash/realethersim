@@ -917,4 +917,271 @@ const F = (x,y,z) => { const a=x*x,b=y*y,c=z*z, s=a+b+c-1;
       }
     ]
   },
+  "dupinCyclide": {
+    "title": "Dupin Ring Cyclide",
+    "about": "Charles Dupin's cyclide (1822) is the inversion of a torus in a sphere — and its single most beautiful property is that every one of its lines of curvature is a perfect circle. The ring cyclide looks like a torus whose tube swells on one side and tapers on the other, an asymmetric doughnut with a sharply varying cross-section. Because it is the image of a torus under a Möbius (sphere) inversion, it inherits the torus's smoothness everywhere: there is not a single pinch point or node on the whole surface.",
+    "howItWorks": "We render the level set F = isovalue of the cyclide's defining quartic directly instead of meshing it. For each pixel a ray is marched until F crosses the isovalue, and the surface is shaded by its gradient ∇F. The seed constants a=1.9, c=1 (so b²=a²−c²=2.61) and d=1.4 satisfy a>d>c, the condition that picks out a ring cyclide; the on-axis section F(X,0,0)=0 then has four real roots, two nested intervals that are the two sides of the swept tube. The raw body is off-centre (it spans x∈[−4.3,2.3]), so we substitute X=x−1 to recentre it on the origin for the bounding sphere and the radial colour trap. The field is smooth — its gradient never vanishes on the surface (measured min|∇F|≈4.6) — so unlike the nodal quartics no step under-relaxation is needed; the isovalue knob simply inflates or deflates the tube.",
+    "equations": [
+      {
+        "label": "Dupin ring cyclide (recentred X = x−1)",
+        "latex": "\\left(X^2+y^2+z^2 + b^2 - d^2\\right)^2 - 4\\,(aX - c\\,d)^2 - 4\\,b^2 y^2 = c_{\\text{iso}}"
+      },
+      {
+        "label": "parameters (ring cyclide ⇔ a > d > c)",
+        "latex": "a = 1.9,\\quad c = 1,\\quad b = \\sqrt{a^2 - c^2} = \\sqrt{2.61},\\quad d = 1.4"
+      },
+      {
+        "label": "inversion of a torus",
+        "latex": "\\text{cyclide} = \\iota_S(\\text{torus}),\\qquad \\iota_S(\\mathbf{p}) = \\mathbf{p}_0 + R^2\\dfrac{\\mathbf{p}-\\mathbf{p}_0}{\\lVert \\mathbf{p}-\\mathbf{p}_0\\rVert^2}"
+      },
+      {
+        "label": "on-axis section (four real ring radii)",
+        "latex": "F(X,0,0)=\\left(X^2 + b^2 - d^2\\right)^2 - 4(aX - cd)^2 = 0"
+      }
+    ],
+    "params": [
+      {
+        "key": "iso",
+        "symbol": "c",
+        "meaning": "isovalue; 0 is the true ring cyclide, ±values inflate or deflate the swept tube"
+      },
+      {
+        "key": "colShift",
+        "symbol": "\\phi",
+        "meaning": "hue offset of the core→edge colour gradient"
+      },
+      {
+        "key": "animate",
+        "symbol": "\\alpha",
+        "meaning": "gently breathes the isovalue over time (0 = still)"
+      }
+    ],
+    "code": "// recentred Dupin ring cyclide; surface is F = isovalue\nconst a = 1.9, c = 1.0, d = 1.4, b2 = a*a - c*c;   // b² = 2.61\nconst F = (x, y, z) => {\n  const X = x - 1.0;                 // recentre the off-axis ring on the origin\n  const s = X*X + y*y + z*z + (b2 - d*d);\n  const t = a*X - c*d;\n  return s*s - 4*t*t - 4*b2*y*y;     // (…)² − 4(aX−cd)² − 4b²y²\n};",
+    "links": [
+      {
+        "label": "Dupin cyclide (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Dupin_cyclide"
+      },
+      {
+        "label": "Cyclide (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Cyclide"
+      },
+      {
+        "label": "Cyclide (MathWorld)",
+        "url": "https://mathworld.wolfram.com/Cyclide.html"
+      }
+    ]
+  },
+  "orthocircle": {
+    "title": "Orthocircle",
+    "about": "The orthocircle is a smooth degree-12 algebraic surface built from three unit circles lying in the three coordinate planes, each one fattened into a torus-like tube. Where an ordinary union of three rings would cross and pinch, a single product equation fuses them into one continuous, gently swollen lattice of interlocking loops — a favourite showpiece for implicit-surface renderers because it is bounded, highly symmetric, and entirely free of singular points. The constant a sets the tube thickness and b adds a mild radial swell that smooths the joins where the rings meet.",
+    "howItWorks": "Each factor ((u²+v²−1)²+w²) is the squared distance, in a tweaked metric, from a unit circle living in one coordinate plane — its zero set is a thin tube around that ring. Multiplying the three orthogonal ring-fields together and subtracting the small positive term a²(1+b·r²) thickens every ring into a solid tube and seals the six places where pairs of rings approach, yielding one smooth connected surface. We render the level set F = isovalue directly: for each pixel a ray is marched until F crosses the isovalue, shaded by its gradient ∇F. Because ∇F never vanishes on the surface (it stays in roughly [0.14, 0.79]), the |F−iso|/|∇F| step needs no under-relaxation — it ray-marches as cleanly as the Goursat or tanglecube.",
+    "equations": [
+      {
+        "label": "Orthocircle surface",
+        "latex": "\\big((x^2+y^2-1)^2+z^2\\big)\\big((y^2+z^2-1)^2+x^2\\big)\\big((z^2+x^2-1)^2+y^2\\big) - a^2\\big(1 + b\\,(x^2+y^2+z^2)\\big) = c"
+      },
+      {
+        "label": "one ring-tube factor",
+        "latex": "R_z(x,y,z) = (x^2+y^2-1)^2 + z^2 \\;\\;(\\text{tube around the unit circle in the }xy\\text{-plane})"
+      },
+      {
+        "label": "standard constants",
+        "latex": "a = 0.075,\\quad b = 3 \\;\\Rightarrow\\; a^2 = 0.005625,\\;\\; a^2 b = 0.016875"
+      },
+      {
+        "label": "bounded body",
+        "latex": "\\max_{F=0}\\lVert(x,y,z)\\rVert \\approx 1.15"
+      }
+    ],
+    "params": [
+      {
+        "key": "iso",
+        "symbol": "c",
+        "meaning": "isovalue; 0 is the standard orthocircle, ±values fatten the tubes or pinch the ring joins"
+      },
+      {
+        "key": "colShift",
+        "symbol": "\\phi",
+        "meaning": "hue offset of the core→edge colour gradient"
+      },
+      {
+        "key": "animate",
+        "symbol": "\\alpha",
+        "meaning": "gently breathes the isovalue over time (0 = still)"
+      }
+    ],
+    "code": "// surface: F = isovalue. Three orthogonal unit rings fused into one tube lattice.\nconst a = 0.075, b = 3;\nconst F = (x, y, z) => {\n  const x2 = x*x, y2 = y*y, z2 = z*z;\n  const t1 = (x2 + y2 - 1)**2 + z2;   // ring in xy-plane\n  const t2 = (y2 + z2 - 1)**2 + x2;   // ring in yz-plane\n  const t3 = (z2 + x2 - 1)**2 + y2;   // ring in zx-plane\n  return t1*t2*t3 - a*a*(1 + b*(x2 + y2 + z2));\n};",
+    "links": [
+      {
+        "label": "Orthocircle (MathWorld)",
+        "url": "https://mathworld.wolfram.com/Orthocircles.html"
+      },
+      {
+        "label": "Algebraic surface (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Algebraic_surface"
+      },
+      {
+        "label": "Implicit surface (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Implicit_surface"
+      }
+    ]
+  },
+  "decocube": {
+    "title": "Decocube",
+    "about": "The decocube is a rounded cube rendered not as a solid but as its skeleton: twelve tube-edges meeting at eight corners, like a wireframe cube fattened into smooth rods. It is built algebraically as the product of three intersecting-torus factors — one torus wrapped around each coordinate axis and capped at ±1 — so the zero set is exactly where those tubes live. The result is a clean, hollow cube frame with no flat faces, beloved as a showcase object for implicit-surface and ray-marching renderers.",
+    "howItWorks": "Each factor ((u²+v²−r²)² + (w²−1)²) is a thin torus of tube-radius √a around one axis, pinched to its ±1 caps by the (w²−1)² term; multiplying the three cyclic factors and subtracting a² carves out the 12 edges where any one tube is thin. We render the level set F = isovalue directly: for each pixel a ray is marched until F crosses the isovalue, and the surface is shaded by its gradient ∇F. The field is smooth and its gradient stays in a narrow band (probe: |∇F| ≈ 0.024–0.085, range only 3.6×, zero overshoot flags), so no special step-capping is needed — the standard |F−iso|/|∇F| under-relaxation suffices. The isovalue knob fattens the tubes as it rises and thins them to wires as it falls.",
+    "equations": [
+      {
+        "label": "Decocube (product of three tori)",
+        "latex": "\\big((x^2+y^2-r^2)^2+(z^2-1)^2\\big)\\big((y^2+z^2-r^2)^2+(x^2-1)^2\\big)\\big((z^2+x^2-r^2)^2+(y^2-1)^2\\big) - a^2 = c"
+      },
+      {
+        "label": "tube offset and thickness",
+        "latex": "r = 0.82, \\qquad a = 0.02 \\;\\Rightarrow\\; a^2 = 4\\times10^{-4}"
+      },
+      {
+        "label": "one torus factor (capped at ±1)",
+        "latex": "(x^2+y^2-r^2)^2 + (z^2-1)^2 = 0 \\;\\Rightarrow\\; x^2+y^2=r^2,\\ z=\\pm 1"
+      }
+    ],
+    "params": [
+      {
+        "key": "iso",
+        "symbol": "c",
+        "meaning": "isovalue; 0 is the slim cube frame, positive values fatten the edges into chunky rods, negative thins them toward wires"
+      },
+      {
+        "key": "colShift",
+        "symbol": "\\phi",
+        "meaning": "hue offset of the core→edge colour gradient"
+      },
+      {
+        "key": "animate",
+        "symbol": "\\alpha",
+        "meaning": "gently breathes the isovalue over time (0 = still)"
+      }
+    ],
+    "code": "// implicit field; the surface is F = isovalue\nconst r2 = 0.82 * 0.82, a2 = 0.02 * 0.02;\nconst F = (x, y, z) => {\n  const x2 = x*x, y2 = y*y, z2 = z*z;\n  const t1 = (x2 + y2 - r2)**2 + (z2 - 1)**2;\n  const t2 = (y2 + z2 - r2)**2 + (x2 - 1)**2;\n  const t3 = (z2 + x2 - r2)**2 + (y2 - 1)**2;\n  return t1 * t2 * t3 - a2;   // surface: F = isovalue\n};\n// raymarch it as a distance estimate, normal = grad(F):\nconst de = Math.abs(F(p.x, p.y, p.z) - iso) / length(grad(F, p));   // |F-iso| / |grad F|",
+    "links": [
+      {
+        "label": "Decocube (Bruno Levy / Graphite gallery)",
+        "url": "https://members.loria.fr/Bruno.Levy/GEX/decocube.html"
+      },
+      {
+        "label": "Implicit surface (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Implicit_surface"
+      },
+      {
+        "label": "Algebraic surface (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Algebraic_surface"
+      }
+    ]
+  },
+  "endrassOctic": {
+    "title": "Endraß Octic",
+    "about": "Stephan Endraß's 1995 octic is the degree-8 surface carrying the record number of ordinary double points: 168 real nodes, the most known for any octic and close to the theoretical maximum. Its equation is laced with √2, and the nodes pack into a dense, eight-fold-symmetric cluster — a glittering knot of pinch points where the surface folds through itself again and again. Like all high-degree algebraic surfaces it is unbounded, so what you see is the recognisable central body where the nodes bunch up; sheets stream outward along the z-axis and are clipped by the bounding sphere.",
+    "howItWorks": "We render the zero set F = isovalue of a single octic polynomial directly as a lit isosurface: a ray is marched until F crosses the isovalue, and the surface is shaded by its gradient ∇F. The polynomial is a product of four planes, 64(x²−1)(y²−1)((x+y)²−2)((x−y)²−2), minus the square of a degree-4 polynomial in (x²+y²) and z — that squared factor is what forces the 168 nodes. Because ∇F vanishes at every node (a numerical probe finds ~37% of on-surface samples have near-zero gradient, with the field magnitude swinging ~10⁴× across the surface), the distance estimate |F−iso|/|∇F| is heavily under-relaxed and hard-capped, exactly like the Togliatti quintic and Barth sextic, so the march can't overshoot straight through a pinch point.",
+    "equations": [
+      {
+        "label": "Endraß octic (w = 1)",
+        "latex": "64\\,(x^2-1)(y^2-1)\\big((x+y)^2-2\\big)\\big((x-y)^2-2\\big) - \\Big(\\!-4(1{+}\\sqrt2)(x^2{+}y^2)^2 + \\big(8(2{+}\\sqrt2)z^2 + 2(2{+}7\\sqrt2)\\big)(x^2{+}y^2) - 16z^4 + 8(1{+}2\\sqrt2)z^2 - (1{+}12\\sqrt2)\\Big)^2 = c"
+      },
+      {
+        "label": "plane product (the four tropes)",
+        "latex": "\\Pi = (x^2-1)(y^2-1)\\big((x+y)^2-2\\big)\\big((x-y)^2-2\\big)"
+      },
+      {
+        "label": "168 nodes (record for an octic)",
+        "latex": "\\#\\{\\,F=0,\\ \\nabla F = 0\\,\\} = 168"
+      }
+    ],
+    "params": [
+      {
+        "key": "iso",
+        "symbol": "c",
+        "meaning": "isovalue; c = 0 is the singular 168-node Endraß octic, nonzero values smooth the pinch points open"
+      },
+      {
+        "key": "colShift",
+        "symbol": "\\phi",
+        "meaning": "hue offset of the core→edge colour gradient"
+      },
+      {
+        "key": "animate",
+        "symbol": "\\alpha",
+        "meaning": "gently sweeps the isovalue over time (0 = still)"
+      }
+    ],
+    "code": "// affine Endraß octic (w = 1); surface is F = isovalue\nconst s2 = Math.SQRT2;\nconst F = (x, y, z) => {\n  const x2=x*x, y2=y*y, z2=z*z, z4=z2*z2, r2=x2+y2;\n  const planes = 64*(x2-1)*(y2-1)*((x+y)**2-2)*((x-y)**2-2);\n  const inner = -4*(1+s2)*r2*r2\n              + (8*(2+s2)*z2 + 2*(2+7*s2))*r2\n              - 16*z4 + 8*(1+2*s2)*z2 - (1+12*s2);\n  return planes - inner*inner;\n};",
+    "links": [
+      {
+        "label": "Endraß surface — Endraß octic gallery",
+        "url": "https://www.mathematik.uni-mainz.de/AlgebraischeGeometrie/docs/Eflaeche.shtml"
+      },
+      {
+        "label": "Octic surface (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Octic_surface"
+      },
+      {
+        "label": "Nodal surfaces — Herwig Hauser / IMAGINARY gallery",
+        "url": "https://imaginary.org/gallery/herwig-hauser-classic"
+      }
+    ]
+  },
+  "cassini": {
+    "title": "Cassini Surface",
+    "about": "The Cassini surface is a Cassini oval spun into three dimensions — the locus of points whose product of distances to two fixed foci is held constant. Giovanni Domenico Cassini proposed the planar curve in 1680 as a model for the Earth-Sun orbit, and its 3D surface of revolution inherits the same dramatic morphology: as the constant b is tuned past the focal separation a, the shape transforms from a single oval, through a pinched peanut, into two separate egg-shaped blobs. At a=1, b=1.1 it sits just on the connected side, a smooth vertical dumbbell with a slim waist.",
+    "howItWorks": "We render the level set F = isovalue of the quartic Cassini field directly rather than meshing it. For each pixel a ray is marched until F crosses the isovalue, and the surface is shaded by its gradient ∇F. The core (x²+y²+z²)² term closes the surface into a bounded body, while the −2a²(x²−y²−z²) term stretches it along one axis (remapped to world-up so the dumbbell stands upright) and squeezes the perpendicular waist. The whole surface is smooth — its gradient never collapses to zero near the zero set (measured |∇F| stays between 2.2 and 7.2), so no step under-relaxation is needed. The isovalue knob inflates the peanut or, pushed negative, pinches its waist shut into two separate lobes.",
+    "equations": [
+      {
+        "label": "Cassini surface of revolution",
+        "latex": "\\left(x^2+y^2+z^2\\right)^2 - 2a^2\\left(x^2 - y^2 - z^2\\right) + a^4 - b^4 = c"
+      },
+      {
+        "label": "defining locus (product of focal distances)",
+        "latex": "\\lVert\\mathbf{p}-\\mathbf{f}_1\\rVert\\,\\lVert\\mathbf{p}-\\mathbf{f}_2\\rVert = b^2,\\quad \\mathbf{f}_{1,2}=(\\pm a,0,0)"
+      },
+      {
+        "label": "axial tip and waist (a=1, b=1.1)",
+        "latex": "x_{\\text{tip}} = \\sqrt{a^2+b^2} \\approx 1.487,\\qquad r_{\\text{waist}} = \\sqrt{b^2-a^2} \\approx 0.458"
+      },
+      {
+        "label": "connectivity transition",
+        "latex": "b > a \\Rightarrow \\text{connected peanut};\\quad b < a \\Rightarrow \\text{two separate blobs}"
+      }
+    ],
+    "params": [
+      {
+        "key": "iso",
+        "symbol": "c",
+        "meaning": "isovalue; 0 is the connected peanut (a=1, b=1.1), negative values pinch the waist into two blobs, positive values inflate it toward an oval"
+      },
+      {
+        "key": "colShift",
+        "symbol": "\\phi",
+        "meaning": "hue offset of the core→edge colour gradient"
+      },
+      {
+        "key": "animate",
+        "symbol": "\\alpha",
+        "meaning": "gently sweeps the isovalue over time (0 = still)"
+      }
+    ],
+    "code": "// Cassini oval of revolution; surface is F = isovalue. a=1, b=1.1 ⇒ a⁴−b⁴ = −0.4641.\nconst a2 = 1, a4 = 1, b4 = Math.pow(1.1, 4);\nconst F = (x, y, z) => {\n  const r2 = x*x + y*y + z*z;\n  return r2*r2 - 2*a2*(x*x - y*y - z*z) + (a4 - b4);\n};\n// raymarch it as a distance estimate, normal = grad(F):\nconst de = Math.abs(F(x,y,z) - iso) / length(grad(F, p));   // |F−iso| / |∇F|",
+    "links": [
+      {
+        "label": "Cassini oval (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Cassini_oval"
+      },
+      {
+        "label": "Cassini Surface (MathWorld)",
+        "url": "https://mathworld.wolfram.com/CassiniSurface.html"
+      },
+      {
+        "label": "Cassini Ovals (MathWorld)",
+        "url": "https://mathworld.wolfram.com/CassiniOvals.html"
+      }
+    ]
+  },
 };

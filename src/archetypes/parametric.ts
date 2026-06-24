@@ -718,6 +718,205 @@ export const PARAMETRIC_SYSTEMS: Record<string, ParamSurface> = {
       out[o + 2] = r * Math.sin(phi);
     },
   },
+  crossCap: {
+    id: 'crossCap', label: 'Cross-Cap', defaultParticleCount: 200_000, scale: 1.6, pointSize: 0.008,
+    params: [
+      { key: 'width', label: 'width', min: 0.4, max: 1.6, step: 0.01, default: 1 },
+      { key: 'height', label: 'height', min: 0.4, max: 1.8, step: 0.01, default: 1 },
+    ],
+    // Cross-cap — the simplest immersion of the real projective plane RP² (one segment of double points
+    // joining two pinch points), completing the Boy/Roman trio. Standard parametrization over
+    // u,v ∈ [0,π]: x = cos u·sin 2v, y = sin u·sin 2v, z = cos²v·sin²u (z ≥ 0 always). Pure
+    // sines/cosines ⇒ every point finite (probe: 0 NaN, 0 Inf). Raw bbox x,y∈[-1,1], z∈[0,1]; the
+    // double-point segment (z-axis) is mapped to the up axis and centred by −0.5.
+    position: (i, n, p, out, o) => {
+      const [a, b] = uv(i, n);
+      const u = a * Math.PI; // [0, π]
+      const v = b * Math.PI; // [0, π]
+      const s2v = Math.sin(2 * v);
+      const cv = Math.cos(v);
+      const su = Math.sin(u);
+      const cu = Math.cos(u);
+      const z = cv * cv * su * su; // = cos²v − cos²u·cos²v, the pinch/double-point segment ∈ [0,1]
+      out[o] = cu * s2v * p.width; // planar X
+      out[o + 1] = z * p.height - 0.5 * p.height; // up axis (double-point segment), centred (raw z ∈ [0,1])
+      out[o + 2] = su * s2v * p.width; // planar Z
+    },
+  },
+  monkeySaddle: {
+    id: 'monkeySaddle', label: 'Monkey Saddle', defaultParticleCount: 160_000, scale: 0.73, pointSize: 0.008,
+    params: [
+      { key: 'reach', label: 'reach R', min: 0.8, max: 1.8, step: 0.01, default: 1.3 },
+      { key: 'legs', label: 'legs k', min: 2, max: 6, step: 1, default: 3 },
+      { key: 'lift', label: 'height lift', min: 0.3, max: 1.6, step: 0.01, default: 1 },
+    ],
+    // Monkey saddle z = x³ − 3xy² = r³cos(3θ): a saddle with three descending valleys (two legs and a
+    // tail) instead of two. Sampled in polar form over a disk — u is the radius fraction (×R), v the
+    // angle — so the height field is exactly rⁿ·cos(kθ) (k=3 is the classic monkey saddle, k=2 the
+    // ordinary saddle). Odd-symmetric ⇒ already origin-centred (probe centre ≈ (0,0,0)); no offset.
+    position: (i, n, p, out, o) => {
+      const [a, b] = uv(i, n);
+      const rad = a * p.reach; // [0, R] radius
+      const v = b * TAU; // [0, 2π] angle
+      const k = Math.max(2, Math.round(p.legs));
+      out[o] = rad * Math.cos(v);
+      out[o + 1] = p.lift * Math.pow(rad, k) * Math.cos(k * v); // monkey-saddle height r^k cos(kθ), up axis
+      out[o + 2] = rad * Math.sin(v);
+    },
+  },
+  supershape3D: {
+    id: 'supershape3D', label: 'Supershape 3D', defaultParticleCount: 200_000, scale: 1.15, pointSize: 0.008,
+    params: [
+      { key: 'm1', label: 'symmetry m₁ (lat)', min: 1, max: 14, step: 1, default: 7 },
+      { key: 'm2', label: 'symmetry m₂ (lon)', min: 1, max: 14, step: 1, default: 7 },
+      { key: 'n1', label: 'n₁', min: 0.1, max: 4, step: 0.01, default: 0.3 },
+      { key: 'n2', label: 'n₂', min: 0.1, max: 4, step: 0.01, default: 1.7 },
+      { key: 'n3', label: 'n₃', min: 0.1, max: 4, step: 0.01, default: 1.7 },
+    ],
+    // Full 3D Gielis supershape with INDEPENDENT symmetries for the two angles (unlike 'superformula',
+    // which shares one m). r1 = superR(theta, m1, …) shapes the latitude, r2 = superR(phi, m2, …) the
+    // longitude; their spherical product gives the solid. superR already clamps the radius (≤ 4) and
+    // guards the pow-of-negative / divide cases, so every sample is finite (verified: 0 NaN/Inf over
+    // 201×201 grids and 7 parameter cases). Default-param half-extent is 1.0 (identical to the
+    // 'superformula' sibling), so scale matches it at 1.15. Extreme in-range params (two clamped
+    // radii compounding) can reach half≈16, exactly as the sibling does — an accepted family trait.
+    // Body is symmetric about the origin for typical params, so no centring offset is baked in.
+    position: (i, n, p, out, o) => {
+      const [a, b] = uv(i, n);
+      const phi = a * TAU - Math.PI; // [-π, π] longitude
+      const theta = b * Math.PI - Math.PI / 2; // [-π/2, π/2] latitude
+      const r1 = superR(theta, p.m1, p.n1, p.n2, p.n3);
+      const r2 = superR(phi, p.m2, p.n1, p.n2, p.n3);
+      const ct = r1 * Math.cos(theta);
+      out[o] = r2 * Math.cos(phi) * ct;
+      out[o + 1] = r1 * Math.sin(theta);
+      out[o + 2] = r2 * Math.sin(phi) * ct;
+    },
+  },
+  bourSurface: {
+    id: 'bourSurface', label: "Bour's Surface", defaultParticleCount: 160_000, scale: 0.55, pointSize: 0.008,
+    params: [
+      { key: 'extent', label: 'extent', min: 0.8, max: 2, step: 0.01, default: 1.6 },
+      { key: 'flare', label: 'flare', min: 0.3, max: 1.6, step: 0.01, default: 1 },
+    ],
+    // Bour's minimal surface (order 2) — a polynomial-times-power-of-u minimal surface with three
+    // self-intersecting lobes (3-fold symmetry in v). The u^1.5 power needs u ≥ 0, so u runs over
+    // [0, extent]; Math.max(0,u) guards the fractional power. The raw shape drifts along +x by the
+    // midpoint of its x-range; that offset (= extent/2 − 1/8, verified against the sampled bbox) is
+    // baked back out so the model sits exactly on the origin (probe centre = (0,0,0) for all extent).
+    position: (i, n, p, out, o) => {
+      const [a, b] = uv(i, n);
+      const u = a * p.extent; // [0, extent], u ≥ 0 for u^1.5
+      const v = b * TAU; // [0, 2π]
+      const u15 = Math.pow(Math.max(0, u), 1.5); // guard pow-of-negative
+      const u2h = (u * u) / 2;
+      out[o] = u * Math.cos(v) - u2h * Math.cos(2 * v) + (p.extent / 2 - 0.125); // centred along x
+      out[o + 1] = -u * Math.sin(v) - u2h * Math.sin(2 * v);
+      out[o + 2] = (4 / 3) * u15 * Math.cos(1.5 * v) * p.flare; // flare scales the height lobes
+    },
+  },
+  pluckerConoid: {
+    id: 'pluckerConoid', label: "Plücker's Conoid", defaultParticleCount: 160_000, scale: 1.23, pointSize: 0.008,
+    params: [
+      { key: 'folds', label: 'folds n', min: 1, max: 6, step: 1, default: 2 },
+      { key: 'amp', label: 'amplitude', min: 0.2, max: 1.2, step: 0.01, default: 0.6 },
+    ],
+    // Plücker's conoid (cylindroid): a ruled surface whose height oscillates with the azimuth. Each
+    // horizontal ray of length R=1.3 sweeps around while riding the wave z = amp·sin(n·v), folding the
+    // disk into n saddle "blades". Pure trig ⇒ always finite; the domain is symmetric so the bbox is
+    // exactly ±1.3 (planar) × ±amp (height), already centred on the origin — no offset baked in.
+    position: (i, n, p, out, o) => {
+      const [a, b] = uv(i, n);
+      const R = 1.3;
+      const r = a * R; // [0, R] along each ruling
+      const v = b * TAU; // [0, 2π] azimuth
+      out[o] = r * Math.cos(v);
+      out[o + 1] = p.amp * Math.sin(p.folds * v); // up axis (oscillating height)
+      out[o + 2] = r * Math.sin(v);
+    },
+  },
+  sphericalSpiral: {
+    id: 'sphericalSpiral', label: 'Spherical Spiral', defaultParticleCount: 160_000, scale: 1.5, pointSize: 0.008,
+    params: [
+      { key: 'turns', label: 'turns c', min: 6, max: 24, step: 1, default: 16 },
+      { key: 'tube', label: 'thickness', min: 0.01, max: 0.08, step: 0.005, default: 0.04 },
+    ],
+    // A loxodrome-like spiral winding pole to pole on the unit sphere, swept into a solid tube. The
+    // sweepTube parameter t∈[0,2π] is remapped to latitude φ = t/2 − π/2 ∈ [−π/2, π/2]; the centreline
+    // C(φ) = (cosφ·cos cφ, sinφ, cosφ·sin cφ) rides the sphere while winding c times in longitude. The
+    // analytic tangent dC/dφ never vanishes (|dC| ≥ 1 from the sinφ→cosφ middle term), so the frame is
+    // always well-conditioned. Lives on the unit sphere ⇒ already origin-centred (bbox ≈ ±1.04).
+    position: (i, n, p, out, o) => {
+      sweepTube(i, n, p.tube, out, o, (t) => {
+        const phi = t / 2 - Math.PI / 2; // [-π/2, π/2]
+        const cl = Math.cos(phi);
+        return [cl * Math.cos(p.turns * phi), Math.sin(phi), cl * Math.sin(p.turns * phi)];
+      }, (t) => {
+        const phi = t / 2 - Math.PI / 2;
+        const cl = Math.cos(phi), sl = Math.sin(phi);
+        const ca = Math.cos(p.turns * phi), sa = Math.sin(p.turns * phi);
+        // dC/dφ (constant ½ from dφ/dt dropped — sweepTube normalizes the tangent)
+        return [
+          -sl * ca - cl * p.turns * sa,
+          cl,
+          -sl * sa + cl * p.turns * ca,
+        ];
+      });
+    },
+  },
+  bohemianDome: {
+    id: 'bohemianDome', label: 'Bohemian Dome', defaultParticleCount: 160_000, scale: 0.64, pointSize: 0.008,
+    params: [
+      { key: 'a', label: 'a (circle)', min: 0.5, max: 2, step: 0.01, default: 1 },
+      { key: 'b', label: 'b (ellipse)', min: 0.5, max: 3, step: 0.01, default: 1.5 },
+      { key: 'c', label: 'c (depth)', min: 0.5, max: 2, step: 0.01, default: 1 },
+    ],
+    // Bohemian dome — a circle of radius a swept so its centre traces an ellipse (semi-axes b, c) in a
+    // perpendicular plane. x = a·cos u; y = b·cos v + a·sin u; z = c·sin v; u,v ∈ [0,2π]. Pure bounded
+    // trig ⇒ every sample finite (no NaN/Inf). All three coords range symmetrically about 0, so the
+    // surface is exactly origin-centred (verified bbox centre = (0,0,0)) — no offset baked in.
+    position: (i, n, p, out, o) => {
+      const [aa, bb] = uv(i, n);
+      const u = aa * TAU; // [0, 2π] around the swept circle
+      const v = bb * TAU; // [0, 2π] around the guiding ellipse
+      out[o] = p.a * Math.cos(u);
+      out[o + 1] = p.b * Math.cos(v) + p.a * Math.sin(u); // up axis, symmetric ⇒ centred
+      out[o + 2] = p.c * Math.sin(v);
+    },
+  },
+  conicalSpiral: {
+    id: 'conicalSpiral', label: 'Conical Spiral', defaultParticleCount: 160_000, scale: 1.3, pointSize: 0.008,
+    params: [
+      { key: 'turns', label: 'turns', min: 1, max: 18, step: 1, default: 9 },
+      { key: 'tube', label: 'thickness', min: 0.02, max: 0.12, step: 0.005, default: 0.06 },
+    ],
+    // A spiral climbing a cone (a unicorn horn / snail spike), swept into a solid tube. The centreline
+    // winds `turns` times while its radius tapers linearly from R0=1 to a point and it rises over
+    // height H=2.2. The (s-0.5)·H term centres the model on the up axis; analytic tangent dC supplied.
+    // sweepTube drives the curve param over [0, 2π], so s = t/τ ∈ [0,1] and dC carries the 1/τ chain factor.
+    position: (i, n, p, out, o) => {
+      const R0 = 1, H = 2.2;
+      const a = p.turns;
+      sweepTube(i, n, p.tube, out, o, (t) => {
+        const s = t / TAU;            // s ∈ [0,1] along the spiral
+        const ang = a * TAU * s;
+        const rad = (1 - s) * R0;     // taper to a point
+        return [rad * Math.cos(ang), (s - 0.5) * H, rad * Math.sin(ang)]; // up axis centred
+      }, (t) => {
+        const s = t / TAU;
+        const ang = a * TAU * s;
+        const rad = (1 - s) * R0;
+        const ca = Math.cos(ang), sa = Math.sin(ang);
+        const dang = a * TAU;         // d(ang)/ds
+        // dC/ds = (-R0·cos − rad·sin·dang, H, -R0·sin + rad·cos·dang); chain ×(1/τ) for d/dt
+        return [
+          (-R0 * ca - rad * sa * dang) / TAU,
+          H / TAU,
+          (-R0 * sa + rad * ca * dang) / TAU,
+        ];
+      });
+    },
+  },
 };
 
 class ParametricArchetype implements Archetype {
