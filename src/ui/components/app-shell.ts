@@ -35,23 +35,25 @@ export class EtherApp extends LitElement {
       <div class="layout">
         <canvas class="view"></canvas>
         <aside class="panel">
-          <h1 class="brand" style="display:flex;align-items:baseline;gap:8px">
+          <h1 class="brand" style="margin-bottom:6px">
             ETHERSIM <span style="font-size:.5em;font-weight:400;opacity:.45;letter-spacing:0">v${APP_VERSION}</span>
+          </h1>
+          <div style="display:flex;flex-wrap:wrap;gap:7px;margin:0 0 12px">
             <button
               title="Search all systems (⌘K)"
               @click=${() => window.dispatchEvent(new CustomEvent('ethersim:palette'))}
-              style="margin-left:auto;font:inherit;font-size:11px;letter-spacing:.04em;color:#9fd;background:#10303c;border:1px solid #244;border-radius:6px;padding:3px 9px;cursor:pointer"
+              style="font:inherit;font-size:11px;letter-spacing:.04em;color:#9fd;background:#10303c;border:1px solid #244;border-radius:6px;padding:4px 10px;cursor:pointer"
             >
               ⌘K&nbsp;search
             </button>
             <button
               title="View this system's source code"
               @click=${() => window.dispatchEvent(new CustomEvent('ethersim:code'))}
-              style="font:inherit;font-size:11px;letter-spacing:.04em;color:#9fd;background:#10303c;border:1px solid #244;border-radius:6px;padding:3px 9px;cursor:pointer"
+              style="font:inherit;font-size:11px;letter-spacing:.04em;color:#9fd;background:#10303c;border:1px solid #244;border-radius:6px;padding:4px 10px;cursor:pointer"
             >
               &lt;/&gt;&nbsp;source
             </button>
-          </h1>
+          </div>
           <ether-archetype-switcher></ether-archetype-switcher>
           <ether-params-panel></ether-params-panel>
           <ether-hierarchy-tree></ether-hierarchy-tree>
