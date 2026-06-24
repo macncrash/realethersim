@@ -824,4 +824,786 @@ o[1] = p.b * x[0];`,
       }
     ]
   },
+  "icon-sanddollar": {
+    "title": "Icon · sanddollar",
+    "about": "A symmetric icon from Michael Field and Martin Golubitsky's 'Symmetry in Chaos'. The plane is treated as the complex number z = x + iy, and a single polynomial map — equivariant under the dihedral group — is iterated a million times by a swarm of points. Because the map commutes with rotation by 2π/5, the resulting strange attractor is forced into a five-fold mandala: a chaotic orbit that nonetheless paints a perfectly symmetric flower. This particular tuning (λ = -2.34) blooms into a dense, lace-like five-petalled disc reminiscent of a sand dollar's radial test.",
+    "howItWorks": "Each step computes zz̄ = x²+y² and the complex power (x+iy)⁴ (unrolled), whose real part times one more factor of z gives Re(z⁵). A scalar amplitude p = λ + α·zz̄ + β·Re(z⁵) modulates the radial push, while γ injects the z⁴ term and ω adds a swirl. Because every ingredient is built from rotationally-invariant quantities (zz̄, z⁵, z⁴), rotating any orbit point by 2π/5 yields another orbit point — so 100k seeds settle onto a set with exact five-fold rotational symmetry.",
+    "equations": [
+      {
+        "label": "modulus & power",
+        "latex": "z\\bar{z} = x^2 + y^2,\\quad (z_r + i z_i) = (x+iy)^4,\\quad z_n = x\\,z_r - y\\,z_i = \\operatorname{Re}(z^5)"
+      },
+      {
+        "label": "amplitude",
+        "latex": "p = \\lambda + \\alpha\\, z\\bar{z} + \\beta\\, z_n"
+      },
+      {
+        "label": "x'",
+        "latex": "x' = p\\,x + \\gamma\\, z_r - \\omega\\, y"
+      },
+      {
+        "label": "y'",
+        "latex": "y' = p\\,y - \\gamma\\, z_i + \\omega\\, x"
+      }
+    ],
+    "params": [
+      {
+        "key": "lambda",
+        "symbol": "λ",
+        "meaning": "Linear gain / contraction; drives the overall radius and onset of chaos (-2.34 here)."
+      },
+      {
+        "key": "alpha",
+        "symbol": "α",
+        "meaning": "Coupling to the squared modulus zz̄; the isotropic nonlinear restoring term."
+      },
+      {
+        "key": "beta",
+        "symbol": "β",
+        "meaning": "Coupling to Re(z⁵); injects the five-fold angular harmonic that shapes the petals."
+      },
+      {
+        "key": "gamma",
+        "symbol": "γ",
+        "meaning": "Weight of the z⁴ (z_r, z_i) term; adds the higher-order symmetric distortion."
+      },
+      {
+        "key": "omega",
+        "symbol": "ω",
+        "meaning": "Rotational swirl coupling x↔y; 0 keeps reflection symmetry, nonzero twists the mandala."
+      }
+    ],
+    "code": "const zzbar = x*x + y*y;\nconst a2 = x*x - y*y, b2 = 2*x*y;\nconst zr = a2*a2 - b2*b2, zi = 2*a2*b2; // (x+iy)^4\nconst zn = x*zr - y*zi;                 // Re(z^5)\nconst p = lambda + alpha*zzbar + beta*zn;\nx2 = p*x + gamma*zr - omega*y;\ny2 = p*y - gamma*zi + omega*x;",
+    "links": [
+      {
+        "label": "Symmetry in Chaos (Field & Golubitsky)",
+        "url": "https://en.wikipedia.org/wiki/Symmetry_in_Chaos"
+      },
+      {
+        "label": "Symmetric icon / attractor (Paul Bourke)",
+        "url": "https://paulbourke.net/fractals/icon/"
+      },
+      {
+        "label": "Attractor — Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Attractor"
+      },
+      {
+        "label": "Martin Golubitsky",
+        "url": "https://en.wikipedia.org/wiki/Martin_Golubitsky"
+      }
+    ]
+  },
+  "icon-trinity": {
+    "title": "Icon · trinity",
+    "about": "A symmetric icon from Field and Golubitsky's \"Symmetry in Chaos,\" tuned to threefold rotational symmetry (D3 / Z3). The map iterates a single point through a polynomial built from the complex power z^n, and the chaotic orbit — averaged over a million bounces — settles into a lacy mandala that looks identical when spun by 120°. Each visited pixel is colored by how often the wandering point lands there, turning deterministic chaos into a stained-glass rosette. This is the n=3 'trinity' member of that family: three-armed, square-bounded, centered on the origin.",
+    "howItWorks": "From the point z = x + iy the map forms three real invariants of the rotation group: zzbar = |z|² (rotation-invariant), and the real and imaginary parts of z² and z³ (the complex power, unrolled here for n=3). A scalar p = lambda + alpha·|z|² + beta·Re(z³) scales the radial push, gamma couples in z^{n-1} = z² to break the map away from a pure spiral, and omega adds a rotation. Because every term commutes with rotation by 2π/3, the attractor it carves out inherits exact threefold symmetry. Seed near the origin, discard the first ~1000 iterates as transient, then accumulate.",
+    "equations": [
+      {
+        "label": "complex power (n=3)",
+        "latex": "z_r = x^2 - y^2,\\quad z_i = 2xy,\\quad |z|^2 = x^2 + y^2,\\quad z_n = x\\,z_r - y\\,z_i"
+      },
+      {
+        "label": "radial scalar",
+        "latex": "p = \\lambda + \\alpha\\,|z|^2 + \\beta\\,z_n"
+      },
+      {
+        "label": "x'",
+        "latex": "x' = p\\,x + \\gamma\\,z_r - \\omega\\,y"
+      },
+      {
+        "label": "y'",
+        "latex": "y' = p\\,y - \\gamma\\,z_i + \\omega\\,x"
+      }
+    ],
+    "params": [
+      {
+        "key": "lambda",
+        "symbol": "λ",
+        "meaning": "Linear gain on the radial push; the dominant stability/scale control."
+      },
+      {
+        "key": "alpha",
+        "symbol": "α",
+        "meaning": "Coefficient of |z|² — quadratic radial feedback that bounds the orbit."
+      },
+      {
+        "key": "beta",
+        "symbol": "β",
+        "meaning": "Coefficient of Re(zⁿ); injects the n-fold angular modulation."
+      },
+      {
+        "key": "gamma",
+        "symbol": "γ",
+        "meaning": "Coupling of z^{n-1} into the output; sharpens the petal structure."
+      },
+      {
+        "key": "omega",
+        "symbol": "ω",
+        "meaning": "Rotation term; twists the arms and tunes chirality."
+      }
+    ],
+    "code": "const zr=x*x-y*y, zi=2*x*y, zz=x*x+y*y, zn=x*zr-y*zi;\nconst p=lambda+alpha*zz+beta*zn;\nx=p*x+gamma*zr-omega*y;\ny=p*y-gamma*zi+omega*x;",
+    "links": [
+      {
+        "label": "Symmetric icons (Field & Golubitsky)",
+        "url": "https://en.wikipedia.org/wiki/Symmetry_in_Chaos"
+      },
+      {
+        "label": "Symmetric Chaos — MathWorld",
+        "url": "https://mathworld.wolfram.com/SymmetricChaos.html"
+      },
+      {
+        "label": "Sprott: Symmetric Icons",
+        "url": "http://sprott.physics.wisc.edu/fractals/icons/"
+      },
+      {
+        "label": "Cyclic / dihedral symmetry group",
+        "url": "https://en.wikipedia.org/wiki/Cyclic_symmetry_in_three_dimensions"
+      }
+    ]
+  },
+  "icon-pentagram": {
+    "title": "Icon · Pentagram",
+    "about": "A symmetric icon from Michael Field and Martin Golubitsky's 'Symmetry in Chaos.' Take a single point, square the radius, raise the complex number to the fifth power, and feed the result back as a nonlinear kick — millions of iterations later the wandering orbit has painted a five-fold mandala that no single step ever planned. The chaos is locally unpredictable yet globally obeys the dihedral symmetry baked into the z^n term, so a pentagram-petalled flower emerges from pure feedback. Rotating the finished cloud by 72 degrees leaves it unchanged.",
+    "howItWorks": "Each step works in the complex plane with z = x + iy. The map computes the squared modulus zz̄ = x²+y², the real part of z⁵ (which carries the 5-fold symmetry), and a state-dependent scalar p = λ + α·zz̄ + β·Re(z⁵). It then pushes z outward/inward by p while adding a rotated copy of z⁴ scaled by γ and a rigid rotation scaled by ω. Because every term is built from powers of z that are invariant (or equivariant) under rotation by 2π/5, the attractor the orbit settles onto inherits exact C₅ rotational symmetry. With β=ω=0 the symmetry is the full dihedral D₅, giving the mirror-symmetric pentagram.",
+    "equations": [
+      {
+        "label": "modulus",
+        "latex": "z\\bar{z} = x^2 + y^2"
+      },
+      {
+        "label": "z^4 (unrolled)",
+        "latex": "z_r = x^4 - 6x^2y^2 + y^4,\\quad z_i = 4xy(x^2 - y^2)"
+      },
+      {
+        "label": "n-fold term",
+        "latex": "z_n = \\operatorname{Re}(z^5) = x\\,z_r - y\\,z_i"
+      },
+      {
+        "label": "scalar",
+        "latex": "p = \\lambda + \\alpha\\,z\\bar{z} + \\beta\\,z_n"
+      },
+      {
+        "label": "iterate",
+        "latex": "x' = p\\,x + \\gamma\\,z_r - \\omega\\,y,\\quad y' = p\\,y - \\gamma\\,z_i + \\omega\\,x"
+      }
+    ],
+    "params": [
+      {
+        "key": "lambda",
+        "symbol": "λ",
+        "meaning": "Linear gain on the current point; sets overall expansion/contraction and the size of the attractor."
+      },
+      {
+        "key": "alpha",
+        "symbol": "α",
+        "meaning": "Cubic radial nonlinearity (couples to zz̄); the dominant chaos/folding control."
+      },
+      {
+        "key": "beta",
+        "symbol": "β",
+        "meaning": "Couples to Re(zⁿ); breaks reflection to give a chiral spin while keeping rotational symmetry."
+      },
+      {
+        "key": "gamma",
+        "symbol": "γ",
+        "meaning": "Strength of the symmetry-creating zⁿ⁻¹ kick that imprints the five petals."
+      },
+      {
+        "key": "omega",
+        "symbol": "ω",
+        "meaning": "Rigid rotation per step; nonzero twists the pattern, destroying mirror symmetry."
+      }
+    ],
+    "code": "const x2=x*x, y2=y*y;\nconst zr=x2*x2-6*x2*y2+y2*y2;      // Re(z^4)\nconst zi=4*x*y*(x2-y2);             // Im(z^4)\nconst zn=x*zr-y*zi;                 // Re(z^5)\nconst p=lambda+alpha*(x2+y2)+beta*zn;\nconst nx=p*x+gamma*zr-omega*y;\nconst ny=p*y-gamma*zi+omega*x;\nx=nx; y=ny;",
+    "links": [
+      {
+        "label": "Symmetry in Chaos (Field & Golubitsky)",
+        "url": "https://en.wikipedia.org/wiki/Symmetry_in_Chaos"
+      },
+      {
+        "label": "Symmetric icon / chaotic attractor",
+        "url": "https://mathworld.wolfram.com/StrangeAttractor.html"
+      },
+      {
+        "label": "Cyclic / dihedral symmetry group",
+        "url": "https://en.wikipedia.org/wiki/Dihedral_group"
+      },
+      {
+        "label": "Sprott — Strange Attractors",
+        "url": "http://sprott.physics.wisc.edu/sa.htm"
+      }
+    ]
+  },
+  "icon-hexagon": {
+    "title": "Icon · hexagon",
+    "about": "A symmetric icon from Field and Golubitsky's book \"Symmetry in Chaos\" — a chaotic map deliberately engineered so its strange attractor obeys an exact rotational symmetry. This one carries the dihedral/cyclic symmetry of order six, so the orbit paints a six-petalled mandala that is unchanged when you spin the page by 60°. Each point is fed through a complex polynomial whose terms are individually invariant under the sixfold rotation group, so chaos and crystalline order coexist on the same picture. Field and Golubitsky popularised these 'symmetric icons' in the early 1990s as proof that deterministic chaos can be made beautiful and orderly at once.",
+    "howItWorks": "Treat the point (x,y) as a complex number z = x + iy. Each step builds three rotation-invariant quantities: the squared modulus z·z̄ = x²+y², and the real and imaginary parts of zⁿ (here n=6) via the complex power z⁵ (=z^{n-1}). A radial gain p = λ + α·(z z̄) + β·Re(zⁿ) scales the point, while the γ term injects the symmetric polynomial z^{n-1} and the ω term adds a small rotation. Because every term respects the 60° rotation, the whole map commutes with that rotation, and the attractor it settles onto must share the symmetry. Iterate ~1.5M times, discard the transient, and the cloud fills a sixfold mandala.",
+    "equations": [
+      {
+        "label": "modulus",
+        "latex": "z\\bar z = x^2 + y^2"
+      },
+      {
+        "label": "complex power",
+        "latex": "z^{n-1} = (x+iy)^{5} = z_r + i\\,z_i"
+      },
+      {
+        "label": "n-th real part",
+        "latex": "z_n = \\operatorname{Re}(z^{n}) = x\\,z_r - y\\,z_i"
+      },
+      {
+        "label": "gain",
+        "latex": "p = \\lambda + \\alpha\\,z\\bar z + \\beta\\,z_n"
+      },
+      {
+        "label": "x'",
+        "latex": "x' = p\\,x + \\gamma\\,z_r - \\omega\\,y"
+      },
+      {
+        "label": "y'",
+        "latex": "y' = p\\,y - \\gamma\\,z_i + \\omega\\,x"
+      }
+    ],
+    "params": [
+      {
+        "key": "lambda",
+        "symbol": "\\lambda",
+        "meaning": "Linear feedback gain; the dominant contraction/expansion term that sets the overall size of the attractor."
+      },
+      {
+        "key": "alpha",
+        "symbol": "\\alpha",
+        "meaning": "Coupling to the squared radius z z̄; controls radial bunching of the petals."
+      },
+      {
+        "key": "beta",
+        "symbol": "\\beta",
+        "meaning": "Coupling to Re(zⁿ); modulates the sharpness and reach of the sixfold lobes."
+      },
+      {
+        "key": "gamma",
+        "symbol": "\\gamma",
+        "meaning": "Strength of the symmetric polynomial z^{n-1}; imprints the actual n-fold petal structure."
+      },
+      {
+        "key": "omega",
+        "symbol": "\\omega",
+        "meaning": "Small antisymmetric rotation term; breaks the reflection symmetry to give a chiral pinwheel (Z_n rather than D_n)."
+      }
+    ],
+    "code": "const X=x[0], Y=x[1];\nconst zzbar=X*X+Y*Y;\nconst x2=X*X-Y*Y, y2=2*X*Y;        // z^2\nconst x4=x2*x2-y2*y2, y4=2*x2*y2;   // z^4\nconst zr=x4*X-y4*Y, zi=x4*Y+y4*X;   // z^5 = z^(n-1)\nconst zn=X*zr-Y*zi;                  // Re(z^6)\nconst p=lambda+alpha*zzbar+beta*zn;\no[0]=p*X+gamma*zr-omega*Y;\no[1]=p*Y-gamma*zi+omega*X;",
+    "links": [
+      {
+        "label": "Symmetric icon (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Symmetry_in_Chaos"
+      },
+      {
+        "label": "Field & Golubitsky, Symmetry in Chaos",
+        "url": "https://www.maths.manchester.ac.uk/~mdc/MartinGolubitskySymmetryInChaos.html"
+      },
+      {
+        "label": "Paul Bourke — Symmetric icons / chaos",
+        "url": "https://paulbourke.net/fractals/icons/"
+      },
+      {
+        "label": "Clifford Pickover (attractors)",
+        "url": "https://en.wikipedia.org/wiki/Clifford_A._Pickover"
+      }
+    ]
+  },
+  "icon-heptagon": {
+    "title": "Icon · heptagon",
+    "about": "A symmetric icon from Field and Golubitsky's \"Symmetry in Chaos\" — chaotic dynamics tamed by an enforced symmetry group. Each iterate runs a point through a complex polynomial whose terms are invariant under rotation by 2π/7, so the strange attractor it traces is forced into a seven-fold mandala. The chaos lives in the radial fine structure; the heptagonal lattice is exact. The result looks less like a fractal and more like a stained-glass rose window grown from a single equation.",
+    "howItWorks": "Treat the plane as the complex plane z = x + iy. The map mixes the rotation-invariant scalars |z|² and Re(zⁿ) into a radial gain p, then advances z while folding in the degree-(n−1) term zⁿ⁻¹ (here n = 7). Because every term commutes with multiplication by a 7th root of unity, applying the map and then rotating by 2π/7 gives the same set as rotating first — the attractor must carry D₇ symmetry. 100k points seeded near the origin all relax onto the same icon.",
+    "equations": [
+      {
+        "label": "Rotation-invariant gain",
+        "latex": "p = \\lambda + \\alpha\\,(x^2+y^2) + \\beta\\,\\mathrm{Re}\\,(x+iy)^7"
+      },
+      {
+        "label": "x update",
+        "latex": "x' = p\\,x + \\gamma\\,\\mathrm{Re}\\,(x+iy)^6 - \\omega\\,y"
+      },
+      {
+        "label": "y update",
+        "latex": "y' = p\\,y - \\gamma\\,\\mathrm{Im}\\,(x+iy)^6 + \\omega\\,x"
+      }
+    ],
+    "params": [
+      {
+        "key": "lambda",
+        "symbol": "λ",
+        "meaning": "linear radial gain — overall expansion of the basin"
+      },
+      {
+        "key": "alpha",
+        "symbol": "α",
+        "meaning": "quadratic |z|² feedback that bends orbits back inward"
+      },
+      {
+        "key": "beta",
+        "symbol": "β",
+        "meaning": "strength of the Re(zⁿ) symmetry-locking term"
+      },
+      {
+        "key": "gamma",
+        "symbol": "γ",
+        "meaning": "weight of the zⁿ⁻¹ term that sculpts the seven petals"
+      },
+      {
+        "key": "omega",
+        "symbol": "ω",
+        "meaning": "rotational shear, breaking the mirror to a pure swirl"
+      }
+    ],
+    "code": "function step(x, y, {lambda, alpha, beta, gamma, omega}) {\n  const zzbar = x*x + y*y;\n  let zr = 1, zi = 0;            // accumulate (x+iy)^6\n  for (let k = 0; k < 6; k++) { const r = zr*x - zi*y, i = zr*y + zi*x; zr = r; zi = i; }\n  const zn = zr*x - zi*y;        // Re((x+iy)^7)\n  const p = lambda + alpha*zzbar + beta*zn;\n  return [p*x + gamma*zr - omega*y, p*y - gamma*zi + omega*x];\n}",
+    "links": [
+      {
+        "label": "Symmetry in Chaos (Field & Golubitsky)",
+        "url": "https://en.wikipedia.org/wiki/Symmetry_in_Chaos"
+      },
+      {
+        "label": "Attractor — Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Attractor"
+      },
+      {
+        "label": "Sprott: Symmetric Icons",
+        "url": "http://sprott.physics.wisc.edu/fractals/icons/"
+      },
+      {
+        "label": "Dihedral group D₇ — MathWorld",
+        "url": "https://mathworld.wolfram.com/DihedralGroup.html"
+      }
+    ]
+  },
+  "icon-clamshell": {
+    "title": "Icon · Clamshell",
+    "about": "A symmetric icon from Field and Golubitsky's \"Symmetry in Chaos\" — a chaotic map deliberately engineered to commute with a cyclic rotation group, so its strange attractor is forced into a perfect mandala. This instance carries four-fold (C4) rotational symmetry: every chaotic point landed by the orbit has three rotated twins, and the densest petals fold inward like the ribbed lip of a clamshell. The map is the n=4 case of the general Field–Golubitsky icon family, built around a complex polynomial in z = x + iy whose nonlinear feedback both stretches (chaos) and rotates (symmetry).",
+    "howItWorks": "Treat the state as a complex number z = x + iy. Compute the symmetric radial term zzbar = |z|² and the n-fold angular term zn = Re(zⁿ); together with z^(n-1) these build a real scaling factor p = lambda + alpha·zzbar + beta·zn. The new point is p·z plus a gamma-weighted z^(n-1) twist and an omega-weighted 90° rotation. Because every term is invariant (or equivariant) under rotation by 2π/4, the chaotic attractor inherits exact C4 symmetry. For n=4 the complex power z^(n-1)=z³ is unrolled: zr = x³−3xy², zi = 3x²y−y³.",
+    "equations": [
+      {
+        "label": "radial & angular invariants",
+        "latex": "z\\bar z = x^2+y^2,\\quad z_r+iz_i=(x+iy)^3,\\quad z_n=x\\,z_r-y\\,z_i"
+      },
+      {
+        "label": "scaling factor",
+        "latex": "p=\\lambda+\\alpha\\,z\\bar z+\\beta\\,z_n"
+      },
+      {
+        "label": "x update",
+        "latex": "x' = p\\,x+\\gamma\\,z_r-\\omega\\,y"
+      },
+      {
+        "label": "y update",
+        "latex": "y' = p\\,y-\\gamma\\,z_i+\\omega\\,x"
+      }
+    ],
+    "params": [
+      {
+        "key": "lambda",
+        "symbol": "λ",
+        "meaning": "Linear scaling / overall gain; tunes the attractor between contraction and chaotic spread."
+      },
+      {
+        "key": "alpha",
+        "symbol": "α",
+        "meaning": "Coupling to the rotation-invariant radius |z|², controlling radial nonlinearity."
+      },
+      {
+        "key": "beta",
+        "symbol": "β",
+        "meaning": "Coupling to the n-fold angular term Re(zⁿ); sharpens the petal lobes."
+      },
+      {
+        "key": "gamma",
+        "symbol": "γ",
+        "meaning": "Strength of the z^(n-1) symmetric twist that imprints the C4 arms."
+      },
+      {
+        "key": "omega",
+        "symbol": "ω",
+        "meaning": "Infinitesimal-rotation term breaking reflection symmetry, giving the swirl/handedness."
+      }
+    ],
+    "code": "function step(x, y, {lambda, alpha, beta, gamma, omega}) {\n  const zr = x*x*x - 3*x*y*y;      // Re(z^3)\n  const zi = 3*x*x*y - y*y*y;      // Im(z^3)\n  const zn = x*zr - y*zi;          // Re(z^4)\n  const zzbar = x*x + y*y;         // |z|^2\n  const p = lambda + alpha*zzbar + beta*zn;\n  return [ p*x + gamma*zr - omega*y,\n           p*y - gamma*zi + omega*x ];\n}",
+    "links": [
+      {
+        "label": "Symmetry in Chaos (Field & Golubitsky)",
+        "url": "https://en.wikipedia.org/wiki/Symmetric_icon"
+      },
+      {
+        "label": "Symmetric icons — Paul Bourke",
+        "url": "https://paulbourke.net/fractals/icons/"
+      },
+      {
+        "label": "Attractor — Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Attractor"
+      },
+      {
+        "label": "Strange attractors — Sprott",
+        "url": "http://sprott.physics.wisc.edu/sa.htm"
+      }
+    ]
+  },
+  "gingerbreadman": {
+    "title": "Gingerbreadman Map",
+    "about": "A deceptively simple piecewise-linear map whose only nonlinearity is a single absolute value, yet it carpets the plane with a chaotic sea pocked by ghostly hexagonal islands of stability. Devil Pickover popularized it in the 1980s, and Roger Bourke's plots gave it its name: the speckled chaotic region traces the rough outline of a gingerbread man. It is area-preserving (conservative), so unlike dissipative strange attractors it has no shrinking basin — every orbit wanders forever on its own invariant set, either a stable island ring or the surrounding chaotic ocean.",
+    "howItWorks": "Each step replaces the point (x, y) with (1 - y + |x|, y becomes the old x). The fold introduced by |x| is the sole source of chaos: it reflects the left half-plane, and the linear shear then stretches and re-stacks the plane. Because the Jacobian determinant is exactly 1 everywhere, areas are preserved — orbits neither collapse to an attractor nor blow up to infinity, instead filling a measure-positive chaotic sea threaded with quasi-periodic islands. Seeding a cloud in the sea near (-0.1, 0) lights up the full speckled body.",
+    "equations": [
+      {
+        "label": "x update",
+        "latex": "x_{n+1} = 1 - y_n + |x_n|"
+      },
+      {
+        "label": "y update",
+        "latex": "y_{n+1} = x_n"
+      }
+    ],
+    "params": [
+      {
+        "key": "s",
+        "symbol": "s",
+        "meaning": "Fold strength multiplying |x| (s = 1 is the canonical area-preserving Gingerbreadman; other values warp the sea)."
+      }
+    ],
+    "code": "o[0] = 1 - x[1] + s*Math.abs(x[0]); o[1] = x[0];",
+    "links": [
+      {
+        "label": "Wikipedia: Gingerbreadman map",
+        "url": "https://en.wikipedia.org/wiki/Gingerbreadman_map"
+      },
+      {
+        "label": "Wolfram MathWorld: Gingerbreadman Map",
+        "url": "https://mathworld.wolfram.com/GingerbreadmanMap.html"
+      },
+      {
+        "label": "Clifford Pickover, Computers, Pattern, Chaos and Beauty",
+        "url": "https://en.wikipedia.org/wiki/Clifford_A._Pickover"
+      }
+    ]
+  },
+  "standard": {
+    "title": "Standard (Chirikov) Map",
+    "about": "Born from Boris Chirikov's 1969 study of how chaos creeps into nearly-integrable systems, the standard map is the discrete heartbeat of the kicked rotor: a free-spinning pendulum that receives a sharp gravitational kick once per period. It is the universal local model for the transition to chaos in Hamiltonian systems, the prototype on which the Chirikov resonance-overlap criterion was forged. Living on the torus [0,2π)², its phase portrait at the kick strength K=1.2 is a stunning mosaic of order and disorder: smooth KAM curves and nested island chains float untouched inside a turbulent chaotic sea. Seeding particles across the whole torus paints the entire portrait at once.",
+    "howItWorks": "Each step the momentum p receives a kick K·sin(x) that depends on the current angle x, then the angle advances by the updated momentum. Both coordinates are wrapped modulo 2π onto the torus. For small K the motion stays on invariant KAM curves (integrable-like); as K grows these curves break up one by one. At K=1.2 the last great barriers are already shattered, leaving a connected chaotic sea riddled with surviving elliptic islands — the signature mixed phase space of Hamiltonian chaos.",
+    "equations": [
+      {
+        "label": "Momentum kick",
+        "latex": "p_{n+1} = (p_n + K\\sin x_n) \\bmod 2\\pi"
+      },
+      {
+        "label": "Angle advance",
+        "latex": "x_{n+1} = (x_n + p_{n+1}) \\bmod 2\\pi"
+      }
+    ],
+    "params": [
+      {
+        "key": "K",
+        "symbol": "K",
+        "meaning": "Kick strength / nonlinearity. K≈0.9716 is the critical value where the last KAM curve breaks; K=1.2 gives a mixed sea-plus-islands portrait."
+      }
+    ],
+    "code": "const TAU = 2*Math.PI;\nlet np = (y + K*Math.sin(x)) % TAU; if (np<0) np+=TAU;\nlet nx = (x + np) % TAU; if (nx<0) nx+=TAU;\nx = nx; y = np;",
+    "links": [
+      {
+        "label": "Wikipedia: Standard map",
+        "url": "https://en.wikipedia.org/wiki/Standard_map"
+      },
+      {
+        "label": "Wikipedia: Chirikov criterion",
+        "url": "https://en.wikipedia.org/wiki/Chirikov_criterion"
+      },
+      {
+        "label": "Scholarpedia: Chirikov standard map",
+        "url": "http://www.scholarpedia.org/article/Chirikov_standard_map"
+      },
+      {
+        "label": "MathWorld: Standard Map",
+        "url": "https://mathworld.wolfram.com/StandardMap.html"
+      }
+    ]
+  },
+  "duffing-map": {
+    "title": "Duffing Map",
+    "about": "The Duffing map is the discrete-time cousin of the Duffing oscillator, the classic forced nonlinear spring that Georg Duffing studied in 1918 to model structures that stiffen as they bend. Stripping the differential equation down to a two-step recurrence keeps its defining cubic restoring force y³, and that single nonlinearity is enough to fold the plane into a strange attractor. At a=2.75, b=0.2 the orbit settles onto a thin, twice-folded chaotic ribbon with perfect odd symmetry about the origin. It is a textbook example of how a smooth mechanical system, once sampled in time, becomes a fractal.",
+    "howItWorks": "Each step shifts the old y into the new x, then drives the new y by a linear stretch a·y, a memory term -b·x that feeds the previous position back in, and a cubic -y³ that bends large excursions back toward the center. The competition between the linear amplification and the cubic restoring force stretches and folds the state cloud on every iteration, so points seeded near the origin spread out and converge onto the same attractor.",
+    "equations": [
+      {
+        "label": "x update",
+        "latex": "x_{n+1} = y_n"
+      },
+      {
+        "label": "y update",
+        "latex": "y_{n+1} = -b\\,x_n + a\\,y_n - y_n^{3}"
+      }
+    ],
+    "params": [
+      {
+        "key": "a",
+        "symbol": "a",
+        "meaning": "Linear amplification of y; raising it widens the attractor and tunes the route into chaos."
+      },
+      {
+        "key": "b",
+        "symbol": "b",
+        "meaning": "Damping / feedback strength coupling the previous x back into y (acts like the oscillator's friction)."
+      }
+    ],
+    "code": "const nx = y;\nconst ny = -b*x + a*y - y*y*y;\nx = nx; y = ny;",
+    "links": [
+      {
+        "label": "Duffing map (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Duffing_map"
+      },
+      {
+        "label": "Duffing equation (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Duffing_equation"
+      },
+      {
+        "label": "Duffing Differential Equation (MathWorld)",
+        "url": "https://mathworld.wolfram.com/DuffingDifferentialEquation.html"
+      }
+    ]
+  },
+  "kings-dream": {
+    "title": "King's Dream",
+    "about": "Clifford Pickover devised this trigonometric quadratic map and gave it the evocative name \"The King's Dream\" in his books on visual mathematics and computer art. Each point is folded through a pair of sine waves whose interference weaves a delicate, lacework attractor with crisp two-fold (180°) rotational symmetry. Like Pickover's other dream maps it has no physical origin — it is pure aesthetic exploration of how simple iterated sines can spin chaos into ornament. Sweeping the four parameters morphs the figure between webs, swirls, and ribbed shells.",
+    "howItWorks": "Start a swarm of points near the origin and repeatedly apply the map. The two output coordinates each mix a sine of the other coordinate with a scaled sine of the same coordinate, so x feeds y and y feeds x through frequencies b and a. The orbit never escapes — every term is a bounded sine — yet the folding is sensitive to initial conditions, so the cloud spreads across a fractal-like attractor instead of a single curve. Because the map commutes with (x,y)→(−x,−y), the rendered set is symmetric under a half-turn about the center.",
+    "equations": [
+      {
+        "label": "x update",
+        "latex": "x_{n+1} = \\sin(b\\,y_n) + c\\,\\sin(b\\,x_n)"
+      },
+      {
+        "label": "y update",
+        "latex": "y_{n+1} = \\sin(a\\,x_n) + d\\,\\sin(a\\,y_n)"
+      }
+    ],
+    "params": [
+      {
+        "key": "a",
+        "symbol": "a",
+        "meaning": "frequency of the sines driving the y update (acts on x and y)"
+      },
+      {
+        "key": "b",
+        "symbol": "b",
+        "meaning": "frequency of the sines driving the x update (acts on y and x)"
+      },
+      {
+        "key": "c",
+        "symbol": "c",
+        "meaning": "self-coupling weight of sin(b·x) in the x update"
+      },
+      {
+        "key": "d",
+        "symbol": "d",
+        "meaning": "self-coupling weight of sin(a·y) in the y update"
+      }
+    ],
+    "code": "const nx = Math.sin(b*y) + c*Math.sin(b*x);\nconst ny = Math.sin(a*x) + d*Math.sin(a*y);\nx = nx; y = ny;",
+    "links": [
+      {
+        "label": "Clifford Pickover — Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Clifford_A._Pickover"
+      },
+      {
+        "label": "Pickover attractor — Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Pickover_attractor"
+      },
+      {
+        "label": "Sprott — Strange Attractors: Creating Patterns in Chaos",
+        "url": "http://sprott.physics.wisc.edu/sa.htm"
+      }
+    ]
+  },
+  "sprott-quadratic": {
+    "title": "Sprott Quadratic",
+    "about": "In the early 1990s physicist Julien C. Sprott ran a now-famous computer search through the space of simple quadratic maps, asking a blunt question: how common is chaos? He let a program iterate the general two-dimensional quadratic recurrence with coefficients drawn from a coarse alphabet, kept only the sets whose orbits stayed bounded yet had a positive Lyapunov exponent, and harvested thousands of strange attractors — each a unique fractal lacework. This map is one such survivor: twelve plain numbers, two parabolic update rules, and an orbit that never repeats but never escapes, tracing out a folded, asymmetric web.",
+    "howItWorks": "Each point is pushed through two coupled quadratic polynomials in x and y. Stretching (the positive Lyapunov exponent measured at ~0.34) pulls nearby points apart while the bounded basin folds them back, so a cloud of 100k seeds settles onto the same intricate attractor. Because every term — constant, linear, square, and cross-product — is tunable, nudging any coefficient continuously reshapes or destroys the figure; most settings blow up to infinity, which is exactly why Sprott's filtered catalog is special.",
+    "equations": [
+      {
+        "label": "x next",
+        "latex": "x' = a_0 + a_1 x + a_2 x^2 + a_3 xy + a_4 y + a_5 y^2"
+      },
+      {
+        "label": "y next",
+        "latex": "y' = a_6 + a_7 x + a_8 x^2 + a_9 xy + a_{10} y + a_{11} y^2"
+      }
+    ],
+    "params": [
+      {
+        "key": "a0",
+        "symbol": "a₀",
+        "meaning": "x constant offset"
+      },
+      {
+        "key": "a1",
+        "symbol": "a₁",
+        "meaning": "x linear-in-x weight"
+      },
+      {
+        "key": "a2",
+        "symbol": "a₂",
+        "meaning": "x quadratic x² weight (fold strength)"
+      },
+      {
+        "key": "a3",
+        "symbol": "a₃",
+        "meaning": "x cross xy weight (shear coupling)"
+      },
+      {
+        "key": "a4",
+        "symbol": "a₄",
+        "meaning": "x linear-in-y weight"
+      },
+      {
+        "key": "a5",
+        "symbol": "a₅",
+        "meaning": "x quadratic y² weight"
+      },
+      {
+        "key": "a6",
+        "symbol": "a₆",
+        "meaning": "y constant offset"
+      },
+      {
+        "key": "a7",
+        "symbol": "a₇",
+        "meaning": "y linear-in-x weight"
+      },
+      {
+        "key": "a8",
+        "symbol": "a₈",
+        "meaning": "y quadratic x² weight"
+      },
+      {
+        "key": "a9",
+        "symbol": "a₉",
+        "meaning": "y cross xy weight"
+      },
+      {
+        "key": "a10",
+        "symbol": "a₁₀",
+        "meaning": "y linear-in-y weight"
+      },
+      {
+        "key": "a11",
+        "symbol": "a₁₁",
+        "meaning": "y quadratic y² weight"
+      }
+    ],
+    "code": "const X = x, Y = y;\nx = a0 + a1*X + a2*X*X + a3*X*Y + a4*Y + a5*Y*Y;\ny = a6 + a7*X + a8*X*X + a9*X*Y + a10*Y + a11*Y*Y;",
+    "links": [
+      {
+        "label": "Sprott — Strange Attractors: Creating Patterns in Chaos",
+        "url": "http://sprott.physics.wisc.edu/sa.htm"
+      },
+      {
+        "label": "J. C. Sprott home page (chaos & attractor catalogs)",
+        "url": "http://sprott.physics.wisc.edu/"
+      },
+      {
+        "label": "Wikipedia — Attractor (strange attractors)",
+        "url": "https://en.wikipedia.org/wiki/Attractor"
+      },
+      {
+        "label": "Wikipedia — Lyapunov exponent",
+        "url": "https://en.wikipedia.org/wiki/Lyapunov_exponent"
+      }
+    ]
+  },
+  "zaslavsky": {
+    "title": "Zaslavsky Map",
+    "about": "The Zaslavsky map is a dissipative kicked-rotor model introduced by George M. Zaslavsky in the 1970s to study Hamiltonian chaos and the emergence of stochastic webs in nearly-integrable systems. Each step kicks the phase x on a circle (the mod-1 torus) while the conjugate variable y is simultaneously driven by a cosine impulse and bled away by an exponential damping factor e^(-gamma). The competition between the resonant kick and the dissipation folds the orbit into a filamentary fractal attractor — a torn, leaf-like sheet that is the dissipative cousin of Zaslavsky's famous symmetric stochastic web. Tuning gamma sets how hard the strange attractor is squeezed against the y=0 axis.",
+    "howItWorks": "x lives on a circle and is advanced by a constant drift nu plus a y-dependent term and a phase-dependent cosine kick, then wrapped back into [0,1) by the mod operation. y is the kicked-and-damped momentum: it receives the same cosine kick (scaled by eps) and is then multiplied by the contraction factor e^(-gamma) < 1, which guarantees a bounded attractor. The auxiliary constant mu = (1 - e^(-gamma))/gamma couples the damping strength into the x-update so the map reduces smoothly to the conservative standard map as gamma -> 0. Stretching from the kick plus folding from the wrap and contraction produces sensitive dependence and a fractal limit set.",
+    "equations": [
+      {
+        "label": "phase (mod 1)",
+        "latex": "x_{n+1} = \\left(x_n + \\nu\\,(1 + \\mu\\,y_n) + \\varepsilon\\,\\nu\\,\\mu\\,\\cos(2\\pi x_n)\\right)\\bmod 1"
+      },
+      {
+        "label": "damped momentum",
+        "latex": "y_{n+1} = e^{-\\gamma}\\left(y_n + \\varepsilon\\,\\cos(2\\pi x_n)\\right)"
+      },
+      {
+        "label": "coupling constant",
+        "latex": "\\mu = \\dfrac{1 - e^{-\\gamma}}{\\gamma}"
+      }
+    ],
+    "params": [
+      {
+        "key": "nu",
+        "symbol": "\\nu",
+        "meaning": "Phase drift / kick strength on the circle; sets how far x advances each step."
+      },
+      {
+        "key": "eps",
+        "symbol": "\\varepsilon",
+        "meaning": "Perturbation amplitude of the cosine kick driving both x and y."
+      },
+      {
+        "key": "gamma",
+        "symbol": "\\gamma",
+        "meaning": "Dissipation rate; the momentum is contracted by e^(-gamma) each step (gamma -> 0 is the conservative limit)."
+      }
+    ],
+    "code": "const e = Math.exp(-gamma);\nconst m = (1 - e) / gamma;\nconst c = Math.cos(2 * Math.PI * x);\nconst n = x + nu * (1 + m * y) + eps * nu * m * c;\nx = n - Math.floor(n);   // mod 1\ny = e * (y + eps * c);",
+    "links": [
+      {
+        "label": "Wikipedia: Zaslavskii map",
+        "url": "https://en.wikipedia.org/wiki/Zaslavskii_map"
+      },
+      {
+        "label": "Scholarpedia: Zaslavsky web map (G. Zaslavsky)",
+        "url": "http://www.scholarpedia.org/article/Zaslavsky_web_map"
+      },
+      {
+        "label": "Sprott: Strange Attractors",
+        "url": "http://sprott.physics.wisc.edu/sa.htm"
+      }
+    ]
+  },
+  "martin": {
+    "title": "Martin (Hopalong)",
+    "about": "Barry Martin's 'sine Hopalong' map, popularized by A.K. Dewdney in Scientific American's Computer Recreations column (September 1986) under the name 'hopalong'. This sine variant replaces the classic square-root term with x' = y - sin(x), y' = a - x, so a single point 'hops' across the plane tracing a delicate, lace-like orbital fractal. Despite being deterministic and almost trivially simple, the orbit never settles: it weaves an infinitely detailed filigree of interleaved curves that looks hand-stitched. It is a cousin of the Gingerbreadman and Pickover orbital maps.",
+    "howItWorks": "Each step is an algebraic shear-and-fold: the new x subtracts sin of the old x from the old y, and the new y is the constant a minus the old x. The sin term injects a smooth periodic nonlinearity while the y' = a - x term recycles position into velocity, so the point keeps hopping without ever escaping to infinity or locking into a short cycle. Seeding 100k particles near the origin and iterating in lockstep paints the whole attractor at once; trails connect successive hops into the characteristic woven filaments.",
+    "equations": [
+      {
+        "label": "x update",
+        "latex": "x_{n+1} = y_n - \\sin(x_n)"
+      },
+      {
+        "label": "y update",
+        "latex": "y_{n+1} = a - x_n"
+      }
+    ],
+    "params": [
+      {
+        "key": "a",
+        "symbol": "a",
+        "meaning": "Additive offset feeding old x back into the next y; sets the overall scale and lacing density of the orbital pattern (a=4 gives a rich ~10x10 filigree)."
+      }
+    ],
+    "code": "let nx = y - Math.sin(x);\nlet ny = a - x;\nx = nx; y = ny;",
+    "links": [
+      {
+        "label": "Hopalong attractor (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Barry_Martin_(computer_scientist)"
+      },
+      {
+        "label": "Dewdney, 'Computer Recreations' (Sci. Am., Sep 1986)",
+        "url": "https://www.scientificamerican.com/issue/sa/1986/09-01/"
+      },
+      {
+        "label": "Pickover, Computers, Pattern, Chaos and Beauty",
+        "url": "https://en.wikipedia.org/wiki/Clifford_A._Pickover"
+      },
+      {
+        "label": "Sprott, Strange Attractors",
+        "url": "http://sprott.physics.wisc.edu/sa.htm"
+      }
+    ]
+  },
 };

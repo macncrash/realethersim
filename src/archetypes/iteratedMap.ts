@@ -101,6 +101,45 @@ export const MAP_SYSTEMS: Record<string, MapSystem> = Object.fromEntries(
       iterate: (o, x, p) => { o[0] = Math.sin((x[0] * x[1]) / p.b) * x[1] + Math.cos(p.a * x[0] - x[1]); o[1] = x[0] + Math.sin(x[1]) / p.b; } }),
     makeMap({ id: 'pickover', label: 'Pickover 3D', dim: 3, defaults: { a: 2.24, b: 0.43, c: -0.65, d: -2.43, e: 1 }, init: [0.1, 0.1, 0.1], spread: 0.2, bounds: { x: [-2.2, 2.2], y: [-2, 2], z: [-1, 1] },
       iterate: (o, x, p) => { o[0] = Math.sin(p.a * x[1]) - x[2] * Math.cos(p.b * x[0]); o[1] = x[2] * Math.sin(p.c * x[0]) - Math.cos(p.d * x[1]); o[2] = p.e * Math.sin(x[0]); } }),
+    makeMap({ id: 'icon-sanddollar', label: 'Icon · sanddollar', defaults: { lambda: -2.34, alpha: 2.0, beta: 0.2, gamma: 0.1, omega: 0 }, init: [0.01, 0.013], spread: 0.05, pointSize: 0.007, bounds: { x: [-1.005, 1.005], y: [-1.005, 1.005] },
+      iterate: (o, x, p) => { const zzbar = x[0] * x[0] + x[1] * x[1]; const a2 = x[0] * x[0] - x[1] * x[1]; const b2 = 2 * x[0] * x[1]; const zr = a2 * a2 - b2 * b2; const zi = 2 * a2 * b2; const zn = x[0] * zr - x[1] * zi; const f = p.lambda + p.alpha * zzbar + p.beta * zn; o[0] = f * x[0] + p.gamma * zr - p.omega * x[1]; o[1] = f * x[1] - p.gamma * zi + p.omega * x[0]; } }),
+    makeMap({ id: 'icon-trinity', label: 'Icon · trinity', defaults: { lambda: 1.56, alpha: -1.0, beta: 0.1, gamma: -0.82, omega: 0.12 }, init: [0.01, 0.013], spread: 0.1, pointSize: 0.007, bounds: { x: [-1.35, 1.35], y: [-1.35, 1.35] },
+      iterate: (o, x, p) => { const zr = x[0] * x[0] - x[1] * x[1]; const zi = 2 * x[0] * x[1]; const zzbar = x[0] * x[0] + x[1] * x[1]; const zn = x[0] * zr - x[1] * zi; const pp = p.lambda + p.alpha * zzbar + p.beta * zn; o[0] = pp * x[0] + p.gamma * zr - p.omega * x[1]; o[1] = pp * x[1] - p.gamma * zi + p.omega * x[0]; } }),
+    makeMap({ id: 'icon-pentagram', label: 'Icon · Pentagram', defaults: { lambda: 2.6, alpha: -2.0, beta: 0.0, gamma: -0.5, omega: 0.0 }, init: [0.01, 0.01], spread: 0.1, pointSize: 0.007, bounds: { x: [-1.3, 1.3], y: [-1.3, 1.3] },
+      iterate: (o, x, p) => { const x2 = x[0] * x[0]; const y2 = x[1] * x[1]; const zr = x2 * x2 - 6 * x2 * y2 + y2 * y2; const zi = 4 * x[0] * x[1] * (x2 - y2); const zzbar = x2 + y2; const zn = x[0] * zr - x[1] * zi; const pp = p.lambda + p.alpha * zzbar + p.beta * zn; o[0] = pp * x[0] + p.gamma * zr - p.omega * x[1]; o[1] = pp * x[1] - p.gamma * zi + p.omega * x[0]; } }),
+    makeMap({ id: 'icon-hexagon', label: 'Icon · hexagon', defaults: { lambda: -2.5, alpha: 5.0, beta: -1.9, gamma: 1.0, omega: 0.188 }, init: [0.01, 0.013], spread: 0.05, pointSize: 0.007, bounds: { x: [-0.72, 0.72], y: [-0.72, 0.72] },
+      iterate: (o, x, p) => { const X = x[0], Y = x[1]; const zzbar = X * X + Y * Y; const x2 = X * X - Y * Y, y2 = 2 * X * Y; const x4 = x2 * x2 - y2 * y2, y4 = 2 * x2 * y2; const zr = x4 * X - y4 * Y, zi = x4 * Y + y4 * X; const zn = X * zr - Y * zi; const pp = p.lambda + p.alpha * zzbar + p.beta * zn; o[0] = pp * X + p.gamma * zr - p.omega * Y; o[1] = pp * Y - p.gamma * zi + p.omega * X; } }),
+    makeMap({ id: 'icon-heptagon', label: 'Icon · heptagon', defaults: { lambda: 2.5, alpha: -2.5, beta: 0.0, gamma: 0.9, omega: 0.0 }, init: [0.01, 0.013], spread: 0.1, pointSize: 0.007, bounds: { x: [-1.01, 1.01], y: [-1.01, 1.01] },
+      iterate: (o, x, p) => {
+        const X = x[0], Y = x[1];
+        const zzbar = X * X + Y * Y;
+        // (X + iY)^6 unrolled (degree n-1 = 6 for n = 7)
+        const z2r = X * X - Y * Y, z2i = 2 * X * Y;
+        const z3r = z2r * X - z2i * Y, z3i = z2r * Y + z2i * X;
+        const z4r = z3r * X - z3i * Y, z4i = z3r * Y + z3i * X;
+        const z5r = z4r * X - z4i * Y, z5i = z4r * Y + z4i * X;
+        const zr = z5r * X - z5i * Y, zi = z5r * Y + z5i * X;
+        const zn = zr * X - zi * Y; // Re((X + iY)^7)
+        const pp = p.lambda + p.alpha * zzbar + p.beta * zn;
+        o[0] = pp * X + p.gamma * zr - p.omega * Y;
+        o[1] = pp * Y - p.gamma * zi + p.omega * X;
+      } }),
+    makeMap({ id: 'icon-clamshell', label: 'Icon · Clamshell', defaults: { lambda: -1.86, alpha: 2.0, beta: 0.0, gamma: 1.0, omega: 0.1 }, init: [0.01, 0.013], spread: 0.05, pointSize: 0.007, bounds: { x: [-0.9, 0.9], y: [-0.9, 0.9] },
+      iterate: (o, x, p) => { const zr = x[0] * x[0] * x[0] - 3 * x[0] * x[1] * x[1]; const zi = 3 * x[0] * x[0] * x[1] - x[1] * x[1] * x[1]; const zn = x[0] * zr - x[1] * zi; const zzbar = x[0] * x[0] + x[1] * x[1]; const pp = p.lambda + p.alpha * zzbar + p.beta * zn; o[0] = pp * x[0] + p.gamma * zr - p.omega * x[1]; o[1] = pp * x[1] - p.gamma * zi + p.omega * x[0]; } }),
+    makeMap({ id: 'gingerbreadman', label: 'Gingerbreadman', defaults: { s: 1 }, init: [-0.1, 0], spread: 4, bounds: { x: [-3, 8], y: [-3, 8] },
+      iterate: (o, x, p) => { o[0] = 1 - x[1] + p.s * Math.abs(x[0]); o[1] = x[0]; } }),
+    makeMap({ id: 'standard', label: 'Standard (Chirikov)', defaults: { K: 1.2 }, init: [Math.PI, Math.PI], spread: 6, bounds: { x: [0, 2 * Math.PI], y: [0, 2 * Math.PI] }, pointSize: 0.006,
+      iterate: (o, x, p) => { const TAU = 2 * Math.PI; let np = (x[1] + p.K * Math.sin(x[0])) % TAU; if (np < 0) np += TAU; let nx = (x[0] + np) % TAU; if (nx < 0) nx += TAU; o[0] = nx; o[1] = np; } }),
+    makeMap({ id: 'duffing-map', label: 'Duffing', defaults: { a: 2.75, b: 0.2 }, init: [0.1, 0.1], spread: 0.1, bounds: { x: [-1.75, 1.75], y: [-1.75, 1.75] },
+      iterate: (o, x, p) => { o[0] = x[1]; o[1] = -p.b * x[0] + p.a * x[1] - x[1] * x[1] * x[1]; } }),
+    makeMap({ id: 'kings-dream', label: 'King’s Dream', defaults: { a: -0.966, b: 2.879, c: 0.765, d: 0.744 }, init: [0.1, 0.1], spread: 0.1, bounds: { x: [-1.8, 1.8], y: [-1.45, 1.45] },
+      iterate: (o, x, p) => { o[0] = Math.sin(p.b * x[1]) + p.c * Math.sin(p.b * x[0]); o[1] = Math.sin(p.a * x[0]) + p.d * Math.sin(p.a * x[1]); } }),
+    makeMap({ id: 'sprott-quadratic', label: 'Sprott Quadratic', defaults: { a0: 1, a1: -0.8, a2: -0.7, a3: -0.1, a4: -0.7, a5: 0.1, a6: 1.1, a7: -0.3, a8: -0.5, a9: 0, a10: -0.9, a11: 0.2 }, init: [0.05, 0.05], spread: 0.05, bounds: { x: [-2.224, 1.466], y: [-1.019, 1.282] },
+      iterate: (o, x, p) => { const X = x[0], Y = x[1]; o[0] = p.a0 + p.a1 * X + p.a2 * X * X + p.a3 * X * Y + p.a4 * Y + p.a5 * Y * Y; o[1] = p.a6 + p.a7 * X + p.a8 * X * X + p.a9 * X * Y + p.a10 * Y + p.a11 * Y * Y; } }),
+    makeMap({ id: 'zaslavsky', label: 'Zaslavsky', defaults: { nu: 0.5, eps: 1.0, gamma: 0.8 }, init: [0.1, 0.1], spread: 0.1, bounds: { x: [0, 1], y: [-0.5, 0.5] },
+      iterate: (o, x, p) => { const e = Math.exp(-p.gamma); const m = (1 - e) / p.gamma; const c = Math.cos(2 * Math.PI * x[0]); const n = x[0] + p.nu * (1 + m * x[1]) + p.eps * p.nu * m * c; o[0] = n - Math.floor(n); o[1] = e * (x[1] + p.eps * c); } }),
+    makeMap({ id: 'martin', label: 'Martin (Hopalong)', defaults: { a: 4 }, init: [0, 0], spread: 0.5, bounds: { x: [-2.5, 7.5], y: [-3.5, 6.5] },
+      iterate: (o, x, p) => { o[0] = x[1] - Math.sin(x[0]); o[1] = p.a - x[0]; } }),
   ].map((s) => [s.id, s]),
 );
 
