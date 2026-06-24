@@ -22,14 +22,14 @@ camera focus-tracking, JSON snapshots, and an optional fully GPU-resident comput
   family (Barnsley fern + IFS chaos-game, Mandelbrot/Julia/Burning-Ship escape-time, DLA), an
   emergent **Life** family (Particle Life, Boids, slime mold), **Fluid** (point vortices) and
   **Field** systems (Gray-Scott foam, excitable-medium waves, Lenia), plus the hyper-oscillator and
-  N-body — **42 systems across 8 categories**, switchable live, no reload. Adding one is a single
+  N-body — **136 systems across 10 categories**, switchable live, no reload. Adding one is a single
   file + one `register()` call.
 - **Learn as you go** — a built-in **Learn panel** (About / Math / Code) explains every system in
   plain English, renders its governing equations with **KaTeX** (with your live slider values
   substituted in), shows the core source, and links out to references.
 - **Decoupled simulation** — the integrator runs in a Web Worker over a SharedArrayBuffer
   double-buffer (with a main-thread fallback), independent of the render frame rate.
-- **Every system runs on the GPU** — all 42 systems have a fully GPU-resident **TSL** compute path:
+- **GPU by default** — most systems have a fully GPU-resident **TSL** compute path:
   per-particle RK4 (attractors), map iteration, chaos-game IFS, per-pixel escape-time fractals with
   live zoom, brute-force `Loop` flocking/particle-life, an atomic-scatter slime trail field, softened
   Biot–Savart vortices, ring-kernel Lenia + Gray-Scott / integer-grid CA, walker-aggregation DLA, and
