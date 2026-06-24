@@ -15,7 +15,11 @@ export type RaymarchKind =
   | 'schwarzD'
   | 'schoenIWP'
   | 'neovius'
-  | 'chmutov';
+  | 'chmutov'
+  | 'heart'
+  | 'tanglecube'
+  | 'goursat'
+  | 'barth';
 
 export interface RaymarchSystem {
   id: string;
@@ -29,6 +33,8 @@ export interface RaymarchSystem {
   camDist: number; // initial camera distance when the system is selected
   maxSteps: number; // sphere-trace step cap
   freq?: number; // spatial frequency for periodic implicit surfaces (world → lattice scale)
+  stepScale?: number; // DE under-relaxation (default 0.7); lower for surfaces whose ∇F vanishes near F=0
+  maxStep?: number; // hard cap on the march step (world units) — stops steep-gradient surfaces overshooting
 }
 
 const COL: ParamSpec = { key: 'colShift', label: 'colour', min: 0, max: 1, step: 0.01, default: 0.5 };
@@ -121,6 +127,22 @@ export const RAYMARCH_SYSTEMS: Record<string, RaymarchSystem> = {
   chmutov: {
     id: 'chmutov', label: 'Chmutov Octic', sdf: 'chmutov', category: 'Surface',
     iters: 0, freq: 0.85, bound: 1.75, camDist: 4.7, maxSteps: 210, params: [ISO, COL, ANIM],
+  },
+  heart: {
+    id: 'heart', label: 'Heart', sdf: 'heart', category: 'Surface',
+    iters: 0, freq: 0.7, bound: 2.0, camDist: 4.6, maxSteps: 360, stepScale: 0.4, maxStep: 0.035, params: [ISO, COL, ANIM],
+  },
+  tanglecube: {
+    id: 'tanglecube', label: 'Tanglecube', sdf: 'tanglecube', category: 'Surface',
+    iters: 0, freq: 1.0, bound: 3.0, camDist: 7.5, maxSteps: 220, stepScale: 0.45, params: [ISO, COL, ANIM],
+  },
+  goursat: {
+    id: 'goursat', label: 'Goursat', sdf: 'goursat', category: 'Surface',
+    iters: 0, freq: 0.62, bound: 2.4, camDist: 5.6, maxSteps: 190, params: [ISO, COL, ANIM],
+  },
+  barth: {
+    id: 'barth', label: 'Barth Sextic', sdf: 'barth', category: 'Surface',
+    iters: 0, freq: 0.92, bound: 1.55, camDist: 3.7, maxSteps: 240, params: [ISO, COL, ANIM],
   },
 };
 

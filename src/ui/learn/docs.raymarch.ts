@@ -326,4 +326,93 @@ const F = (p) => T8(p.x) + T8(p.y) + T8(p.z);   // surface: F = isovalue`,
       { label: 'Chebyshev polynomials', url: 'https://en.wikipedia.org/wiki/Chebyshev_polynomials' },
     ],
   },
+  heart: {
+    title: 'Heart',
+    about:
+      'The Taubin heart surface — a sextic (degree-6) algebraic surface whose zero set is a plump, ' +
+      'three-dimensional valentine. It’s the canonical example of an implicit surface that would be ' +
+      'painful to describe with a parametric formula but falls out of a single polynomial equation.',
+    howItWorks:
+      'A core ellipsoid term is cubed, then two negative z³ terms pull the top into the two lobes and ' +
+      'the bottom into the cusp. We render it the same way as the minimal surfaces: distance ≈ |F|/|∇F|.',
+    equations: [
+      { label: 'Taubin heart', latex: '\\left(x^2 + \\tfrac94 y^2 + z^2 - 1\\right)^3 - x^2 z^3 - \\tfrac{9}{80}\\,y^2 z^3 = 0' },
+    ],
+    params: [
+      { key: 'iso', symbol: 'c', meaning: 'isovalue; inflates or deflates the heart' },
+      { key: 'colShift', symbol: '\\phi', meaning: 'colour gradient offset' },
+      { key: 'animate', symbol: '\\alpha', meaning: 'sweeps the isovalue over time (0 = still)' },
+    ],
+    code: `// cusp axis remapped to world-up so it stands upright
+const F = (x,y,z) => { const b = x*x + 2.25*z*z + y*y - 1;
+  return b*b*b - x*x*y*y*y - 0.1125*z*z*y*y*y; };`,
+    links: [{ label: 'Heart surface (MathWorld)', url: 'https://mathworld.wolfram.com/HeartSurface.html' }],
+  },
+  tanglecube: {
+    title: 'Tanglecube',
+    about:
+      'A smooth quartic (degree-4) surface that looks like four rounded lobes tangled through a central ' +
+      'cage — a favourite test object for implicit-surface renderers because it’s symmetric, bounded, ' +
+      'and has no singular points to trip up the ray-march.',
+    howItWorks:
+      'Each axis contributes a double-well polynomial t⁴ − 5t²; summed with a constant, the zero set is ' +
+      'the tangle. The wells along each axis are what carve out the four lobes.',
+    equations: [
+      { label: 'tanglecube', latex: 'x^4 - 5x^2 + y^4 - 5y^2 + z^4 - 5z^2 + 11.8 = 0' },
+    ],
+    params: [
+      { key: 'iso', symbol: 'c', meaning: 'isovalue; opens and closes the central tangle' },
+      { key: 'colShift', symbol: '\\phi', meaning: 'colour gradient offset' },
+      { key: 'animate', symbol: '\\alpha', meaning: 'sweeps the isovalue over time (0 = still)' },
+    ],
+    code: `const F = (x,y,z) => x**4 - 5*x*x + y**4 - 5*y*y + z**4 - 5*z*z + 11.8;`,
+    links: [{ label: 'Tanglecube (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Tanglecube' }],
+  },
+  goursat: {
+    title: 'Goursat',
+    about:
+      'The Goursat surfaces are the family of quartics built only from the symmetric quantities x⁴+y⁴+z⁴ ' +
+      'and (x²+y²+z²). This one — x⁴+y⁴+z⁴ = 1 — is the "squircle" in 3D: a cube with the edges and ' +
+      'corners rounded off. Push the isovalue and it inflates from a near-sphere toward a sharper cube.',
+    howItWorks:
+      'The quartic norm x⁴+y⁴+z⁴ measures distance in a way that bulges toward the cube’s corners; its ' +
+      'level set is a rounded cube. Raised powers ⇒ sharper edges.',
+    equations: [
+      { label: 'Goursat (rounded cube)', latex: 'x^4 + y^4 + z^4 = 1 + c' },
+    ],
+    params: [
+      { key: 'iso', symbol: 'c', meaning: 'isovalue; 0 = rounded cube, higher ⇒ larger / squarer' },
+      { key: 'colShift', symbol: '\\phi', meaning: 'colour gradient offset' },
+      { key: 'animate', symbol: '\\alpha', meaning: 'sweeps the isovalue over time (0 = still)' },
+    ],
+    code: `const F = (x,y,z) => x**4 + y**4 + z**4 - 1;   // surface: F = isovalue`,
+    links: [{ label: 'Goursat surface (MathWorld)', url: 'https://mathworld.wolfram.com/GoursatsSurface.html' }],
+  },
+  barth: {
+    title: 'Barth Sextic',
+    about:
+      'Wolf Barth’s 1996 sextic is famous for a reason: it has 65 ordinary double points (nodes), the ' +
+      'maximum possible for a degree-6 surface. Its equation is laced with the golden ratio φ, and the ' +
+      'nodes sit at the vertices of nested icosahedra — a crystalline knot of pinch points.',
+    howItWorks:
+      'Three factors of the form φ²·a²−b² (cyclically permuted) multiply to give the icosahedral ' +
+      'symmetry, minus a squared sphere term that closes it up. The nodes are where the surface pinches ' +
+      'to a point, so the ray-march is run with extra steps to resolve them.',
+    equations: [
+      {
+        label: 'Barth sextic',
+        latex: '4(\\varphi^2 x^2 - y^2)(\\varphi^2 y^2 - z^2)(\\varphi^2 z^2 - x^2) - (1+2\\varphi)(x^2+y^2+z^2-1)^2 = 0',
+      },
+      { label: 'golden ratio', latex: '\\varphi = \\tfrac{1+\\sqrt5}{2} \\approx 1.618' },
+    ],
+    params: [
+      { key: 'iso', symbol: 'c', meaning: 'isovalue; perturbs the surface off its singular zero set' },
+      { key: 'colShift', symbol: '\\phi', meaning: 'colour gradient offset' },
+      { key: 'animate', symbol: '\\alpha', meaning: 'sweeps the isovalue over time (0 = still)' },
+    ],
+    code: `const P = 2.6180339887;   // φ²
+const F = (x,y,z) => { const a=x*x,b=y*y,c=z*z, s=a+b+c-1;
+  return 4*(P*a-b)*(P*b-c)*(P*c-a) - 4.2360679*s*s; };`,
+    links: [{ label: 'Barth surface (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Barth_surface' }],
+  },
 };

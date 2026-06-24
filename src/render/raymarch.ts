@@ -107,9 +107,39 @@ const surfaceField = (kind: string, c: Node): Node => {
       .sub(cos(x.mul(2)).add(cos(y.mul(2))).add(cos(z.mul(2))));
   if (kind === 'neovius')
     return cos(x).add(cos(y)).add(cos(z)).mul(3).add(cos(x).mul(cos(y)).mul(cos(z)).mul(4));
-  return cheb8(x).add(cheb8(y)).add(cheb8(z)); // chmutov octic
+  if (kind === 'chmutov') return cheb8(x).add(cheb8(y)).add(cheb8(z)); // chmutov octic
+  // ── algebraic surfaces (non-periodic; live inside the unit-ish ball) ──
+  if (kind === 'heart') {
+    // Taubin heart, cusp remapped to the world up-axis (formula z → world y) so it stands upright.
+    const X = x, Y = z, Z = y;
+    const X2 = X.mul(X), Y2 = Y.mul(Y), Z2 = Z.mul(Z), Z3 = Z2.mul(Z);
+    const base = X2.add(Y2.mul(2.25)).add(Z2).sub(1);
+    return base.mul(base).mul(base).sub(X2.mul(Z3)).sub(Y2.mul(Z3).mul(0.1125)); // (…)³ − x²z³ − 9/80 y²z³
+  }
+  if (kind === 'tanglecube') {
+    const x2 = x.mul(x), y2 = y.mul(y), z2 = z.mul(z);
+    return x2.mul(x2).sub(x2.mul(5)).add(y2.mul(y2)).sub(y2.mul(5)).add(z2.mul(z2)).sub(z2.mul(5)).add(11.8);
+  }
+  if (kind === 'goursat') {
+    const x2 = x.mul(x), y2 = y.mul(y), z2 = z.mul(z);
+    return x2.mul(x2).add(y2.mul(y2)).add(z2.mul(z2)).sub(1); // x⁴+y⁴+z⁴ = 1 (+iso) — rounded cube
+  }
+  if (kind === 'barth') {
+    // Barth sextic — the golden-ratio 65-node surface. P = φ², (1+2φ) ≈ 4.236.
+    const x2 = x.mul(x), y2 = y.mul(y), z2 = z.mul(z);
+    const P = 2.6180339887;
+    const t1 = x2.mul(P).sub(y2);
+    const t2 = y2.mul(P).sub(z2);
+    const t3 = z2.mul(P).sub(x2);
+    const s = x2.add(y2).add(z2).sub(1);
+    return t1.mul(t2).mul(t3).mul(4).sub(s.mul(s).mul(4.2360679));
+  }
+  return cheb8(x).add(cheb8(y)).add(cheb8(z)); // default (unreachable for registered kinds)
 };
-const SURFACE_KINDS = ['gyroid', 'schwarzP', 'schwarzD', 'schoenIWP', 'neovius', 'chmutov'];
+const SURFACE_KINDS = [
+  'gyroid', 'schwarzP', 'schwarzD', 'schoenIWP', 'neovius', 'chmutov',
+  'heart', 'tanglecube', 'goursat', 'barth',
+];
 
 function makeMap(sys: RaymarchSystem, u: Record<string, Node>, uTime: Node): Node {
   const kind: RaymarchKind = sys.sdf;
@@ -126,7 +156,8 @@ function makeMap(sys: RaymarchSystem, u: Record<string, Node>, uTime: Node): Nod
       const gy = fAt(p.add(vec3(0, e, 0))).sub(f0);
       const gz = fAt(p.add(vec3(0, 0, e))).sub(f0);
       const gmag = vec3(gx, gy, gz).length().div(e).max(1e-4); // |∇F| (forward difference)
-      const de = f0.sub(iso).abs().div(gmag).mul(0.7); // |F−iso|/|∇F|, under-relaxed to avoid overshoot
+      let de = f0.sub(iso).abs().div(gmag).mul(sys.stepScale ?? 0.7); // |F−iso|/|∇F|, under-relaxed to avoid overshoot
+      if (sys.maxStep !== undefined) de = de.min(sys.maxStep); // cap the step so steep surfaces can't overshoot
       return vec2(de.max(0), p.length().div(sys.bound)); // trap = radial → core→edge palette
     });
   }

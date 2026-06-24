@@ -32,6 +32,41 @@ function superR(angle: number, m: number, n1: number, n2: number, n3: number): n
   return Math.min(Math.pow(s, -1 / Math.max(n1, 1e-3)), 4);
 }
 
+// Sweep a circular tube of radius `rad` along a space curve. C(t) is the centreline, dC(t) its
+// tangent. Index i is split into (around-the-tube, along-the-curve); a fixed up-vector frame avoids
+// the cost of parallel transport (a closed knot tolerates the mild twist this introduces).
+function sweepTube(
+  i: number,
+  n: number,
+  rad: number,
+  out: Float32Array,
+  o: number,
+  C: (t: number) => [number, number, number],
+  dC: (t: number) => [number, number, number],
+): void {
+  const around = 24;
+  const alongCount = Math.max(1, Math.floor(n / around));
+  const ai = i % around;
+  const t = (Math.floor(i / around) / alongCount) * TAU;
+  const v = (ai / around) * TAU;
+  const c = C(t);
+  const d = dC(t);
+  let tx = d[0], ty = d[1], tz = d[2];
+  const tl = Math.hypot(tx, ty, tz) || 1;
+  tx /= tl; ty /= tl; tz /= tl;
+  // N = normalize(up × T); swap up away from T to keep the cross product well-conditioned
+  let ux = 0, uy = 1, uz = 0;
+  if (Math.abs(ty) > 0.9) { ux = 1; uy = 0; uz = 0; }
+  let nx = uy * tz - uz * ty, ny = uz * tx - ux * tz, nz = ux * ty - uy * tx;
+  const nl = Math.hypot(nx, ny, nz) || 1;
+  nx /= nl; ny /= nl; nz /= nl;
+  const bx = ty * nz - tz * ny, by = tz * nx - tx * nz, bz = tx * ny - ty * nx; // B = T × N
+  const cv = Math.cos(v), sv = Math.sin(v);
+  out[o] = c[0] + rad * (cv * nx + sv * bx);
+  out[o + 1] = c[1] + rad * (cv * ny + sv * by);
+  out[o + 2] = c[2] + rad * (cv * nz + sv * bz);
+}
+
 export interface ParamSurface {
   id: string;
   label: string;
@@ -144,6 +179,102 @@ export const PARAMETRIC_SYSTEMS: Record<string, ParamSurface> = {
       out[o] = r1 * Math.cos(phi) * ct;
       out[o + 1] = r2 * Math.sin(theta);
       out[o + 2] = r1 * Math.sin(phi) * ct;
+    },
+  },
+  sunflower: {
+    id: 'sunflower', label: 'Sunflower', defaultParticleCount: 120_000, scale: 1.5, pointSize: 0.01,
+    params: [
+      { key: 'dome', label: 'dome', min: 0, max: 1.5, step: 0.01, default: 0.5 },
+      { key: 'spread', label: 'spread', min: 0.6, max: 1.6, step: 0.01, default: 1 },
+    ],
+    // Vogel's model — the flat phyllotaxis seed head (golden-angle spiral), gently domed into 3D.
+    position: (i, n, p, out, o) => {
+      const r = Math.sqrt((i + 0.5) / n); // equal-area radius
+      const th = i * GOLDEN;
+      const rr = r * p.spread;
+      out[o] = rr * Math.cos(th);
+      out[o + 1] = p.dome * (1 - r * r) - 0.2; // gentle central dome
+      out[o + 2] = rr * Math.sin(th);
+    },
+  },
+  torusknot: {
+    id: 'torusknot', label: 'Torus Knot', defaultParticleCount: 144_000, scale: 0.5, pointSize: 0.007,
+    params: [
+      { key: 'p', label: 'p (longit.)', min: 1, max: 9, step: 1, default: 2 },
+      { key: 'q', label: 'q (merid.)', min: 1, max: 9, step: 1, default: 3 },
+      { key: 'tube', label: 'thickness', min: 0.05, max: 0.6, step: 0.01, default: 0.28 },
+    ],
+    // (p,q) torus knot swept into a solid tube — p=2,q=3 is the trefoil. coprime p,q ⇒ a true knot.
+    position: (i, n, pp, out, o) => {
+      sweepTube(i, n, pp.tube, out, o, (t) => {
+        const w = 2 + Math.cos(pp.q * t);
+        return [w * Math.cos(pp.p * t), -Math.sin(pp.q * t), w * Math.sin(pp.p * t)];
+      }, (t) => {
+        const cqt = Math.cos(pp.q * t), sqt = Math.sin(pp.q * t);
+        const cpt = Math.cos(pp.p * t), spt = Math.sin(pp.p * t);
+        const w = 2 + cqt;
+        return [
+          -pp.q * sqt * cpt - pp.p * w * spt,
+          -pp.q * cqt,
+          -pp.q * sqt * spt + pp.p * w * cpt,
+        ];
+      });
+    },
+  },
+  lissajous: {
+    id: 'lissajous', label: 'Lissajous Curve', defaultParticleCount: 120_000, scale: 1.5, pointSize: 0.006,
+    params: [
+      { key: 'a', label: 'a', min: 1, max: 8, step: 1, default: 3 },
+      { key: 'b', label: 'b', min: 1, max: 8, step: 1, default: 2 },
+      { key: 'c', label: 'c', min: 1, max: 8, step: 1, default: 4 },
+      { key: 'phase', label: 'phase', min: 0, max: Math.PI, step: 0.01, default: Math.PI / 2 },
+      { key: 'tube', label: 'thickness', min: 0.02, max: 0.2, step: 0.005, default: 0.07 },
+    ],
+    // 3D Lissajous: three sinusoids at integer frequencies — the higher-dimensional cousin of the
+    // oscilloscope figures. Closes into a knot when a:b:c are coprime. Swept into a solid tube.
+    position: (i, n, p, out, o) => {
+      sweepTube(
+        i, n, p.tube, out, o,
+        (t) => [Math.sin(p.a * t + p.phase), Math.sin(p.b * t), Math.sin(p.c * t)],
+        (t) => [p.a * Math.cos(p.a * t + p.phase), p.b * Math.cos(p.b * t), p.c * Math.cos(p.c * t)],
+      );
+    },
+  },
+  dini: {
+    id: 'dini', label: "Dini's Surface", defaultParticleCount: 160_000, scale: 0.42, pointSize: 0.008,
+    params: [
+      { key: 'twist', label: 'twist', min: 0.05, max: 1.2, step: 0.01, default: 0.3 },
+      { key: 'turns', label: 'turns', min: 1, max: 5, step: 0.1, default: 2.5 },
+    ],
+    // The twisted pseudosphere — a surface of constant negative curvature spiralling up an axis.
+    position: (i, n, p, out, o) => {
+      const [a, b] = uv(i, n);
+      const u = a * p.turns * TAU;
+      const v = 0.12 + b * (1.45 - 0.12); // (0.12, 1.45) keeps ln(tan(v/2)) finite
+      const sv = Math.sin(v);
+      out[o] = Math.cos(u) * sv;
+      out[o + 1] = Math.cos(v) + Math.log(Math.tan(v / 2)) + p.twist * u - 1; // up (centred funnel)
+      out[o + 2] = Math.sin(u) * sv;
+    },
+  },
+  harmonic: {
+    id: 'harmonic', label: 'Harmonic Sphere', defaultParticleCount: 160_000, scale: 1.3, pointSize: 0.008,
+    params: [
+      { key: 'lobesU', label: 'lobes φ', min: 1, max: 10, step: 1, default: 4 },
+      { key: 'lobesV', label: 'lobes θ', min: 1, max: 10, step: 1, default: 5 },
+      { key: 'amp', label: 'amplitude', min: 0, max: 0.7, step: 0.01, default: 0.35 },
+    ],
+    // A sphere whose radius is modulated by a product of sinusoids — the look of a spherical-harmonic
+    // mode: petals, sea-urchins, bumpy planets.
+    position: (i, n, p, out, o) => {
+      const [a, b] = uv(i, n);
+      const phi = a * TAU;
+      const theta = b * Math.PI;
+      const st = Math.sin(theta);
+      const r = 1 + p.amp * Math.sin(p.lobesU * phi) * Math.sin(p.lobesV * theta);
+      out[o] = r * st * Math.cos(phi);
+      out[o + 1] = r * Math.cos(theta);
+      out[o + 2] = r * st * Math.sin(phi);
     },
   },
 };

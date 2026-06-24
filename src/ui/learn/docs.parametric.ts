@@ -165,4 +165,115 @@ point(r1*Math.cos(phi)*ct, r2*Math.sin(theta), r1*Math.sin(phi)*ct);`,
       { label: 'Gielis 2003 (original paper)', url: 'https://www.amjbot.org/doi/10.3732/ajb.90.3.333' },
     ],
   },
+  sunflower: {
+    title: 'Sunflower',
+    about:
+      'The flat cousin of the Fibonacci sphere: Vogel’s 1979 model for the seed head of a sunflower. ' +
+      'Place seed i at radius √i and rotate by the golden angle each step — the result is the ' +
+      'interlocking left/right spiral families (parastichies) you can count on a real sunflower, and ' +
+      'they always come out as consecutive Fibonacci numbers.',
+    howItWorks:
+      'Equal-area spacing (r = √(i/N)) keeps the seeds uniformly dense from centre to rim, while the ' +
+      'golden angle guarantees no two seeds share a spoke. A gentle dome lifts it off the plane into 3D.',
+    equations: [
+      { label: 'Vogel’s model', latex: 'r_i = \\sqrt{i/N}, \\quad \\theta_i = i\\,\\gamma, \\quad \\gamma = \\pi(3-\\sqrt5)' },
+      { label: 'position', latex: '(r_i\\cos\\theta_i,\\; d(1-r_i^2),\\; r_i\\sin\\theta_i)' },
+    ],
+    params: [
+      { key: 'dome', symbol: 'd', meaning: 'height of the central dome (0 = flat disk)' },
+      { key: 'spread', symbol: 's', meaning: 'overall radius of the seed head' },
+    ],
+    code: `const r = Math.sqrt((i+0.5)/N), th = i * g;     // g = golden angle
+point(r*spread*Math.cos(th), dome*(1 - r*r), r*spread*Math.sin(th));`,
+    links: [{ label: 'Phyllotaxis / Vogel model', url: 'https://en.wikipedia.org/wiki/Fermat%27s_spiral' }],
+  },
+  torusknot: {
+    title: 'Torus Knot',
+    about:
+      'A (p,q) torus knot winds p times around the hole of a torus and q times through it before ' +
+      'closing up. When p and q share no common factor the loop is genuinely knotted — (2,3) is the ' +
+      'trefoil, the simplest nontrivial knot. We trace the whole loop as one dense glowing curve.',
+    howItWorks:
+      'A single angle t runs once around the loop. The point rides a circle of radius 2+cos(q·t) ' +
+      '(the meridian winding) while that circle is carried around by the p·t longitude.',
+    equations: [
+      { label: '(p,q) torus knot', latex: 'x=(2+\\cos qt)\\cos pt,\\;\\; y=-\\sin qt,\\;\\; z=(2+\\cos qt)\\sin pt' },
+    ],
+    params: [
+      { key: 'p', symbol: 'p', meaning: 'times the curve winds around the central axis (longitude)' },
+      { key: 'q', symbol: 'q', meaning: 'times it winds through the hole (meridian); gcd(p,q)=1 ⇒ a knot' },
+    ],
+    code: `const t = (i/N)*2*Math.PI, w = 2 + Math.cos(q*t);
+point(w*Math.cos(p*t), -Math.sin(q*t), w*Math.sin(p*t));`,
+    links: [{ label: 'Torus knot (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Torus_knot' }],
+  },
+  lissajous: {
+    title: 'Lissajous Curve',
+    about:
+      'The 3D generalisation of the figures Jules Lissajous drew in 1857 by bouncing light off two ' +
+      'vibrating mirrors — and what an oscilloscope shows in XY mode. Three perpendicular sinusoids at ' +
+      'integer frequencies trace an intricate closed orbit that knots and unknots as you retune them.',
+    howItWorks:
+      'Each coordinate is its own oscillator: x, y, z are sines of a·t, b·t, c·t. The frequency ratios ' +
+      'set how many times the curve folds in each direction; the phase shears the x-oscillation.',
+    equations: [
+      { label: '3D Lissajous', latex: 'x=\\sin(at+\\delta),\\;\\; y=\\sin(bt),\\;\\; z=\\sin(ct)' },
+    ],
+    params: [
+      { key: 'a', symbol: 'a', meaning: 'x-frequency' },
+      { key: 'b', symbol: 'b', meaning: 'y-frequency' },
+      { key: 'c', symbol: 'c', meaning: 'z-frequency' },
+      { key: 'phase', symbol: '\\delta', meaning: 'phase offset on x — opens and twists the figure' },
+    ],
+    code: `const t = (i/N)*2*Math.PI;
+point(Math.sin(a*t + phase), Math.sin(b*t), Math.sin(c*t));`,
+    links: [{ label: 'Lissajous curve (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Lissajous_curve' }],
+  },
+  dini: {
+    title: "Dini's Surface",
+    about:
+      'Take a pseudosphere — the trumpet-shaped surface of constant negative curvature, the geometry ' +
+      'where parallel lines diverge — and twist it as it climbs. The result is Dini’s surface, a ' +
+      'spiralling horn that is still, at every point, a saddle of exactly the same curvature.',
+    howItWorks:
+      'u winds around and up the axis; v runs from the wide mouth toward the infinitely thin cusp. The ' +
+      'twist term adds a height proportional to u, shearing the tractrix profile into a helix.',
+    equations: [
+      {
+        label: "Dini's surface",
+        latex: '\\begin{aligned} x &= \\cos u\\sin v,\\;\\; z = \\sin u\\sin v \\\\ y &= \\cos v + \\ln\\tan\\tfrac{v}{2} + b\\,u \\end{aligned}',
+      },
+    ],
+    params: [
+      { key: 'twist', symbol: 'b', meaning: 'how fast the horn spirals up its axis' },
+      { key: 'turns', symbol: 'T', meaning: 'number of revolutions swept' },
+    ],
+    code: `const u = a*turns*2*Math.PI, v = 0.12 + b*(1.45-0.12);
+point(Math.cos(u)*Math.sin(v), Math.cos(v)+Math.log(Math.tan(v/2))+twist*u-1, Math.sin(u)*Math.sin(v));`,
+    links: [{ label: "Dini's surface (Wikipedia)", url: 'https://en.wikipedia.org/wiki/Dini%27s_surface' }],
+  },
+  harmonic: {
+    title: 'Harmonic Sphere',
+    about:
+      'A sphere whose radius breathes in and out according to a product of sinusoids — the visual ' +
+      'signature of a spherical-harmonic mode, the natural vibration patterns of a sphere that show up ' +
+      'everywhere from atomic orbitals to the cosmic microwave background. Tuning the lobe counts walks ' +
+      'you through petals, sea-urchins, and bumpy little planets.',
+    howItWorks:
+      'For each (φ, θ) on the sphere, displace the radius by amp·sin(mφ)·sin(kθ). m sets how many lobes ' +
+      'run around the equator, k how many run pole-to-pole; amplitude controls how far they bulge.',
+    equations: [
+      { label: 'modulated radius', latex: 'r(\\varphi,\\theta) = 1 + A\\,\\sin(m\\varphi)\\,\\sin(k\\theta)' },
+      { label: 'on the sphere', latex: '(r\\sin\\theta\\cos\\varphi,\\; r\\cos\\theta,\\; r\\sin\\theta\\sin\\varphi)' },
+    ],
+    params: [
+      { key: 'lobesU', symbol: 'm', meaning: 'lobes around the equator (longitude)' },
+      { key: 'lobesV', symbol: 'k', meaning: 'lobes from pole to pole (latitude)' },
+      { key: 'amp', symbol: 'A', meaning: 'how far the surface bulges in and out' },
+    ],
+    code: `const phi = a*2*Math.PI, theta = b*Math.PI, st = Math.sin(theta);
+const r = 1 + amp*Math.sin(m*phi)*Math.sin(k*theta);
+point(r*st*Math.cos(phi), r*Math.cos(theta), r*st*Math.sin(phi));`,
+    links: [{ label: 'Spherical harmonics (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Spherical_harmonics' }],
+  },
 };
