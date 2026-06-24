@@ -386,7 +386,7 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
       controls.target.set(tx, ty, tz);
       controls.update();
     },
-    async exportImage(): Promise<void> {
+    async captureImageBlob(): Promise<Blob> {
       // Render the current view into an offscreen target (the WebGPU swap-chain isn't readable),
       // sRGB so it matches the screen, then composite a branded overlay and embed the snapshot.
       const sizeV = new THREE.Vector2();
@@ -406,7 +406,7 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
       cv.width = w;
       cv.height = h;
       const ctx = cv.getContext('2d');
-      if (!ctx) return;
+      if (!ctx) throw new Error('2D canvas context unavailable');
       const img = ctx.createImageData(w, h);
       // WebGPU pads each readback row to a 256-byte boundary; WebGL2 packs tightly. Detect which,
       // then copy each row from its real (padded) source offset — otherwise rows drift and shear.
@@ -447,14 +447,18 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
       ctx.fillText(paramStr, w - pad, h - pad - fs * 1.3);
       ctx.fillText(cam, w - pad, h - pad);
 
-      // PNG → embed the full snapshot as a tEXt chunk (the image can recreate the sim) → download.
+      // PNG → embed the full snapshot as a tEXt chunk (the image alone can recreate the sim).
       const blob: Blob = await new Promise((res) => cv.toBlob((b) => res(b as Blob), 'image/png'));
       const bytes = new Uint8Array(await blob.arrayBuffer());
       const withMeta = embedText(bytes, 'ethersim', JSON.stringify(this.exportSnapshot()));
-      const url = URL.createObjectURL(new Blob([withMeta as unknown as BlobPart], { type: 'image/png' }));
+      return new Blob([withMeta as unknown as BlobPart], { type: 'image/png' });
+    },
+    async exportImage(): Promise<void> {
+      const blob = await this.captureImageBlob();
+      const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `ethersim-${id}-${Date.now()}.png`;
+      a.download = `ethersim-${driver.archetypeId}-${Date.now()}.png`;
       a.click();
       URL.revokeObjectURL(url);
     },

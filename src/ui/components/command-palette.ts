@@ -148,10 +148,10 @@ export class CommandPalette extends LitElement {
       return this.demo.value
         ? html`<style>
               .cmdp-badge {
-                position: fixed; left: 16px; bottom: 16px; z-index: 9998; display: flex; align-items: center;
-                gap: 7px; font: inherit; font-size: 12px; color: #eafff7; background: #163d33cc;
-                border: 1px solid #2f8a6a; border-radius: 999px; padding: 6px 12px; cursor: pointer;
-                backdrop-filter: blur(4px);
+                position: fixed; left: 50%; top: 14px; transform: translateX(-50%); z-index: 9998;
+                display: flex; align-items: center; gap: 7px; font: inherit; font-size: 12px; color: #eafff7;
+                background: #163d33cc; border: 1px solid #2f8a6a; border-radius: 999px; padding: 6px 14px;
+                cursor: pointer; backdrop-filter: blur(4px);
               }
               .cmdp-dot { width: 8px; height: 8px; border-radius: 50%; background: #5af0c8; animation: cmdpPulse 1.6s infinite; }
               @keyframes cmdpPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }

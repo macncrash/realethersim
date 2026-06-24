@@ -9,6 +9,8 @@ export interface Engine {
   // Render a PNG of the current view with a branded overlay + the full snapshot embedded as
   // metadata, then download it. The image alone can recreate the simulation.
   exportImage(): Promise<void>;
+  // The same branded, metadata-embedded PNG as exportImage() but returned as a Blob (for sharing).
+  captureImageBlob(): Promise<Blob>;
   togglePause(): boolean; // returns the new paused state
   reset(): void;
   // Highlight a contiguous particle range (hierarchy-tree selection). Pass null to clear.

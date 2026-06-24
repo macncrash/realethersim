@@ -5,6 +5,9 @@ import katex from 'katex';
 import { $archetypeId, $params } from '../store';
 import { getFactory } from '../../core/registry';
 import { getDoc, type SystemDoc } from '../learn/content';
+import { APP_VERSION } from '../../version';
+
+const REPO = 'https://github.com/macncrash/realethersim';
 
 type Tab = 'about' | 'math' | 'code';
 
@@ -51,6 +54,41 @@ export class LearnPanel extends LitElement {
   private toggle(): void {
     this.open = !this.open;
     this.requestUpdate();
+  }
+
+  // Lightweight, anonymous, user-initiated feedback. The vote is sent as a fire-and-forget beacon to
+  // /_vote/<dir>/<id>; the server-log → observatory pipeline counts it (no new endpoint, no PII).
+  // localStorage remembers your choice per system so the counter isn't spammed and the UI reflects it.
+  private myVote(id: string): string | null {
+    try {
+      return localStorage.getItem('ethersim:vote:' + id);
+    } catch {
+      return null;
+    }
+  }
+  private vote(id: string, dir: 'up' | 'down'): void {
+    if (this.myVote(id) === dir) return; // already your vote — don't double-send
+    try {
+      localStorage.setItem('ethersim:vote:' + id, dir);
+    } catch {
+      /* private mode — vote still sends, just won't persist the UI state */
+    }
+    try {
+      navigator.sendBeacon?.('/_vote/' + dir + '/' + encodeURIComponent(id));
+    } catch {
+      /* best-effort */
+    }
+    this.requestUpdate();
+  }
+  private report(id: string): void {
+    const label = getFactory(id).label;
+    const title = encodeURIComponent(`Problem with ${label} (${id})`);
+    const body = encodeURIComponent(
+      `**System:** ${label} (\`${id}\`)\n**Version:** ${APP_VERSION}\n\n` +
+        `**What looks wrong?** (the math, the rendering, the behaviour, a typo, a reference…)\n\n\n` +
+        `**Expected vs. actual:**\n\n\n---\n_opened from the in-app “report a problem” button_`,
+    );
+    window.open(`${REPO}/issues/new?title=${title}&body=${body}`, '_blank', 'noopener');
   }
 
   private renderAbout(doc: SystemDoc): TemplateResult {
@@ -112,6 +150,23 @@ export class LearnPanel extends LitElement {
             <button class="tab ${this.tab === 'about' ? 'active' : ''}" @click=${() => this.setTab('about')}>About</button>
             <button class="tab ${this.tab === 'math' ? 'active' : ''}" @click=${() => this.setTab('math')}>Math</button>
             <button class="tab ${this.tab === 'code' ? 'active' : ''}" @click=${() => this.setTab('code')}>Code</button>
+          </div>
+          <div class="lactions" style="display:flex;align-items:center;gap:6px;margin-left:auto">
+            <button
+              title="I like this one"
+              @click=${() => this.vote(id, 'up')}
+              style="font:inherit;font-size:13px;line-height:1;background:${this.myVote(id) === 'up' ? '#1f5a4a' : '#10303c'};border:1px solid ${this.myVote(id) === 'up' ? '#2f8a6a' : '#244'};border-radius:6px;padding:4px 8px;cursor:pointer"
+            >👍</button>
+            <button
+              title="Not a fan"
+              @click=${() => this.vote(id, 'down')}
+              style="font:inherit;font-size:13px;line-height:1;background:${this.myVote(id) === 'down' ? '#5a2f2f' : '#10303c'};border:1px solid ${this.myVote(id) === 'down' ? '#8a4a4a' : '#244'};border-radius:6px;padding:4px 8px;cursor:pointer"
+            >👎</button>
+            <button
+              title="Report a problem (opens a GitHub issue)"
+              @click=${() => this.report(id)}
+              style="font:inherit;font-size:11px;letter-spacing:.03em;color:#d9a;background:#2a1620;border:1px solid #5a2f3a;border-radius:6px;padding:4px 9px;cursor:pointer"
+            >⚠ report</button>
           </div>
           <button class="learn-handle" @click=${() => this.toggle()}>▾</button>
         </div>
