@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { registerArchetypes } from '../archetypes';
-import { getFactory } from '../core/registry';
+import { getFactory, listFactories } from '../core/registry';
 import { defaultParams, type Archetype, type ResolvedParams } from '../core/archetype';
 import { resolveParams } from '../core/params';
 
@@ -9,6 +9,16 @@ import { resolveParams } from '../core/params';
 // canvas sits behind scrolling caption sections; the section crossing the viewport centre selects
 // the system. Built as a second Vite entry (demo.html) — independent of the main app.
 registerArchetypes();
+
+// Live system count — derived from the registry that already powers the tour, so the landing copy
+// can never drift again (the hard-coded HTML fallback is just for crawlers / no-JS).
+{
+  const count = String(listFactories().length);
+  for (const id of ['sysCount', 'sysCountOutro']) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = count;
+  }
+}
 
 interface View {
   count: number;

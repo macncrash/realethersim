@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>ETHERSIM — a tour of complex systems</title>
-    <meta name="description" content="A scrolling tour of ETHERSIM: strange attractors, fractals, emergent life, and gravity — 42 dynamical systems in the browser, open source, WebGPU." />
+    <meta name="description" content="A scrolling tour of ETHERSIM: strange attractors, fractals, emergent life, and gravity — 136 dynamical systems in the browser, open source, WebGPU." />
     <style>
       :root {
         --bg: #05070d;
@@ -40,9 +40,13 @@
       .hero .pills { margin-top: 20px; color: var(--accent); font-size: 13px; letter-spacing: 0.18em; }
       .outro h2 { font-size: clamp(28px, 6vw, 56px); margin: 0 0 10px; letter-spacing: 0.04em; }
       .outro p { color: var(--dim); }
-      .outro .cta { display: inline-block; margin-top: 18px; padding: 12px 22px; border: 1px solid var(--accent);
-        border-radius: 10px; color: var(--accent); text-decoration: none; letter-spacing: 0.12em; font-size: 14px; }
-      .outro .cta:hover { background: rgba(74,214,200,0.12); }
+      .cta { display: inline-block; margin-top: 18px; padding: 12px 22px; border: 1px solid var(--accent);
+        border-radius: 10px; color: var(--accent); text-decoration: none; letter-spacing: 0.12em; font-size: 14px; transition: background .15s; }
+      .cta:hover { background: rgba(74,214,200,0.12); }
+      .hero .hero-cta { margin-top: 26px; font-size: 16px; padding: 14px 30px; background: rgba(74,214,200,0.10);
+        box-shadow: 0 10px 34px rgba(74,214,200,0.18); }
+      .hero .hero-cta:hover { background: rgba(74,214,200,0.22); }
+      .hero .scrollhint { margin-top: 18px; color: var(--dim); font-size: 12px; letter-spacing: 0.12em; opacity: 0.7; }
       @media (prefers-reduced-motion: no-preference) { html { scroll-snap-type: y proximity; } }
     </style>
   </head>
@@ -56,7 +60,9 @@
         <div>
           <h1>ETHERSIM</h1>
           <div class="sub">A tour of complex systems — chaos, fractals, life, and gravity,<br />simulated live in your browser.</div>
-          <div class="pills">42 SYSTEMS · 8 FAMILIES · WEBGPU · OPEN SOURCE</div>
+          <div class="pills"><span id="sysCount">136</span> SYSTEMS · 10 FAMILIES · WEBGPU · OPEN SOURCE</div>
+          <a class="cta hero-cta" href="./index.html">launch ETHERSIM →</a>
+          <div class="scrollhint">or scroll to take the tour ↓</div>
         </div>
       </section>
 
@@ -101,7 +107,7 @@
 
       <section class="outro" data-sim="nbody">
         <div>
-          <h2>Explore all 42 systems</h2>
+          <h2>Explore all <span id="sysCountOutro">136</span> systems</h2>
           <p>Strange attractors · iterated maps · fractals · Particle Life · Boids · slime mold · vortices · Lenia · reaction-diffusion · N-body.<br />
              Every one runs on the GPU, with built-in notes, math, and code.</p>
           <a class="cta" id="appLink" href="./index.html">launch ETHERSIM →</a>
