@@ -4,22 +4,36 @@ import type { ArchetypeFactory, ParamSpec } from '../core/archetype';
 // they're rendered by a full-screen distance-estimator shader (see src/render/raymarch.ts). They
 // register as factories ONLY so the switcher / params panel / learn panel pick them up; bootstrap
 // intercepts their id before any point sim is built, so create() must never be called.
-export type RaymarchKind = 'mandelbulb' | 'qjulia' | 'mandelbox' | 'menger';
+// Fractal distance estimators + implicit isosurfaces (F(x,y,z)=isovalue → DE |F−iso|/|∇F|).
+export type RaymarchKind =
+  | 'mandelbulb'
+  | 'qjulia'
+  | 'mandelbox'
+  | 'menger'
+  | 'gyroid'
+  | 'schwarzP'
+  | 'schwarzD'
+  | 'schoenIWP'
+  | 'neovius'
+  | 'chmutov';
 
 export interface RaymarchSystem {
   id: string;
   label: string;
   sdf: RaymarchKind;
   params: ParamSpec[];
+  category?: string; // UI bucket — 'Fractal' (default) or 'Surface'
   // Internal render tuning (consumed by raymarch.ts, not the UI):
-  iters: number; // fractal iterations baked into the shader loop
+  iters: number; // fractal iterations baked into the shader loop (0 for surfaces)
   bound: number; // bounding-sphere radius the march is clipped to
   camDist: number; // initial camera distance when the system is selected
   maxSteps: number; // sphere-trace step cap
+  freq?: number; // spatial frequency for periodic implicit surfaces (world → lattice scale)
 }
 
 const COL: ParamSpec = { key: 'colShift', label: 'colour', min: 0, max: 1, step: 0.01, default: 0.5 };
 const ANIM: ParamSpec = { key: 'animate', label: 'morph', min: 0, max: 1, step: 0.01, default: 0.35 };
+const ISO: ParamSpec = { key: 'iso', label: 'isovalue', min: -2, max: 2, step: 0.01, default: 0 };
 
 export const RAYMARCH_SYSTEMS: Record<string, RaymarchSystem> = {
   mandelbulb: {
@@ -82,13 +96,39 @@ export const RAYMARCH_SYSTEMS: Record<string, RaymarchSystem> = {
       ANIM,
     ],
   },
+
+  // ── implicit isosurfaces (category: Surface) — triply-periodic minimal surfaces + algebraic ──
+  gyroid: {
+    id: 'gyroid', label: 'Gyroid', sdf: 'gyroid', category: 'Surface',
+    iters: 0, freq: 1.3, bound: 4.4, camDist: 10.5, maxSteps: 170, params: [ISO, COL, ANIM],
+  },
+  schwarzP: {
+    id: 'schwarzP', label: 'Schwarz P', sdf: 'schwarzP', category: 'Surface',
+    iters: 0, freq: 1.3, bound: 4.4, camDist: 10.5, maxSteps: 170, params: [ISO, COL, ANIM],
+  },
+  schwarzD: {
+    id: 'schwarzD', label: 'Schwarz D (Diamond)', sdf: 'schwarzD', category: 'Surface',
+    iters: 0, freq: 1.3, bound: 4.4, camDist: 10.5, maxSteps: 170, params: [ISO, COL, ANIM],
+  },
+  schoenIWP: {
+    id: 'schoenIWP', label: 'Schoen I-WP', sdf: 'schoenIWP', category: 'Surface',
+    iters: 0, freq: 1.3, bound: 4.4, camDist: 10.5, maxSteps: 170, params: [ISO, COL, ANIM],
+  },
+  neovius: {
+    id: 'neovius', label: 'Neovius', sdf: 'neovius', category: 'Surface',
+    iters: 0, freq: 1.3, bound: 4.4, camDist: 10.5, maxSteps: 170, params: [ISO, COL, ANIM],
+  },
+  chmutov: {
+    id: 'chmutov', label: 'Chmutov Octic', sdf: 'chmutov', category: 'Surface',
+    iters: 0, freq: 0.85, bound: 1.75, camDist: 4.7, maxSteps: 210, params: [ISO, COL, ANIM],
+  },
 };
 
 export function makeRaymarchFactory(s: RaymarchSystem): ArchetypeFactory {
   return {
     id: s.id,
     label: s.label,
-    category: 'Fractal',
+    category: s.category ?? 'Fractal',
     kind: 'raymarch',
     params: s.params,
     defaultParticleCount: 1, // inert; the NullDriver ignores it

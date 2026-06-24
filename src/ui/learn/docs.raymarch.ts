@@ -185,4 +185,145 @@ return d;                              // exact signed distance`,
       { label: 'Inigo Quilez — distance functions', url: 'https://iquilezles.org/articles/distfunctions/' },
     ],
   },
+
+  // ── implicit isosurfaces (Surface category) ──
+  gyroid: {
+    title: 'Gyroid',
+    about:
+      'The gyroid is a triply-periodic minimal surface discovered by Alan Schoen at NASA in 1970 — ' +
+      'infinitely connected, smoothly curved, with no straight lines and no self-intersections. It ' +
+      'splits space into two interpenetrating, congruent labyrinths. Nature uses it in butterfly-wing ' +
+      'scales and block copolymers; engineers 3D-print it as an ultra-light, strong lattice.',
+    howItWorks:
+      'Rather than a marching-cubes mesh, we render the level set F = isovalue directly: a ray-marcher ' +
+      'finds where the short trigonometric field F crosses the isovalue for each pixel and shades by ' +
+      'its gradient ∇F. The "isovalue" knob thickens or thins the two channels; at 0 they’re balanced.',
+    equations: [
+      { label: 'gyroid level set', latex: '\\sin x\\cos y + \\sin y\\cos z + \\sin z\\cos x = c' },
+      { label: 'minimal surface (zero mean curvature)', latex: 'H = \\tfrac{1}{2}(\\kappa_1 + \\kappa_2) = 0' },
+    ],
+    params: [
+      { key: 'iso', symbol: 'c', meaning: 'isovalue (level set); 0 is the balanced gyroid, ±values thicken one labyrinth' },
+      { key: 'colShift', symbol: '\\phi', meaning: 'hue offset of the core→edge colour gradient' },
+      { key: 'animate', symbol: '\\alpha', meaning: 'gently breathes the isovalue over time (0 = still)' },
+    ],
+    code: `// implicit field; the surface is F = isovalue
+const F = (p) => sin(p.x)*cos(p.y) + sin(p.y)*cos(p.z) + sin(p.z)*cos(p.x);
+// raymarch it as a distance estimate, normal = ∇F:
+const de = abs(F(p) - iso) / length(grad(F, p));   // |F−iso| / |∇F|`,
+    links: [
+      { label: 'Gyroid (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Gyroid' },
+      { label: 'Triply periodic minimal surface', url: 'https://en.wikipedia.org/wiki/Triply_periodic_minimal_surface' },
+    ],
+  },
+  schwarzP: {
+    title: 'Schwarz P (Primitive)',
+    about:
+      'One of the first triply-periodic minimal surfaces, found by Hermann Schwarz in the 1880s. With ' +
+      'simple-cubic symmetry it partitions space into two identical "plumber’s nightmare" networks of ' +
+      'pipes meeting at right angles.',
+    howItWorks:
+      'The simplest possible TPMS field — a sum of three cosines. We render its level set as a lit ' +
+      'isosurface; the isovalue pinches or opens the necks where the pipes join.',
+    equations: [{ label: 'Schwarz P level set', latex: '\\cos x + \\cos y + \\cos z = c' }],
+    params: [
+      { key: 'iso', symbol: 'c', meaning: 'isovalue; near ±1 the necks pinch off into separate cells' },
+      { key: 'colShift', symbol: '\\phi', meaning: 'colour gradient offset' },
+      { key: 'animate', symbol: '\\alpha', meaning: 'breathes the isovalue (0 = still)' },
+    ],
+    code: `const F = (p) => cos(p.x) + cos(p.y) + cos(p.z);   // surface: F = isovalue`,
+    links: [{ label: 'Schwarz minimal surface (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Schwarz_minimal_surface' }],
+  },
+  schwarzD: {
+    title: 'Schwarz D (Diamond)',
+    about:
+      'Schwarz’s diamond surface: its two interwoven labyrinths trace the diamond (tetrahedral) lattice ' +
+      '— the same geometry as carbon in diamond. Remarkably, the gyroid is the unique intermediate ' +
+      '"associate" surface that bends Schwarz D continuously into Schwarz P without stretching.',
+    howItWorks:
+      'A four-term trigonometric field with diamond symmetry, rendered as a level-set isosurface lit by ' +
+      'its gradient. The isovalue controls the channel thickness.',
+    equations: [
+      {
+        label: 'Schwarz D level set',
+        latex: '\\sin x\\sin y\\sin z + \\sin x\\cos y\\cos z + \\cos x\\sin y\\cos z + \\cos x\\cos y\\sin z = c',
+      },
+    ],
+    params: [
+      { key: 'iso', symbol: 'c', meaning: 'isovalue (channel thickness)' },
+      { key: 'colShift', symbol: '\\phi', meaning: 'colour gradient offset' },
+      { key: 'animate', symbol: '\\alpha', meaning: 'breathes the isovalue (0 = still)' },
+    ],
+    code: `const F = (p) => sin(x)*sin(y)*sin(z) + sin(x)*cos(y)*cos(z)
+              + cos(x)*sin(y)*cos(z) + cos(x)*cos(y)*sin(z);  // F = isovalue`,
+    links: [{ label: 'Schwarz minimal surface (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Schwarz_minimal_surface' }],
+  },
+  schoenIWP: {
+    title: 'Schoen I-WP',
+    about:
+      'Another of Alan Schoen’s 1970 minimal surfaces, with body-centred-cubic symmetry. The "I-WP" ' +
+      '("I-Wrapped Package") splits space into two NON-congruent labyrinths — one wraps around bcc ' +
+      'lattice points, the other threads between them — giving its distinctive cage-of-cages look.',
+    howItWorks:
+      'A trigonometric level set with both first- and second-harmonic cosine terms, rendered as a lit ' +
+      'isosurface. The isovalue trades volume between the two unequal labyrinths.',
+    equations: [
+      {
+        label: 'Schoen I-WP level set',
+        latex: '2(\\cos x\\cos y + \\cos y\\cos z + \\cos z\\cos x) - (\\cos 2x + \\cos 2y + \\cos 2z) = c',
+      },
+    ],
+    params: [
+      { key: 'iso', symbol: 'c', meaning: 'isovalue; shifts volume between the two unequal labyrinths' },
+      { key: 'colShift', symbol: '\\phi', meaning: 'colour gradient offset' },
+      { key: 'animate', symbol: '\\alpha', meaning: 'breathes the isovalue (0 = still)' },
+    ],
+    code: `const F = (p) => 2*(cos(x)*cos(y) + cos(y)*cos(z) + cos(z)*cos(x))
+              - (cos(2*x) + cos(2*y) + cos(2*z));   // F = isovalue`,
+    links: [{ label: 'Triply periodic minimal surface', url: 'https://en.wikipedia.org/wiki/Triply_periodic_minimal_surface' }],
+  },
+  neovius: {
+    title: 'Neovius Surface',
+    about:
+      'Discovered in 1883 by Edvard Neovius, a student of Schwarz. It shares Schwarz P’s simple-cubic ' +
+      'symmetry but adds a fourth term, fattening the nodes where the channels meet into chunky cubic ' +
+      'hubs connected by narrow necks.',
+    howItWorks:
+      'Schwarz P’s three cosines plus a triple-product term, rendered as a level-set isosurface. The ' +
+      'isovalue tunes the balance between the bulbous hubs and the connecting necks.',
+    equations: [{ label: 'Neovius level set', latex: '3(\\cos x + \\cos y + \\cos z) + 4\\cos x\\cos y\\cos z = c' }],
+    params: [
+      { key: 'iso', symbol: 'c', meaning: 'isovalue (hub vs neck balance)' },
+      { key: 'colShift', symbol: '\\phi', meaning: 'colour gradient offset' },
+      { key: 'animate', symbol: '\\alpha', meaning: 'breathes the isovalue (0 = still)' },
+    ],
+    code: `const F = (p) => 3*(cos(x)+cos(y)+cos(z)) + 4*cos(x)*cos(y)*cos(z);  // F = isovalue`,
+    links: [{ label: 'Neovius surface (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Neovius_surface' }],
+  },
+  chmutov: {
+    title: 'Chmutov Octic',
+    about:
+      'Unlike the minimal surfaces, this is an algebraic surface — a degree-8 polynomial zero set built ' +
+      'by Sergei Chmutov from Chebyshev polynomials. Chmutov’s construction packs a near-record number ' +
+      'of nodal singularities for its degree, producing a dense, highly symmetric lattice of tunnels ' +
+      'and pinch points inside the unit cube.',
+    howItWorks:
+      'Sum the 8th Chebyshev polynomial T₈ evaluated on each axis; its zero set is the surface. Because ' +
+      'the gradient varies a lot, we under-relax the ray-march step, then light it by the gradient.',
+    equations: [
+      { label: 'Chmutov octic', latex: 'T_8(x) + T_8(y) + T_8(z) = c' },
+      { label: '8th Chebyshev polynomial', latex: 'T_8(t) = 128t^8 - 256t^6 + 160t^4 - 32t^2 + 1' },
+    ],
+    params: [
+      { key: 'iso', symbol: 'c', meaning: 'isovalue; sweeps through the family of related level sets' },
+      { key: 'colShift', symbol: '\\phi', meaning: 'colour gradient offset' },
+      { key: 'animate', symbol: '\\alpha', meaning: 'sweeps the isovalue over time (0 = still)' },
+    ],
+    code: `const T8 = (t)=>{const a=t*t,b=a*a,c=b*a,d=b*b; return 128*d - 256*c + 160*b - 32*a + 1;};
+const F = (p) => T8(p.x) + T8(p.y) + T8(p.z);   // surface: F = isovalue`,
+    links: [
+      { label: 'Chmutov surfaces', url: 'https://en.wikipedia.org/wiki/Algebraic_surface' },
+      { label: 'Chebyshev polynomials', url: 'https://en.wikipedia.org/wiki/Chebyshev_polynomials' },
+    ],
+  },
 };

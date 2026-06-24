@@ -15,7 +15,7 @@ describe('all registered systems are finite, bounded, and non-degenerate', () =>
   it('has a sizeable catalog across categories', () => {
     expect(factories.length).toBeGreaterThanOrEqual(30);
     const cats = new Set(factories.map((f) => f.category));
-    for (const c of ['Attractor', 'Map', 'Fractal', 'Life', 'Fluid', 'Field', 'Oscillator', 'N-Body']) expect(cats.has(c)).toBe(true);
+    for (const c of ['Attractor', 'Map', 'Fractal', 'Surface', 'Life', 'Fluid', 'Field', 'Oscillator', 'N-Body']) expect(cats.has(c)).toBe(true);
   });
 
   // Raymarch (3D sphere-traced) fractals have no point cloud — they're rendered by a fragment
@@ -53,16 +53,17 @@ describe('all registered systems are finite, bounded, and non-degenerate', () =>
     }, 20_000); // generous timeout: convolution systems (Lenia) are heavy at 800 steps
   }
 
-  // Raymarch fractals: metadata is sound, they're under Fractal, expose params, and must NOT be
-  // instantiated as point sims (bootstrap routes them to the shader renderer + an inert driver).
-  describe('raymarch (3D) fractals', () => {
+  // Raymarch systems (3D fractals + implicit surfaces): metadata is sound, they're under Fractal or
+  // Surface, expose params, and must NOT be instantiated as point sims (bootstrap routes them to the
+  // shader renderer + an inert driver).
+  describe('raymarch (3D) systems', () => {
     const raymarch = factories.filter((f) => f.kind === 'raymarch');
 
-    it('registers the 3D fractal suite under Fractal', () => {
+    it('registers the 3D fractal + surface suites', () => {
       const ids = new Set(raymarch.map((f) => f.id));
-      for (const id of ['mandelbulb', 'qjulia', 'mandelbox', 'menger']) expect(ids.has(id)).toBe(true);
+      for (const id of ['mandelbulb', 'qjulia', 'mandelbox', 'menger', 'gyroid', 'chmutov', 'schoenIWP']) expect(ids.has(id)).toBe(true);
       for (const f of raymarch) {
-        expect(f.category).toBe('Fractal');
+        expect(['Fractal', 'Surface']).toContain(f.category);
         expect(f.params.length).toBeGreaterThan(0);
       }
     });

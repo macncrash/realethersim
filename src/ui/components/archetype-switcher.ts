@@ -5,7 +5,7 @@ import { getFactory } from '../../core/registry';
 
 // Category tabs (FR-3.1) + a per-category system selector, so the catalog can grow to dozens of
 // systems without overflowing the tab bar. Each registered factory declares its `category`.
-const CATEGORY_ORDER = ['Attractor', 'Map', 'Fractal', 'Life', 'Fluid', 'Field', 'Oscillator', 'N-Body'];
+const CATEGORY_ORDER = ['Attractor', 'Map', 'Fractal', 'Surface', 'Life', 'Fluid', 'Field', 'Oscillator', 'N-Body'];
 
 export class ArchetypeSwitcher extends LitElement {
   protected override createRenderRoot(): HTMLElement {

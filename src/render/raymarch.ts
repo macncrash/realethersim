@@ -83,9 +83,53 @@ const sdBox = Fn(([p, b]: [Node, Node]) => {
 // Build the distance-estimator for one fractal. Returns a TSL Fn(p) -> vec2(distance, orbitTrap).
 // All loops are compile-time bounded with an escape Break; every divide/log is guarded so a single
 // NaN can't poison the whole ray.
+// ── implicit-surface fields F(c): the rendered surface is the level set F = isovalue ──
+const cheb8 = (x: Node): Node => {
+  const x2 = x.mul(x);
+  const x4 = x2.mul(x2);
+  const x6 = x4.mul(x2);
+  const x8 = x4.mul(x4);
+  return x8.mul(128).sub(x6.mul(256)).add(x4.mul(160)).sub(x2.mul(32)).add(1); // Chebyshev T₈
+};
+const surfaceField = (kind: string, c: Node): Node => {
+  const x = c.x;
+  const y = c.y;
+  const z = c.z;
+  if (kind === 'gyroid') return sin(x).mul(cos(y)).add(sin(y).mul(cos(z))).add(sin(z).mul(cos(x)));
+  if (kind === 'schwarzP') return cos(x).add(cos(y)).add(cos(z));
+  if (kind === 'schwarzD')
+    return sin(x).mul(sin(y)).mul(sin(z))
+      .add(sin(x).mul(cos(y)).mul(cos(z)))
+      .add(cos(x).mul(sin(y)).mul(cos(z)))
+      .add(cos(x).mul(cos(y)).mul(sin(z)));
+  if (kind === 'schoenIWP')
+    return cos(x).mul(cos(y)).add(cos(y).mul(cos(z))).add(cos(z).mul(cos(x))).mul(2)
+      .sub(cos(x.mul(2)).add(cos(y.mul(2))).add(cos(z.mul(2))));
+  if (kind === 'neovius')
+    return cos(x).add(cos(y)).add(cos(z)).mul(3).add(cos(x).mul(cos(y)).mul(cos(z)).mul(4));
+  return cheb8(x).add(cheb8(y)).add(cheb8(z)); // chmutov octic
+};
+const SURFACE_KINDS = ['gyroid', 'schwarzP', 'schwarzD', 'schoenIWP', 'neovius', 'chmutov'];
+
 function makeMap(sys: RaymarchSystem, u: Record<string, Node>, uTime: Node): Node {
   const kind: RaymarchKind = sys.sdf;
   const ITER = sys.iters;
+
+  if (SURFACE_KINDS.includes(kind)) {
+    const freq = sys.freq ?? 1;
+    return Fn(([p]: [Node]) => {
+      const iso = u.iso.add(u.animate.mul(0.5).mul(sin(uTime.mul(0.3)))).toVar(); // animated level-set
+      const fAt = (wp: Node): Node => surfaceField(kind, wp.mul(freq));
+      const f0 = fAt(p).toVar();
+      const e = 0.0025;
+      const gx = fAt(p.add(vec3(e, 0, 0))).sub(f0);
+      const gy = fAt(p.add(vec3(0, e, 0))).sub(f0);
+      const gz = fAt(p.add(vec3(0, 0, e))).sub(f0);
+      const gmag = vec3(gx, gy, gz).length().div(e).max(1e-4); // |∇F| (forward difference)
+      const de = f0.sub(iso).abs().div(gmag).mul(0.7); // |F−iso|/|∇F|, under-relaxed to avoid overshoot
+      return vec2(de.max(0), p.length().div(sys.bound)); // trap = radial → core→edge palette
+    });
+  }
 
   if (kind === 'mandelbulb') {
     const powerEff = u.power.add(u.animate.mul(1.6).mul(sin(uTime.mul(0.25)))).max(2);
@@ -302,6 +346,7 @@ export function createRaymarch(sys: RaymarchSystem, backend: 'webgpu' | 'webgl2'
         });
         If(hit.greaterThan(0.5), () => {
           const n = calcNormal(hp).toVar();
+          If(n.dot(rd).greaterThan(0), () => n.assign(n.negate())); // face the camera (implicit surfaces flip sign)
           const diff = max(n.dot(LIGHT), 0).toVar();
           const sh = softShadow(hp.add(n.mul(0.0025)), LIGHT).toVar();
           const ao = calcAO(hp, n).toVar();
