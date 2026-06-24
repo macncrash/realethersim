@@ -24,7 +24,12 @@ export type RaymarchKind =
   | 'clebsch'
   | 'cayley'
   | 'fischerKoch'
-  | 'schwarzCLP';
+  | 'schwarzCLP'
+  | 'togliatti'
+  | 'whitneyUmbrella'
+  | 'tooth'
+  | 'lidinoid'
+  | 'dingDong';
 
 export interface RaymarchSystem {
   id: string;
@@ -171,6 +176,28 @@ export const RAYMARCH_SYSTEMS: Record<string, RaymarchSystem> = {
   schwarzCLP: {
     id: 'schwarzCLP', label: 'Schwarz CLP', sdf: 'schwarzCLP', category: 'Surface',
     iters: 0, freq: 1.3, bound: 4.4, camDist: 10.5, maxSteps: 190, stepScale: 0.6, params: [ISO, COL, ANIM],
+  },
+
+  // ── batch 4: node/singular quintics & quartics (gradient-vanishing ⇒ stepScale+maxStep) + a TPMS ──
+  togliatti: {
+    id: 'togliatti', label: 'Togliatti Quintic', sdf: 'togliatti', category: 'Surface',
+    iters: 0, freq: 2.4, bound: 2.3, camDist: 5.2, maxSteps: 240, stepScale: 0.3, maxStep: 0.04, params: [ISO, COL, ANIM],
+  },
+  whitneyUmbrella: {
+    id: 'whitneyUmbrella', label: 'Whitney Umbrella', sdf: 'whitneyUmbrella', category: 'Surface',
+    iters: 0, freq: 0.75, bound: 2.3, camDist: 5.2, maxSteps: 260, stepScale: 0.35, maxStep: 0.04, params: [ISO, COL, ANIM],
+  },
+  tooth: {
+    id: 'tooth', label: 'Tooth Surface', sdf: 'tooth', category: 'Surface',
+    iters: 0, freq: 0.85, bound: 2.4, camDist: 5.3, maxSteps: 240, stepScale: 0.4, maxStep: 0.04, params: [ISO, COL, ANIM],
+  },
+  lidinoid: {
+    id: 'lidinoid', label: 'Lidinoid', sdf: 'lidinoid', category: 'Surface',
+    iters: 0, freq: 1.3, bound: 4.4, camDist: 10.5, maxSteps: 190, params: [ISO, COL, ANIM],
+  },
+  dingDong: {
+    id: 'dingDong', label: 'Ding-Dong Surface', sdf: 'dingDong', category: 'Surface',
+    iters: 0, freq: 0.95, bound: 2.3, camDist: 5.2, maxSteps: 260, stepScale: 0.4, maxStep: 0.035, params: [ISO, COL, ANIM],
   },
 };
 

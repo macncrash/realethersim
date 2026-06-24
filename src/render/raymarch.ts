@@ -180,12 +180,69 @@ const surfaceField = (kind: string, c: Node): Node => {
       .add(cos(z.mul(2)).mul(sin(x)).mul(cos(y))); // Fischer-Koch S nodal approximation
   if (kind === 'schwarzCLP')
     return cos(x.mul(2)).mul(cos(z)).add(cos(y.mul(2)).mul(sin(z))); // Schwarz CLP: cos2x·cosz + cos2y·sinz
+  if (kind === 'togliatti') {
+    // Togliatti quintic — the degree-5 surface with the maximal 31 ordinary double points.
+    // Togliatti/Barth affine real form; the sqrt(5) terms give it pentagonal (icosahedral) symmetry.
+    const s5 = float(2.2360679775); // sqrt(5)
+    const x2 = x.mul(x), y2 = y.mul(y), z2 = z.mul(z);
+    const x3 = x2.mul(x), x4 = x2.mul(x2), y4 = y2.mul(y2);
+    // 64·(x−1)·(x⁴ − 4x³ − 10x²y² − 4x² + 16x − 20xy² + 5y⁴ + 16 − 20y²)
+    const poly = x4
+      .sub(x3.mul(4))
+      .sub(x2.mul(y2).mul(10))
+      .sub(x2.mul(4))
+      .add(x.mul(16))
+      .sub(x.mul(y2).mul(20))
+      .add(y4.mul(5))
+      .add(16)
+      .sub(y2.mul(20));
+    const t1 = x.sub(1).mul(poly).mul(64);
+    // 5√5·(2z − √5 − 1)·(4(x²+y²−z²) + (1 + 3√5))²
+    const inner = x2.add(y2).sub(z2).mul(4).add(s5.mul(3).add(1));
+    const t2 = z.mul(2).sub(s5).sub(1).mul(inner.mul(inner)).mul(s5.mul(5));
+    return t1.sub(t2); // 64(x−1)(…) − 5√5(2z−√5−1)(4(x²+y²−z²)+1+3√5)²
+  }
+  if (kind === 'whitneyUmbrella') {
+    // Whitney umbrella — the canonical Whitney cross-cap: x² = y²·z.
+    // Self-intersecting umbrella sheet for z>0 plus the singular handle line x=y=0, z<0.
+    // The whole z-axis has vanishing gradient (∇F = (2x, −2yz, −y²) = 0 when x=y=0),
+    // so the DE step is heavily under-relaxed and hard-capped to avoid overshoot.
+    const x2 = x.mul(x), y2 = y.mul(y);
+    return x2.sub(y2.mul(z)); // x² − y²z = iso
+  }
+  if (kind === 'tooth') {
+    // Tooth / cushion quartic: x⁴+y⁴+z⁴ − (x²+y²+z²). Bounded body in [-1,1]³ with four
+    // cusp-like dimples; the origin is a singular point (F=0, ∇F=0).
+    const x2 = x.mul(x), y2 = y.mul(y), z2 = z.mul(z);
+    return x2.mul(x2).add(y2.mul(y2)).add(z2.mul(z2)).sub(x2.add(y2).add(z2)); // x⁴+y⁴+z⁴ − (x²+y²+z²)
+  }
+  if (kind === 'lidinoid')
+    return sin(x.mul(2)).mul(cos(y)).mul(sin(z))
+      .add(sin(y.mul(2)).mul(cos(z)).mul(sin(x)))
+      .add(sin(z.mul(2)).mul(cos(x)).mul(sin(y)))
+      .mul(0.5)
+      .sub(
+        cos(x.mul(2)).mul(cos(y.mul(2)))
+          .add(cos(y.mul(2)).mul(cos(z.mul(2))))
+          .add(cos(z.mul(2)).mul(cos(x.mul(2))))
+          .mul(0.5),
+      )
+      .add(0.15); // Lidinoid: ½Σ sin2x·cosy·sinz − ½Σ cos2x·cos2y + 0.15
+  if (kind === 'dingDong') {
+    // Ding-dong surface x²+y²−z²+z³, cusp axis remapped to world up (formula z → world y) so the
+    // bell stands upright, plus a +0.5 recentre so the closed lobe (z∈[0,1]) frames around the origin.
+    const X = x, Y = z;
+    const Z = y.add(0.5);
+    const Z2 = Z.mul(Z);
+    return X.mul(X).add(Y.mul(Y)).sub(Z2).add(Z2.mul(Z)); // x²+y²−z²+z³
+  }
   return cheb8(x).add(cheb8(y)).add(cheb8(z)); // default (unreachable for registered kinds)
 };
 const SURFACE_KINDS = [
   'gyroid', 'schwarzP', 'schwarzD', 'schoenIWP', 'neovius', 'chmutov',
   'heart', 'tanglecube', 'goursat', 'barth',
   'kummer', 'clebsch', 'cayley', 'fischerKoch', 'schwarzCLP',
+  'togliatti', 'whitneyUmbrella', 'tooth', 'lidinoid', 'dingDong',
 ];
 
 function makeMap(sys: RaymarchSystem, u: Record<string, Node>, uTime: Node): Node {

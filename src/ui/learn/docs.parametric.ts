@@ -674,4 +674,405 @@ point(r*st*Math.cos(phi), r*Math.cos(theta), r*st*Math.sin(phi));`,
       }
     ]
   },
+  "catenoidHelicoid": {
+    "title": "Catenoid ↔ Helicoid",
+    "about": "The catenoid (the soap film between two rings) and the helicoid (the surface of a spiral ramp) look nothing alike, yet they are secretly the same surface bent without any stretching. They are two members of a continuous 'associate family' of minimal surfaces, and you can morph one smoothly into the other while every patch keeps its exact shape and area — a true isometry, like rolling a sheet of paper into a tube. At every frozen stage in between, the surface is still a minimal (zero-mean-curvature) soap film of its own.",
+    "howItWorks": "A single morph angle t interpolates between the two surfaces: at t=0 the formula is the helicoid, at t=π/2 it is the catenoid, and in between cos t and sin t blend the helicoid and catenoid parametrizations of the same (u,v) patch. Because the blend is an isometry, no point ever has to stretch — the grid just rolls and unrolls. The grid coordinate u sweeps once around (here over [-π,π] so the surface sits centred on the origin) and v climbs the height of the tube; both sinh and cosh are smooth everywhere, so every sampled point is finite.",
+    "equations": [
+      {
+        "label": "associate-family morph",
+        "latex": "\\begin{aligned} x &= \\cos t\\,\\sinh v\\,\\sin u + \\sin t\\,\\cosh v\\,\\cos u \\\\ y &= -\\cos t\\,\\sinh v\\,\\cos u + \\sin t\\,\\cosh v\\,\\sin u \\\\ z &= u\\cos t + v\\sin t \\end{aligned}"
+      },
+      {
+        "label": "endpoints",
+        "latex": "t = 0 \\Rightarrow \\text{helicoid}, \\qquad t = \\tfrac{\\pi}{2} \\Rightarrow \\text{catenoid}"
+      },
+      {
+        "label": "minimal at every t",
+        "latex": "H = \\tfrac{1}{2}(\\kappa_1 + \\kappa_2) = 0"
+      }
+    ],
+    "params": [
+      {
+        "key": "morph",
+        "symbol": "t",
+        "meaning": "bend angle in [0, π/2]; 0 is the helicoid (spiral ramp), π/2 is the catenoid (soap-film neck), values between are the isometric in-betweens"
+      },
+      {
+        "key": "span",
+        "symbol": "A",
+        "meaning": "vertical half-extent of the v domain [-A, A]; larger values flare the catenoid mouth wider (cosh grows) and extend the helicoid blade"
+      }
+    ],
+    "code": "const u = a*2*Math.PI - Math.PI, v = (b*2 - 1)*span;  // a,b ∈ [0,1] grid\nconst ct = Math.cos(t), st = Math.sin(t);\nconst shv = Math.sinh(v), chv = Math.cosh(v);\npoint(\n  ct*shv*Math.sin(u) + st*chv*Math.cos(u),\n  -ct*shv*Math.cos(u) + st*chv*Math.sin(u),\n  u*ct + v*st);",
+    "links": [
+      {
+        "label": "Catenoid (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Catenoid"
+      },
+      {
+        "label": "Helicoid (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Helicoid"
+      },
+      {
+        "label": "Minimal surface / associate family (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Minimal_surface"
+      },
+      {
+        "label": "Catenoid (MathWorld)",
+        "url": "https://mathworld.wolfram.com/Catenoid.html"
+      }
+    ]
+  },
+  "catalan": {
+    "title": "Catalan's Surface",
+    "about": "Catalan's surface is a classical minimal surface — a shape that, like a soap film, locally minimises its area — discovered by Eugene Catalan in 1855. Its claim to fame is geometric poetry: it is the only minimal surface that contains an ordinary cycloid (the arch traced by a point on a rolling wheel) as a geodesic, running right down its spine. Sweep that arched profile outward with hyperbolic functions and the film flares into broad, gently rippled wings on either side of the cycloid.",
+    "howItWorks": "Two coordinates sweep a grid. Parameter u runs along the cycloid arches; at the centre slice v=0 the formula collapses exactly to the cycloid (u - sin u, 1 - cos u, 0). Parameter v then flares the surface away from that geodesic through cosh(v) and sinh(v/2), which widen the wings without ever blowing up — both are entire functions, so every sample is finite. The raw surface marches off along the x-axis and floats at height y=1, so a fixed offset slides it back onto the origin. The 'arches' knob sets how many cycloid arches are drawn; 'extent' controls how far the wings flare.",
+    "equations": [
+      {
+        "label": "Catalan's surface",
+        "latex": "\\begin{aligned} x &= u - \\sin u\\,\\cosh v \\\\ y &= 1 - \\cos u\\,\\cosh v \\\\ z &= 4\\,\\sin\\tfrac{u}{2}\\,\\sinh\\tfrac{v}{2} \\end{aligned}"
+      },
+      {
+        "label": "cycloid geodesic (v=0)",
+        "latex": "(x,y,z)\\big|_{v=0} = (u - \\sin u,\\; 1 - \\cos u,\\; 0)"
+      },
+      {
+        "label": "minimal (zero mean curvature)",
+        "latex": "H = \\tfrac{1}{2}(\\kappa_1 + \\kappa_2) = 0"
+      }
+    ],
+    "params": [
+      {
+        "key": "arches",
+        "symbol": "k",
+        "meaning": "number of cycloid arches drawn; u ranges over [0, k\\pi] (default 4 = two full arches)"
+      },
+      {
+        "key": "extent",
+        "symbol": "A",
+        "meaning": "half-range of v ∈ [-A, A]; larger values flare the hyperbolic wings wider and taller"
+      }
+    ],
+    "code": "const u = a*arches*Math.PI, v = (b*2 - 1)*extent;   // a,b ∈ [0,1] grid\nconst ch = Math.cosh(v), sh2 = Math.sinh(v/2);\nconst uMax = arches*Math.PI;\npoint(u - Math.sin(u)*ch - uMax/2,   // centred along the cycloid\n      1 - Math.cos(u)*ch - 1,        // centred up axis\n      4*Math.sin(u/2)*sh2);",
+    "links": [
+      {
+        "label": "Catalan's minimal surface (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Catalan_minimal_surface"
+      },
+      {
+        "label": "Catalan's Surface (MathWorld)",
+        "url": "https://mathworld.wolfram.com/CatalansSurface.html"
+      },
+      {
+        "label": "Minimal surface (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Minimal_surface"
+      },
+      {
+        "label": "Cycloid (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Cycloid"
+      }
+    ]
+  },
+  "henneberg": {
+    "title": "Henneberg's Surface",
+    "about": "Henneberg's surface, found by Lebrecht Henneberg in 1875, is the first known non-orientable minimal surface — a soap-film shape that locally minimises area yet, like a Möbius band, has only one side. Hidden inside it is a Neil semicubical parabola, the cuspidal curve y²=x³, which the surface contains as a geodesic. Built entirely from hyperbolic and trigonometric functions, it folds into a richly self-intersecting six-fold form that has no boundary and no consistent notion of 'outward'.",
+    "howItWorks": "Two grid coordinates u and v sweep the surface. The x and y coordinates blend sinh(u) with sinh(3u) against cos/sin of v and 3v, while the height z = 2 cosh(2u) cos(2v) gives the saddle. Because sinh(3u) grows explosively, u is held inside a tight window [-reach, reach] with reach ≤ 0.9 — every term is then a finite hyperbolic/trig value, so no point can blow up. The symmetric u-range makes the whole shape sit centred on the origin. The 'flatten' knob weights the fast sinh(3u) cubic term, relaxing the outer folds toward a plain saddle at 0.",
+    "equations": [
+      {
+        "label": "Henneberg's surface",
+        "latex": "\\begin{aligned} x &= 2\\sinh u\\cos v - \\tfrac{2}{3}\\sinh 3u\\,\\cos 3v \\\\ y &= 2\\sinh u\\sin v + \\tfrac{2}{3}\\sinh 3u\\,\\sin 3v \\\\ z &= 2\\cosh 2u\\,\\cos 2v \\end{aligned}"
+      },
+      {
+        "label": "minimal (zero mean curvature)",
+        "latex": "H = \\tfrac{1}{2}(\\kappa_1 + \\kappa_2) = 0"
+      },
+      {
+        "label": "contains a Neil parabola (v=0)",
+        "latex": "y^2 = x^3 \\quad\\text{(semicubical cusp)}"
+      },
+      {
+        "label": "domain",
+        "latex": "u \\in [-A,\\,A],\\ A \\le 0.9,\\quad v \\in [0,\\pi]"
+      }
+    ],
+    "params": [
+      {
+        "key": "reach",
+        "symbol": "A",
+        "meaning": "half-width of u ∈ [-A, A]; kept ≤ 0.9 so sinh(3u) stays bounded — larger A reveals more of the self-intersecting folds"
+      },
+      {
+        "key": "flatten",
+        "symbol": "f",
+        "meaning": "weights the fast (2/3)sinh(3u) cubic term; 1 is the true Henneberg surface, 0 collapses it toward a plain cosh saddle"
+      }
+    ],
+    "code": "const u = (a*2 - 1)*reach, v = b*Math.PI;     // a,b ∈ [0,1] grid, reach ≤ 0.9\nconst su = Math.sinh(u), s3u = Math.sinh(3*u), c2u = Math.cosh(2*u);\nconst k = flatten*(2/3);\npoint(\n  2*su*Math.cos(v) - k*s3u*Math.cos(3*v),\n  2*su*Math.sin(v) + k*s3u*Math.sin(3*v),\n  2*c2u*Math.cos(2*v));",
+    "links": [
+      {
+        "label": "Henneberg surface (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Henneberg_surface"
+      },
+      {
+        "label": "Henneberg's Minimal Surface (MathWorld)",
+        "url": "https://mathworld.wolfram.com/HennebergsMinimalSurface.html"
+      },
+      {
+        "label": "Minimal surface (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Minimal_surface"
+      }
+    ]
+  },
+  "scherk": {
+    "title": "Scherk's Surface",
+    "about": "In 1834 Heinrich Scherk found the first new minimal surfaces since Euler and Meusnier — soap-film shapes defined by the strikingly simple equation z = ln(cos x) − ln(cos y). His 'first surface' is doubly periodic: it tiles the plane into a checkerboard of square holes, and at each crossing four saddle-shaped sheets rise and fall to weave together into the classic 'saddle tower'. Because cos hits zero at the cell edges the surface shoots off to infinity there, so what you see is a bounded window cut just short of those walls.",
+    "howItWorks": "A flat (u,v) grid is stretched across a few fundamental cells of width π each. Inside every cell the x and y coordinates are folded back to the interval (−π/2, π/2) and clamped a small margin short of the ±π/2 asymptotes, where ln(cos) would diverge. The height is then simply ln|cos x| − ln|cos y|: where cos x is small the surface climbs, where cos y is small it dives, and the two competing logarithms knit the saddle towers. The 'cells' knob tiles more towers; the 'tower clamp' margin trades how tall (and how close to the true asymptote) the towers grow.",
+    "equations": [
+      {
+        "label": "Scherk's first surface",
+        "latex": "z = \\ln(\\cos x) - \\ln(\\cos y) = \\ln\\!\\frac{\\cos x}{\\cos y}"
+      },
+      {
+        "label": "fundamental domain",
+        "latex": "x,\\,y \\in \\left(-\\tfrac{\\pi}{2}+\\varepsilon,\\; \\tfrac{\\pi}{2}-\\varepsilon\\right)\\ (\\text{mod }\\pi)"
+      },
+      {
+        "label": "minimal (zero mean curvature)",
+        "latex": "H = \\tfrac{1}{2}(\\kappa_1 + \\kappa_2) = 0"
+      }
+    ],
+    "params": [
+      {
+        "key": "cells",
+        "symbol": "N",
+        "meaning": "how many fundamental cells (each of width π) are tiled per axis — more cells weave more saddle towers"
+      },
+      {
+        "key": "margin",
+        "symbol": "\\varepsilon",
+        "meaning": "gap held back from the ±π/2 asymptotes where ln(cos)→−∞; smaller ε lets the towers grow taller, larger ε flattens them"
+      }
+    ],
+    "code": "const HALF = Math.PI/2, span = cells*Math.PI;\nconst x = (a - 0.5)*span, y = (b - 0.5)*span;   // a,b ∈ [0,1] grid\nconst lim = HALF - margin;\nfunction fold(t){ let l = t % Math.PI;\n  if (l >  HALF) l -= Math.PI;\n  if (l < -HALF) l += Math.PI;\n  return Math.max(-lim, Math.min(lim, l)); }   // clamp off the asymptotes\nconst cx = Math.abs(Math.cos(fold(x))), cy = Math.abs(Math.cos(fold(y)));\npoint(x, Math.log(cx) - Math.log(cy), y);        // z = up",
+    "links": [
+      {
+        "label": "Scherk surface (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Scherk_surface"
+      },
+      {
+        "label": "Scherk's Minimal Surfaces (MathWorld)",
+        "url": "https://mathworld.wolfram.com/ScherksMinimalSurfaces.html"
+      },
+      {
+        "label": "Minimal surface (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Minimal_surface"
+      }
+    ]
+  },
+  "astroidalEllipsoid": {
+    "title": "Astroidal Ellipsoid",
+    "about": "The astroidal ellipsoid is a star-shaped solid built from the astroid — the four-cusped curve traced by a point on a small circle rolling inside one four times its size. Forming the spherical product of two such curves sweeps an eight-pointed star body whose faces all curve inward toward sharp cusps, like an inflated octahedron pinched along every axis. It is the cube of the ordinary ellipsoid parametrization: replacing each coordinate with its signed cube pulls the rounded sphere into pointed, concave lobes.",
+    "howItWorks": "Two angles drive a grid: u sweeps the equator while v runs pole to pole. The ordinary ellipsoid point (cos u cos v, sin v, sin u cos v) is taken and each coordinate is raised to an odd power (3 by default) while keeping its sign — the signed power |s|^k·sign(s). Cubing a value in [-1,1] shrinks the mid-range hard while leaving the extremes at ±1, so the smooth sphere collapses inward into cusped star points. Everything is a power of a bounded sine or cosine, so no division or logarithm can blow up.",
+    "equations": [
+      {
+        "label": "astroidal ellipsoid",
+        "latex": "\\begin{aligned} x &= (\\cos u\\,\\cos v)^3 \\\\ y &= (\\sin v)^3 \\\\ z &= (\\sin u\\,\\cos v)^3 \\end{aligned}"
+      },
+      {
+        "label": "domain",
+        "latex": "u \\in [0, 2\\pi],\\quad v \\in [-\\tfrac{\\pi}{2}, \\tfrac{\\pi}{2}]"
+      },
+      {
+        "label": "signed power (cusp sharpness k)",
+        "latex": "s^{(k)} = \\operatorname{sgn}(s)\\,|s|^{k}"
+      },
+      {
+        "label": "implicit form",
+        "latex": "x^{2/3} + y^{2/3} + z^{2/3} = 1"
+      }
+    ],
+    "params": [
+      {
+        "key": "sharp",
+        "symbol": "k",
+        "meaning": "exponent on each signed factor; k=3 is the classic astroidal ellipsoid, higher k sharpens the cusps and deepens the concave faces, k=1 is a plain octahedral sphere"
+      },
+      {
+        "key": "stretch",
+        "symbol": "\\sigma",
+        "meaning": "scales the z (up) axis, stretching the star body into a prolate spindle or squashing it toward an oblate disk"
+      }
+    ],
+    "code": "const u = a*2*Math.PI, v = (b - 0.5)*Math.PI;   // a,b ∈ [0,1] grid\nconst sp = s => Math.sign(s)*Math.pow(Math.abs(s), sharp); // signed power\npoint(\n  sp(Math.cos(u)*Math.cos(v)),\n  sp(Math.sin(v))*stretch,\n  sp(Math.sin(u)*Math.cos(v)),\n);",
+    "links": [
+      {
+        "label": "Astroidal ellipsoid (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Astroidal_ellipsoid"
+      },
+      {
+        "label": "Astroid (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Astroid"
+      },
+      {
+        "label": "Astroidal Ellipsoid (MathWorld)",
+        "url": "https://mathworld.wolfram.com/AstroidalEllipsoid.html"
+      }
+    ]
+  },
+  "superToroid": {
+    "title": "Super Toroid",
+    "about": "The super-toroid is the torus crossed with the superellipse: a superelliptical cross-section swept around a superelliptical ring. Two squareness exponents let it morph continuously from a smooth doughnut, through a rounded square-tube ring, all the way to a sharp box-section frame. It is the toroidal member of the superquadric family that 3D modellers and CAD systems use to round and bevel boxes, and it scans through an entire catalogue of pillowy and angular ring shapes from just four numbers.",
+    "howItWorks": "Two angles parametrize the surface: u runs around the ring, v around the tube. Instead of plain cos/sin, each is passed through the signed power sgnpow(t,e)=sign(t)·|t|^e, which is the superellipse trick. The exponent e1 squashes or pinches the tube's cross-section, e2 does the same to the ring's outline; at e1=e2=1 the formula collapses exactly to the ordinary torus. Taking the absolute value before raising to the power and restoring the sign afterwards avoids the NaN you would get from a negative base raised to a fractional exponent.",
+    "equations": [
+      {
+        "label": "signed power",
+        "latex": "\\operatorname{sgnpow}(t,e) = \\operatorname{sign}(t)\\,|t|^{e}"
+      },
+      {
+        "label": "super-toroid",
+        "latex": "\\begin{aligned} x &= \\big(R + r\\,\\operatorname{sgnpow}(\\cos v, e_1)\\big)\\,\\operatorname{sgnpow}(\\cos u, e_2) \\\\ y &= r\\,\\operatorname{sgnpow}(\\sin v, e_1) \\\\ z &= \\big(R + r\\,\\operatorname{sgnpow}(\\cos v, e_1)\\big)\\,\\operatorname{sgnpow}(\\sin u, e_2) \\end{aligned}"
+      },
+      {
+        "label": "domain",
+        "latex": "u \\in [-\\pi,\\pi],\\quad v \\in [-\\pi,\\pi]"
+      }
+    ],
+    "params": [
+      {
+        "key": "R",
+        "symbol": "R",
+        "meaning": "ring radius — distance from the centre to the middle of the tube"
+      },
+      {
+        "key": "r",
+        "symbol": "r",
+        "meaning": "tube radius; r→R gives a horn super-toroid, r>R a self-intersecting spindle"
+      },
+      {
+        "key": "e1",
+        "symbol": "e_1",
+        "meaning": "squareness of the tube cross-section: 1 = circle, <1 = squarer (boxy tube), >1 = pinched/star"
+      },
+      {
+        "key": "e2",
+        "symbol": "e_2",
+        "meaning": "squareness of the ring outline: 1 = round ring, <1 = squared frame, >1 = pinched diamond"
+      }
+    ],
+    "code": "function sgnpow(t, e) {                          // signed power, NaN-safe\n  const a = Math.abs(t);\n  return a < 1e-12 ? 0 : (t < 0 ? -1 : 1) * Math.pow(a, e);\n}\nconst u = a*2*Math.PI - Math.PI, v = b*2*Math.PI - Math.PI; // a,b ∈ [0,1] grid\nconst cv = sgnpow(Math.cos(v), e1), sv = sgnpow(Math.sin(v), e1);\nconst cu = sgnpow(Math.cos(u), e2), su = sgnpow(Math.sin(u), e2);\nconst w = R + r*cv;\npoint(w*cu, r*sv, w*su);",
+    "links": [
+      {
+        "label": "Superellipsoid / superquadrics (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Superellipsoid"
+      },
+      {
+        "label": "Superquadrics (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Superquadrics"
+      },
+      {
+        "label": "Torus (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Torus"
+      },
+      {
+        "label": "Superellipse (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Superellipse"
+      }
+    ]
+  },
+  "toroidalSpiral": {
+    "title": "Toroidal Spiral",
+    "about": "Take a tight helix — a slinky — and bend it around into a closed loop so its two ends meet: you get a toroidal spiral, a coil that winds p times around a doughnut-shaped ring. It is the playful cousin of the torus knot, but where a knot threads through the hole, this curve simply spirals around the tube of the torus and closes after a single trip. The result is a glowing wire-wound ring, like the windings of a toroidal inductor or a coiled spring snapped into a circle.",
+    "howItWorks": "A single angle t runs once around the big ring. As it goes, the point also spirals around the tube at p times the speed, tracing a small circle of radius r whose centre sits on a ring of radius R. That centreline is then thickened into a solid tube by sweeping a tiny circle along it, oriented by the curve's analytic tangent so the tube never kinks.",
+    "equations": [
+      {
+        "label": "centreline",
+        "latex": "\\mathbf{C}(t) = \\big((R + r\\cos pt)\\cos t,\\; r\\sin pt,\\; (R + r\\cos pt)\\sin t\\big)"
+      },
+      {
+        "label": "tangent (analytic)",
+        "latex": "\\mathbf{C}'(t) = \\big(\\dot w\\cos t - w\\sin t,\\; rp\\cos pt,\\; \\dot w\\sin t + w\\cos t\\big),\\quad w = R + r\\cos pt,\\ \\dot w = -rp\\sin pt"
+      },
+      {
+        "label": "domain",
+        "latex": "t \\in [0, 2\\pi]"
+      }
+    ],
+    "params": [
+      {
+        "key": "coils",
+        "symbol": "p",
+        "meaning": "number of times the helix coils around the torus tube before closing — higher p packs in tighter windings"
+      },
+      {
+        "key": "tube",
+        "symbol": "\\rho",
+        "meaning": "radius of the solid tube swept along the coiled centreline (its visual thickness)"
+      }
+    ],
+    "code": "const R = 2, r = 0.6;\nconst C  = (t) => { const w = R + r*Math.cos(p*t);\n  return [w*Math.cos(t), r*Math.sin(p*t), w*Math.sin(t)]; };\nconst dC = (t) => { const ct=Math.cos(t), st=Math.sin(t),\n      cp=Math.cos(p*t), sp=Math.sin(p*t),\n      w = R + r*cp, dw = -r*p*sp;\n  return [dw*ct - w*st, r*p*cp, dw*st + w*ct]; };\nsweepTube(i, n, tube, out, o, C, dC);   // thicken centreline into a tube",
+    "links": [
+      {
+        "label": "Toroidal spiral (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Toroidal_spiral"
+      },
+      {
+        "label": "Spiral (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Spiral"
+      },
+      {
+        "label": "Torus (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Torus"
+      }
+    ]
+  },
+  "sievert": {
+    "title": "Sievert's Surface",
+    "about": "Sievert's surface is a rare and beautiful thing: a closed-looking shape that curves by exactly the same positive amount at every single point (constant Gaussian curvature K = +1), just like a sphere — yet it is emphatically not a sphere. Found by Heinrich Sievert in 1886 and later studied by Enneper, it bulges into a plump body wrapped by a single twisting ridge that spirals from one cusp to the other. It is the constant-positive-curvature cousin of the pseudosphere, proving that a sphere is far from the only surface with uniform curvature.",
+    "howItWorks": "A shape constant C controls the twist. Two angles sweep the surface: u runs across (-π/2, π/2) and v down the body in (0, π). An auxiliary angle phi = -u/√(C+1) + atan(√(C+1)·tan u) does the twisting, and a shared factor A = 2/(C+1 - C·sin²v·cos²u) sets the swelling — its denominator stays at least 1, so it never blows up. The radial distance r and the height (built from ln tan(v/2) plus A·cos v) trace the bulb and its ridge. We evaluate phi with atan2 so the tan never explodes at the poles, clamp v off zero to keep the logarithm finite, and subtract √((C+1)/C) to slide the body onto the origin.",
+    "equations": [
+      {
+        "label": "twisting angle",
+        "latex": "\\varphi = -\\dfrac{u}{\\sqrt{C+1}} + \\operatorname{atan}\\!\\big(\\sqrt{C+1}\\,\\tan u\\big)"
+      },
+      {
+        "label": "swelling factor",
+        "latex": "A = \\dfrac{2}{\\,C + 1 - C\\,\\sin^2 v\\,\\cos^2 u\\,}, \\qquad r = \\dfrac{A}{\\sqrt{C}}\\,\\sin v\\,\\sqrt{C+1}\\,\\sqrt{1 + C\\sin^2 u}"
+      },
+      {
+        "label": "Sievert surface",
+        "latex": "\\begin{aligned} x &= r\\cos\\varphi, \\quad z = r\\sin\\varphi \\\\ y &= \\dfrac{\\ln\\tan\\tfrac{v}{2}}{\\sqrt{C}} + \\dfrac{A\\,(C+1)\\cos v}{\\sqrt{C}} \\end{aligned}"
+      },
+      {
+        "label": "constant curvature",
+        "latex": "K = +1 \\quad \\text{(everywhere)}"
+      },
+      {
+        "label": "domain",
+        "latex": "u \\in \\left(-\\tfrac{\\pi}{2}, \\tfrac{\\pi}{2}\\right), \\quad v \\in (0, \\pi)"
+      }
+    ],
+    "params": [
+      {
+        "key": "C",
+        "symbol": "C",
+        "meaning": "shape constant > 0; sets the twist and girth of the bulb — C=1 is the classic form, larger C tightens it into a rounder body, smaller C stretches it taller and thinner"
+      }
+    ],
+    "code": "const u = -Math.PI/2 + 0.06 + a*(Math.PI - 0.12);   // a,b ∈ [0,1] grid\nconst v = 0.07 + b*(Math.PI - 0.14);\nconst sC1 = Math.sqrt(C+1), sqC = Math.sqrt(C);\nconst su = Math.sin(u), cu = Math.cos(u), sv = Math.sin(v), cv = Math.cos(v);\nconst phi = -u/sC1 + Math.atan2(sC1*su, cu);         // no tan blow-up at ±π/2\nconst A = 2/((C+1) - C*sv*sv*cu*cu);                 // denominator ≥ 1\nconst r = (A/sqC)*sv*sC1*Math.sqrt(1 + C*su*su);\nconst y = Math.log(Math.tan(v/2))/sqC + A*(C+1)*cv/sqC;\nconst offX = Math.sqrt((C+1)/C);                     // centre it\npoint(r*Math.cos(phi) - offX, y, r*Math.sin(phi));",
+    "links": [
+      {
+        "label": "Sievert–Enneper surface (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Sievert%E2%80%93Enneper_surface"
+      },
+      {
+        "label": "Sievert's Surface (MathWorld)",
+        "url": "https://mathworld.wolfram.com/SievertsSurface.html"
+      },
+      {
+        "label": "Gaussian curvature (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Gaussian_curvature"
+      }
+    ]
+  },
 };

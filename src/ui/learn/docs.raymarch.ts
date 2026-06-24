@@ -658,4 +658,263 @@ const F = (x,y,z) => { const a=x*x,b=y*y,c=z*z, s=a+b+c-1;
       }
     ]
   },
+  "togliatti": {
+    "title": "Togliatti Quintic",
+    "about": "Eugenio Togliatti's quintic is the degree-5 surface carrying the maximum number of ordinary double points a quintic can have: 31 nodes, a bound conjectured by Arnaud Beauville and realised by Togliatti in 1940 (with the explicit equation given later by Wolf Barth). Its constants are laced with sqrt(5), giving the node cluster a striking fivefold, almost icosahedral symmetry. A quintic is unbounded, so what you see is the recognisable central body where the pinch points bunch up; the rest of the surface streams off to infinity and is clipped by the bounding sphere.",
+    "howItWorks": "We render the zero set F = isovalue of a single quintic polynomial directly as a lit isosurface: a ray is marched until F crosses the isovalue, and the surface is shaded by its gradient grad F. The polynomial factors into a degree-5 piece in x and y times a linear z-factor, minus a term built from the squared quadric 4(x^2+y^2-z^2)+1+3 sqrt5 — that squared quadric is what forces the nodes. Because grad F vanishes at the nodes (and swings across roughly 500x in magnitude over the surface), the distance estimate |F-iso|/|grad F| is heavily under-relaxed and hard-capped, exactly like the Barth sextic and Kummer quartic, so the march can't overshoot straight through a pinch point.",
+    "equations": [
+      {
+        "label": "Togliatti quintic (affine real form)",
+        "latex": "64(x-1)\\big(x^4 - 4x^3 - 10x^2y^2 - 4x^2 + 16x - 20xy^2 + 5y^4 + 16 - 20y^2\\big) - 5\\sqrt5\\,(2z-\\sqrt5-1)\\big(4(x^2+y^2-z^2) + 1 + 3\\sqrt5\\big)^2 = c"
+      },
+      {
+        "label": "31 nodes (maximal for a quintic)",
+        "latex": "\\#\\{\\,F=0,\\ \\nabla F = 0\\,\\} = 31"
+      },
+      {
+        "label": "node-forcing quadric",
+        "latex": "Q = 4(x^2+y^2-z^2) + 1 + 3\\sqrt5"
+      }
+    ],
+    "params": [
+      {
+        "key": "iso",
+        "symbol": "c",
+        "meaning": "isovalue; c = 0 is the singular 31-node Togliatti quintic, nonzero values smooth the pinch points open"
+      },
+      {
+        "key": "colShift",
+        "symbol": "\\phi",
+        "meaning": "hue offset of the core->edge colour gradient"
+      },
+      {
+        "key": "animate",
+        "symbol": "\\alpha",
+        "meaning": "gently sweeps the isovalue over time (0 = still)"
+      }
+    ],
+    "code": "// affine real Togliatti quintic; surface is F = isovalue\nconst s5 = Math.sqrt(5);\nconst F = (x, y, z) => {\n  const poly = x**4 - 4*x**3 - 10*x*x*y*y - 4*x*x + 16*x\n             - 20*x*y*y + 5*y**4 + 16 - 20*y*y;\n  const Q = 4*(x*x + y*y - z*z) + (1 + 3*s5);\n  return 64*(x - 1)*poly - 5*s5*(2*z - s5 - 1)*Q*Q;\n};",
+    "links": [
+      {
+        "label": "Togliatti surface (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Togliatti_surface"
+      },
+      {
+        "label": "Quintic surface (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Quintic_surface"
+      },
+      {
+        "label": "Nodal surfaces — Herwig Hauser / IMAGINARY gallery",
+        "url": "https://imaginary.org/gallery/herwig-hauser-classic"
+      }
+    ]
+  },
+  "whitneyUmbrella": {
+    "title": "Whitney Umbrella",
+    "about": "The Whitney umbrella is the archetypal singular surface — the standard local model for a 'cross-cap', where a smooth sheet folds back and pierces itself along a line. Introduced by Hassler Whitney in his 1944 study of how surfaces map into space, its single cubic equation x² = y²z produces a curved canopy that self-intersects above the origin, tapering into a sharp spike of handle below it. Every coordinate point on that handle line is singular: the surface pinches to nothing along the entire negative z-axis.",
+    "howItWorks": "We render the level set F = isovalue of the cubic F(x,y,z) = x² − y²z directly, rather than meshing it. For each pixel a ray is marched until F crosses the isovalue, and the surface is shaded by its gradient ∇F. The gradient ∇F = (2x, −2yz, −y²) vanishes along the whole z-axis (x = y = 0), so the distance estimate |F−iso|/|∇F| blows up along the handle and the spike; to stop the ray overshooting straight through these singular points the march step is strongly under-relaxed and hard-capped, exactly like the Kummer and heart surfaces. The isovalue knob lifts the surface off its singular zero set, opening the self-intersection into a smooth fold.",
+    "equations": [
+      {
+        "label": "Whitney umbrella",
+        "latex": "x^2 - y^2 z = c"
+      },
+      {
+        "label": "implicit zero set (c = 0)",
+        "latex": "x^2 = y^2 z"
+      },
+      {
+        "label": "gradient",
+        "latex": "\\nabla F = \\big(2x,\\; -2yz,\\; -y^2\\big)"
+      },
+      {
+        "label": "singular handle (whole z-axis)",
+        "latex": "\\nabla F = 0 \\iff x = y = 0 \\ \\Rightarrow\\ \\text{line of singular points}"
+      }
+    ],
+    "params": [
+      {
+        "key": "iso",
+        "symbol": "c",
+        "meaning": "isovalue; c = 0 is the singular Whitney umbrella, nonzero values smooth the self-intersection into a fold"
+      },
+      {
+        "key": "colShift",
+        "symbol": "\\phi",
+        "meaning": "hue offset of the core→edge colour gradient"
+      },
+      {
+        "key": "animate",
+        "symbol": "\\alpha",
+        "meaning": "gently sweeps the isovalue over time (0 = still)"
+      }
+    ],
+    "code": "// surface: F = isovalue. Sheet for z>0, singular handle along x=y=0, z<0.\nconst F = (x, y, z) => x*x - y*y*z;   // x² − y²z",
+    "links": [
+      {
+        "label": "Whitney umbrella (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Whitney_umbrella"
+      },
+      {
+        "label": "Whitney Umbrella (MathWorld)",
+        "url": "https://mathworld.wolfram.com/WhitneyUmbrella.html"
+      },
+      {
+        "label": "Cross-cap (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Cross-cap"
+      }
+    ]
+  },
+  "tooth": {
+    "title": "Tooth Surface",
+    "about": "The tooth surface (also called the cushion surface) is a compact quartic whose zero set is a rounded, pillow-like solid. Its equation is one of the simplest that mixes a quartic norm x^4+y^4+z^4 against the ordinary squared radius x^2+y^2+z^2, and the competition between those two terms gives the surface its puckered silhouette. The body reaches +-1 along each coordinate axis but bulges outward toward the eight cube-corner directions, passing through (+-1,+-1,+-1) at radius sqrt3. The origin sits on the surface as an isolated solitary point (an acnode): the gradient vanishes there and, locally, the zero set consists of just that single point.",
+    "howItWorks": "We render the level set F = isovalue of the quartic directly: for each pixel a ray is marched until the field F crosses the isovalue, and the surface is shaded by its gradient grad F. The quartic term x^4+y^4+z^4 grows faster than the quadratic term far from the centre, closing the surface off into a bounded body whose axis intercepts are at +-1 and whose farthest reach is the diagonal corner (1,1,1) at radius sqrt3~1.73. The field has interior critical points (where grad F = 0) at coordinate combinations of +-1/sqrt2, and the origin is an isolated singular point; at these points the |F-iso|/|grad F| step estimate can blow up, so the march step is under-relaxed and hard-capped (like the heart and Kummer surfaces) to keep the ray from overshooting. A small positive isovalue removes the isolated origin point and smooths the field.",
+    "equations": [
+      {
+        "label": "Tooth (cushion) quartic",
+        "latex": "x^4 + y^4 + z^4 - (x^2 + y^2 + z^2) = c"
+      },
+      {
+        "label": "axis intercepts",
+        "latex": "F(t,0,0) = t^2(t^2 - 1) = 0 \\;\\Rightarrow\\; t = 0,\\, \\pm 1"
+      },
+      {
+        "label": "diagonal section x=y=z=t",
+        "latex": "F(t,t,t) = 3t^2(t^2 - 1), \\quad \\min = -\\tfrac34 \\text{ at } t = \\tfrac{1}{\\sqrt2}, \\;\\; \\text{surface reaches } (1,1,1),\\, |r|=\\sqrt3"
+      },
+      {
+        "label": "isolated singular point (acnode) at the origin",
+        "latex": "F(0,0,0) = 0, \\quad \\nabla F(0,0,0) = 0"
+      }
+    ],
+    "params": [
+      {
+        "key": "iso",
+        "symbol": "c",
+        "meaning": "isovalue; 0 is the singular tooth, small +values open the central pinch into a smooth neck"
+      },
+      {
+        "key": "colShift",
+        "symbol": "\\phi",
+        "meaning": "hue offset of the core→edge colour gradient"
+      },
+      {
+        "key": "animate",
+        "symbol": "\\alpha",
+        "meaning": "gently sweeps the isovalue over time (0 = still)"
+      }
+    ],
+    "code": "// implicit field; the surface is F = isovalue\nconst F = (x, y, z) => {\n  const x2 = x*x, y2 = y*y, z2 = z*z;\n  return x2*x2 + y2*y2 + z2*z2 - (x2 + y2 + z2);\n};\n// raymarch it as a distance estimate, normal = grad(F):\nconst de = Math.abs(F(p.x,p.y,p.z) - iso) / length(grad(F, p));   // |F-iso| / |grad F|",
+    "links": [
+      {
+        "label": "Tooth surface (MathWorld)",
+        "url": "https://mathworld.wolfram.com/ToothSurface.html"
+      },
+      {
+        "label": "Algebraic surface (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Algebraic_surface"
+      }
+    ]
+  },
+  "lidinoid": {
+    "title": "Lidinoid",
+    "about": "The Lidinoid is a triply-periodic minimal surface discovered by Sven Lidin and Stefan Larsson in 1990 - the gyroid's hexagonal cousin. Like the gyroid it is balanced and contains no straight lines, but it carries rhombohedral (rather than cubic) symmetry, twisting space into two interpenetrating labyrinths with a distinctly hexagonal weave. It sits, with the gyroid, on the associate (Bonnet) family of the Schwarz P and D surfaces, bending one into the other without stretching.",
+    "howItWorks": "Instead of meshing it we render the level set F = isovalue directly. For each pixel a ray is marched until the short trigonometric field F crosses the isovalue, and the surface is lit by its gradient grad F. The field mixes a first term of sin(2x)cos(y)sin(z) (cyclically permuted) with a second-harmonic term cos(2x)cos(2y), plus the +0.15 constant that picks out the balanced Lidinoid from its family. The isovalue knob thickens or thins the two channels.",
+    "equations": [
+      {
+        "label": "Lidinoid level set",
+        "latex": "\\tfrac12\\!\\sum_{\\text{cyc}}\\! \\sin 2x\\,\\cos y\\,\\sin z \\;-\\; \\tfrac12\\!\\sum_{\\text{cyc}}\\! \\cos 2x\\,\\cos 2y \\;+\\; 0.15 = c"
+      },
+      {
+        "label": "expanded (cyclic sums over x,y,z)",
+        "latex": "\\tfrac12\\big(\\sin 2x\\cos y\\sin z + \\sin 2y\\cos z\\sin x + \\sin 2z\\cos x\\sin y\\big) - \\tfrac12\\big(\\cos 2x\\cos 2y + \\cos 2y\\cos 2z + \\cos 2z\\cos 2x\\big) + 0.15 = c"
+      },
+      {
+        "label": "minimal surface (zero mean curvature)",
+        "latex": "H = \\tfrac{1}{2}(\\kappa_1 + \\kappa_2) = 0"
+      }
+    ],
+    "params": [
+      {
+        "key": "iso",
+        "symbol": "c",
+        "meaning": "isovalue (level set); 0 is the balanced Lidinoid, ±values thicken one labyrinth"
+      },
+      {
+        "key": "colShift",
+        "symbol": "\\phi",
+        "meaning": "hue offset of the core->edge colour gradient"
+      },
+      {
+        "key": "animate",
+        "symbol": "\\alpha",
+        "meaning": "gently breathes the isovalue over time (0 = still)"
+      }
+    ],
+    "code": "// implicit field; the surface is F = isovalue\nconst F = (p) => {\n  const {x, y, z} = p;\n  const a = Math.sin(2*x)*Math.cos(y)*Math.sin(z)\n          + Math.sin(2*y)*Math.cos(z)*Math.sin(x)\n          + Math.sin(2*z)*Math.cos(x)*Math.sin(y);\n  const b = Math.cos(2*x)*Math.cos(2*y)\n          + Math.cos(2*y)*Math.cos(2*z)\n          + Math.cos(2*z)*Math.cos(2*x);\n  return 0.5*a - 0.5*b + 0.15;\n};\n// raymarch it as a distance estimate, normal = grad(F):\nconst de = Math.abs(F(p) - iso) / length(grad(F, p));   // |F-iso| / |grad F|",
+    "links": [
+      {
+        "label": "Lidinoid - Triply periodic minimal surface (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Triply_periodic_minimal_surface"
+      },
+      {
+        "label": "Gyroid (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Gyroid"
+      },
+      {
+        "label": "Minimal surface (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Minimal_surface"
+      }
+    ]
+  },
+  "dingDong": {
+    "title": "Ding-Dong Surface",
+    "about": "The ding-dong surface is the zero set of a single cubic, x²+y²−z²+z³, and it looks exactly like its name: a closed teardrop bell joined at a cusp to a horn that flares open below. The bell is the lobe for z between 0 and 1, where the radial term x²+y² is balanced by z²(1−z); below z=0 that term flips sign and the surface trumpets outward without bound. The origin is a singular cusp where the bell pinches down to a point and the horn begins, and the apex at z=1 is the rounded top of the bell.",
+    "howItWorks": "We render the level set F = isovalue of the cubic directly, instead of meshing it: for each pixel a ray is marched until F crosses the isovalue, and the surface is shaded by its gradient ∇F. On the axis F reduces to z²(z−1), so the bell closes cleanly at z=0 and z=1. Because the gradient ∇F=(2x, 2y, 3z²−2z) vanishes at the origin cusp (and shrinks across much of the rounded lobe), the |F−iso|/|∇F| step estimate can blow the ray straight through the pinch point, so the march is under-relaxed and hard-capped like the heart and Cayley surfaces. The cusp axis is rotated to world-up and the lobe is recentred on the origin so the bell stands framed with its horn hanging below.",
+    "equations": [
+      {
+        "label": "ding-dong surface",
+        "latex": "x^2 + y^2 - z^2(1 - z) = 0 \\;\\Longleftrightarrow\\; x^2 + y^2 - z^2 + z^3 = 0"
+      },
+      {
+        "label": "on-axis section (x=y=0)",
+        "latex": "z^2(z-1) = 0 \\;\\Rightarrow\\; \\text{bell closes at } z=0,\\,1"
+      },
+      {
+        "label": "lobe radius",
+        "latex": "x^2+y^2 = z^2(1-z), \\quad r_{\\max} = \\sqrt{\\tfrac{4}{27}} \\approx 0.385 \\text{ at } z=\\tfrac23"
+      },
+      {
+        "label": "gradient (cusp at origin)",
+        "latex": "\\nabla F = (2x,\\; 2y,\\; 3z^2 - 2z) = \\mathbf{0} \\text{ at } (0,0,0)"
+      }
+    ],
+    "params": [
+      {
+        "key": "iso",
+        "symbol": "c",
+        "meaning": "isovalue; 0 is the true ding-dong with its pinched cusp, ±values round the cusp open or seal the bell"
+      },
+      {
+        "key": "colShift",
+        "symbol": "\\phi",
+        "meaning": "hue offset of the core→edge colour gradient"
+      },
+      {
+        "key": "animate",
+        "symbol": "\\alpha",
+        "meaning": "gently sweeps the isovalue over time (0 = still)"
+      }
+    ],
+    "code": "// cusp axis remapped to world-up so the bell stands upright; surface is F = isovalue\nconst F = (x, y, z) => x*x + y*y - z*z + z*z*z;   // x²+y²−z²+z³",
+    "links": [
+      {
+        "label": "Ding-Dong surface (MathWorld)",
+        "url": "https://mathworld.wolfram.com/Ding-DongSurface.html"
+      },
+      {
+        "label": "Algebraic surface (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Algebraic_surface"
+      }
+    ]
+  },
 };

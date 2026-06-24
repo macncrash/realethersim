@@ -32,6 +32,11 @@ function superR(angle: number, m: number, n1: number, n2: number, n3: number): n
   return Math.min(Math.pow(s, -1 / Math.max(n1, 1e-3)), 4);
 }
 
+// Signed power: sign(t)·|t|^e — keeps pow-of-negative finite for super-shapes (super-toroid etc.).
+function sgnpow(t: number, e: number): number {
+  return Math.sign(t) * Math.pow(Math.abs(t), e);
+}
+
 // Sweep a circular tube of radius `rad` along a space curve. C(t) is the centreline, dC(t) its
 // tangent. Index i is split into (around-the-tube, along-the-curve); a fixed up-vector frame avoids
 // the cost of parallel transport (a closed knot tolerates the mild twist this introduces).
@@ -507,6 +512,210 @@ export const PARAMETRIC_SYSTEMS: Record<string, ParamSurface> = {
       out[o] = (2 * (Math.cos(u) + u * Math.sin(u)) * sv) / denom - 0.64; // centre (raw x ∈ [-0.7,2])
       out[o + 1] = (2 * (Math.sin(u) - u * Math.cos(u)) * sv) / denom;
       out[o + 2] = lg + (2 * Math.cos(v)) / denom;
+    },
+  },
+  catenoidHelicoid: {
+    id: 'catenoidHelicoid', label: 'Catenoid ↔ Helicoid', defaultParticleCount: 160_000, scale: 0.4645, pointSize: 0.008,
+    params: [
+      { key: 'morph', label: 'morph', min: 0, max: Math.PI / 2, step: 0.01, default: 0.6 },
+      { key: 'span', label: 'span', min: 0.8, max: 2, step: 0.01, default: 1.5 },
+    ],
+    // Associate (Bonnet) family bending a helicoid (morph=0) isometrically into a catenoid (morph=π/2).
+    // All members are minimal surfaces. u∈[-π,π] is symmetric so z = u·cos t + v·sin t (odd in u and v)
+    // is automatically centred on the origin — no offset baked in. cosh/sinh are entire ⇒ always finite.
+    position: (i, n, p, out, o) => {
+      const [a, b] = uv(i, n);
+      const u = a * TAU - Math.PI; // [-π, π], symmetric ⇒ origin-centred
+      const v = (b * 2 - 1) * p.span; // [-span, span]
+      const t = p.morph;
+      const ct = Math.cos(t), st = Math.sin(t);
+      const shv = Math.sinh(v), chv = Math.cosh(v);
+      const su = Math.sin(u), cu = Math.cos(u);
+      out[o] = ct * shv * su + st * chv * cu;
+      out[o + 1] = -ct * shv * cu + st * chv * su;
+      out[o + 2] = u * ct + v * st; // odd in u and v ⇒ centred
+    },
+  },
+  catalan: {
+    id: 'catalan', label: "Catalan's Surface", defaultParticleCount: 160_000, scale: 0.23, pointSize: 0.008,
+    params: [
+      { key: 'arches', label: 'arches', min: 2, max: 4, step: 1, default: 4 },
+      { key: 'extent', label: 'extent', min: 0.8, max: 1.6, step: 0.01, default: 1.3 },
+    ],
+    // Catalan's minimal surface — a soap-film saddle that contains a full cycloid as a geodesic (the
+    // v=0 curve). u sweeps along the rolling-circle arches, v flares the surface out via cosh/sinh.
+    // cosh/sinh are entire ⇒ every sample is finite. The raw shape runs along +x (centre x=uMax/2)
+    // and sits at y=1; both offsets are baked out so it rests on the origin.
+    position: (i, n, p, out, o) => {
+      const [a, b] = uv(i, n);
+      const arches = Math.max(2, Math.round(p.arches));
+      const uMax = arches * Math.PI;
+      const u = a * uMax; // [0, arches·π]
+      const v = (b * 2 - 1) * p.extent; // [-extent, extent]
+      const ch = Math.cosh(v);
+      const sh2 = Math.sinh(v / 2);
+      out[o] = u - Math.sin(u) * ch - uMax / 2; // along the cycloid, centred
+      out[o + 1] = 1 - Math.cos(u) * ch - 1; // up axis, centred (raw y ∈ [0,2])
+      out[o + 2] = 4 * Math.sin(u / 2) * sh2;
+    },
+  },
+  henneberg: {
+    id: 'henneberg', label: "Henneberg's Surface", defaultParticleCount: 160_000, scale: 0.31, pointSize: 0.008,
+    params: [
+      { key: 'reach', label: 'reach', min: 0.4, max: 0.9, step: 0.01, default: 0.8 },
+      { key: 'flatten', label: 'flatten', min: 0, max: 1.5, step: 0.01, default: 1 },
+    ],
+    // Henneberg's minimal surface — a non-orientable soap film containing a Neil semicubical parabola.
+    // x,y mix sinh(u),sinh(3u); z = 2 cosh(2u) cos(2v). sinh(3u) grows fast, so u is clamped to
+    // [-reach, reach] with reach ≤ 0.9. All sinh/cosh ⇒ always finite; the symmetric u domain makes
+    // the surface origin-centred (verified bbox centre = (0,0,0)), so no offset is baked in.
+    position: (i, n, p, out, o) => {
+      const [a, b] = uv(i, n);
+      const u = (a * 2 - 1) * p.reach; // [-reach, reach], reach ≤ 0.9 bounds sinh(3u)
+      const v = b * Math.PI; // [0, π]
+      const su = Math.sinh(u);
+      const s3u = Math.sinh(3 * u);
+      const c2u = Math.cosh(2 * u);
+      const k = p.flatten * (2 / 3); // weights the fast sinh(3u) cubic term
+      out[o] = 2 * su * Math.cos(v) - k * s3u * Math.cos(3 * v);
+      out[o + 1] = 2 * su * Math.sin(v) + k * s3u * Math.sin(3 * v);
+      out[o + 2] = 2 * c2u * Math.cos(2 * v);
+    },
+  },
+  scherk: {
+    id: 'scherk', label: "Scherk's Surface", defaultParticleCount: 200_000, scale: 0.5, pointSize: 0.008,
+    params: [
+      { key: 'cells', label: 'cells', min: 1, max: 3, step: 1, default: 2 },
+      { key: 'margin', label: 'tower clamp', min: 0.08, max: 0.4, step: 0.01, default: 0.2 },
+    ],
+    // Scherk's first (doubly-periodic) minimal surface: z = ln(cos x) − ln(cos y), the "saddle tower".
+    // x,y are tiled over `cells` fundamental cells of width π; within each cell the cos argument is
+    // folded to (−π/2, π/2) and clamped `margin` away from the ±π/2 asymptotes so the towers stay
+    // bounded (ln|cos|→−∞ there). z is up; the domain is symmetric so the model sits on the origin.
+    position: (i, n, p, out, o) => {
+      const [a, b] = uv(i, n);
+      const HALF = Math.PI / 2; // fundamental half-cell width (frequency a = 1)
+      const span = p.cells * Math.PI; // total domain width = cells fundamental cells
+      const x = (a - 0.5) * span; // raw planar X, centred on origin
+      const y = (b - 0.5) * span; // raw planar Y, centred on origin
+      const lim = HALF - p.margin; // clamp the cos argument away from the asymptotes
+      const fold = (t: number): number => {
+        let loc = t % Math.PI; // period π
+        if (loc > HALF) loc -= Math.PI;
+        if (loc < -HALF) loc += Math.PI;
+        if (loc > lim) loc = lim;
+        if (loc < -lim) loc = -lim;
+        return loc;
+      };
+      const cx = Math.abs(Math.cos(fold(x)));
+      const cy = Math.abs(Math.cos(fold(y)));
+      out[o] = x;
+      out[o + 1] = Math.log(cx < 1e-6 ? 1e-6 : cx) - Math.log(cy < 1e-6 ? 1e-6 : cy); // up
+      out[o + 2] = y;
+    },
+  },
+  astroidalEllipsoid: {
+    id: 'astroidalEllipsoid', label: 'Astroidal Ellipsoid', defaultParticleCount: 160_000, scale: 1.6, pointSize: 0.008,
+    params: [
+      { key: 'sharp', label: 'cusp sharpness', min: 1, max: 5, step: 0.05, default: 3 },
+      { key: 'stretch', label: 'z stretch', min: 0.4, max: 1.8, step: 0.01, default: 1 },
+    ],
+    // Astroidal ellipsoid (4-cusped star solid): the spherical product of two astroids. Raising each
+    // signed factor to an odd-ish power 'sharp' (3 = the classic cube) preserves sign and pulls the
+    // faces inward into eight pointed lobes. Pure powers of bounded sines/cosines ⇒ always finite;
+    // the body is symmetric about the origin (bbox exactly [-1,1]), so no centring offset is needed.
+    position: (i, n, p, out, o) => {
+      const [a, b] = uv(i, n);
+      const u = a * TAU; // [0, 2π]
+      const v = (b - 0.5) * Math.PI; // [-π/2, π/2]
+      const cu = Math.cos(u), su = Math.sin(u);
+      const cv = Math.cos(v), sv = Math.sin(v);
+      // signed power |s|^k·sign(s) keeps the cusps and preserves the sign of each base value
+      const sp = (s: number): number => Math.sign(s) * Math.pow(Math.abs(s), p.sharp);
+      out[o] = sp(cu * cv);
+      out[o + 1] = sp(sv) * p.stretch;
+      out[o + 2] = sp(su * cv);
+    },
+  },
+  superToroid: {
+    id: 'superToroid', label: 'Super Toroid', defaultParticleCount: 200_000, scale: 0.55, pointSize: 0.008,
+    params: [
+      { key: 'R', label: 'R (ring)', min: 1, max: 3, step: 0.01, default: 2 },
+      { key: 'r', label: 'r (tube)', min: 0.2, max: 1.4, step: 0.01, default: 0.8 },
+      { key: 'e1', label: 'e₁ (tube)', min: 0.2, max: 2, step: 0.01, default: 1 },
+      { key: 'e2', label: 'e₂ (ring)', min: 0.2, max: 2, step: 0.01, default: 1 },
+    ],
+    // Super-toroid: a superellipse cross-section (squareness e1) swept around a superelliptical ring
+    // (squareness e2). sgnpow(t,e)=sign(t)·|t|^e keeps pow-of-negative finite; e<1 squares the
+    // profile, e>1 pinches it. Origin-centred for all params (bbox is symmetric: ±(R+r), ±r, ±(R+r)).
+    position: (i, n, p, out, o) => {
+      const [a, b] = uv(i, n);
+      const u = a * TAU - Math.PI; // [-π, π] around the ring
+      const v = b * TAU - Math.PI; // [-π, π] around the tube
+      const cu = sgnpow(Math.cos(u), p.e2);
+      const su = sgnpow(Math.sin(u), p.e2);
+      const cv = sgnpow(Math.cos(v), p.e1);
+      const sv = sgnpow(Math.sin(v), p.e1);
+      const w = p.R + p.r * cv;
+      out[o] = w * cu;
+      out[o + 1] = p.r * sv;
+      out[o + 2] = w * su;
+    },
+  },
+  toroidalSpiral: {
+    id: 'toroidalSpiral', label: 'Toroidal Spiral', defaultParticleCount: 160_000, scale: 0.55, pointSize: 0.008,
+    params: [
+      { key: 'coils', label: 'coils p', min: 4, max: 40, step: 1, default: 18 },
+      { key: 'tube', label: 'thickness', min: 0.04, max: 0.2, step: 0.005, default: 0.12 },
+    ],
+    // A helix wound p times around a torus ring (a slinky bent into a donut), swept into a solid tube.
+    // Centreline rides a coil of radius r=0.6 around a ring of radius R=2; coprime is irrelevant here —
+    // it always closes after one trip in t. Centred on the origin (bbox is symmetric, no offset needed).
+    position: (i, n, p, out, o) => {
+      const R = 2, r = 0.6;
+      const pc = p.coils;
+      sweepTube(i, n, p.tube, out, o, (t) => {
+        const w = R + r * Math.cos(pc * t);
+        return [w * Math.cos(t), r * Math.sin(pc * t), w * Math.sin(t)];
+      }, (t) => {
+        const ct = Math.cos(t), st = Math.sin(t);
+        const cp = Math.cos(pc * t), sp = Math.sin(pc * t);
+        const w = R + r * cp;
+        const dw = -r * pc * sp;
+        return [dw * ct - w * st, r * pc * cp, dw * st + w * ct];
+      });
+    },
+  },
+  sievert: {
+    id: 'sievert', label: "Sievert's Surface", defaultParticleCount: 200_000, scale: 1.15, pointSize: 0.008,
+    params: [
+      { key: 'C', label: 'shape C', min: 0.6, max: 3, step: 0.01, default: 1 },
+    ],
+    // Sievert–Enneper surface of constant positive Gaussian curvature K = +1 — a twisted bulb.
+    // u ∈ (-π/2, π/2) is taken via atan2 (no tan blow-up at ±π/2); v ∈ (0, π) is clamped away
+    // from 0 so ln(tan(v/2)) stays finite. The denominator (C+1 − C·sin²v·cos²u) ≥ 1 never
+    // vanishes. The raw surface sits at x ≈ √((C+1)/C); that offset is baked out so it is centred,
+    // and the long log-tan ridge axis is mapped to the up axis.
+    position: (i, n, p, out, o) => {
+      const [a, b] = uv(i, n);
+      const C = p.C;
+      const uEps = 0.06;
+      const u = -Math.PI / 2 + uEps + a * (Math.PI - 2 * uEps); // (-π/2, π/2)
+      const v = 0.07 + b * (Math.PI - 0.14); // (0.07, π-0.07) keeps ln(tan(v/2)) finite
+      const sC1 = Math.sqrt(C + 1);
+      const sqC = Math.sqrt(C);
+      const su = Math.sin(u), cu = Math.cos(u), sv = Math.sin(v), cv = Math.cos(v);
+      const phi = -u / sC1 + Math.atan2(sC1 * su, cu); // continuous across u = ±π/2
+      let denom = (C + 1) - C * sv * sv * cu * cu; // ≥ 1, never zero
+      if (denom < 1e-6) denom = 1e-6;
+      const A = 2 / denom;
+      const r = (A / sqC) * sv * sC1 * Math.sqrt(1 + C * su * su);
+      const th = Math.tan(v / 2);
+      const lg = th > 1e-9 ? Math.log(th) : -20.7; // guard the v→0 cusp
+      const offX = Math.sqrt((C + 1) / C); // bake out the off-origin shift (= maxX/2)
+      out[o] = r * Math.cos(phi) - offX;
+      out[o + 1] = lg / sqC + (A * (C + 1) * cv) / sqC; // up axis (the twisted ridge)
+      out[o + 2] = r * Math.sin(phi);
     },
   },
 };
