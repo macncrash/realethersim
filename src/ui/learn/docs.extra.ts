@@ -2,6 +2,35 @@ import type { SystemDoc } from './content';
 
 // Curated learn-panel content for additional emergent systems (Lenia, DLA).
 export const EXTRA_DOCS: Record<string, SystemDoc> = {
+  grayScottField: {
+    title: 'Gray-Scott (Turing)',
+    about:
+      'The Gray-Scott reaction-diffusion system is the canonical model of Alan Turing’s 1952 idea that two chemicals diffusing and reacting can spontaneously break symmetry into stable patterns — the mechanism behind leopard spots, fish stripes, and seashell markings. Two substances U and V spread across a grid at different speeds while V autocatalyses (U + 2V → 3V) and decays. Sweeping just two numbers, the feed rate f and kill rate k, walks through Pearson’s whole zoo: solitons, spots, stripes, mazes, coral growth, and self-replicating "mitosis" cells.',
+    howItWorks:
+      'Each cell holds concentrations U and V. Every tick they diffuse (a 9-point Laplacian averages each cell toward its neighbours) at rates D_u and D_v, V is produced by the cubic reaction U·V² and removed at rate f+k, and U is fed back toward 1 at rate f. Because V diffuses slower than U, local peaks of V are reinforced while their surroundings are depleted — the short-range-activation / long-range-inhibition that Turing showed makes patterns. V drives the relief height and colour; the grid is toroidal so patterns wrap seamlessly.',
+    equations: [
+      { label: 'U (slow feed)', latex: '\\dot{U} = D_u\\nabla^2 U - U V^2 + f\\,(1 - U)' },
+      { label: 'V (autocatalytic)', latex: '\\dot{V} = D_v\\nabla^2 V + U V^2 - (f + k)\\,V' },
+      { label: '9-point Laplacian', latex: '\\nabla^2\\!\\approx 0.2\\!\\sum_{\\text{edge}} + 0.05\\!\\sum_{\\text{diag}} - 1' },
+    ],
+    params: [
+      { key: 'feed', symbol: 'f', meaning: 'feed rate replenishing U; with k it selects the pattern (Pearson classification)' },
+      { key: 'kill', symbol: 'k', meaning: 'removal rate of V; f≈k≈0.06 gives coral/mitosis, lower k gives spots & worms' },
+      { key: 'diffU', symbol: 'D_u', meaning: 'diffusion rate of U (the fast inhibitor)' },
+      { key: 'diffV', symbol: 'D_v', meaning: 'diffusion rate of V (the slow activator) — D_v < D_u is what enables patterns' },
+      { key: 'relief', symbol: 'h', meaning: 'how far V displaces the grid into 3D relief' },
+    ],
+    code: `// per cell, 9-point Laplacian on a toroidal grid
+const uvv = u*v*v;
+uNext = u + (Du*lapU - uvv + f*(1 - u));
+vNext = v + (Dv*lapV + uvv - (f + k)*v);`,
+    links: [
+      { label: 'Reaction–diffusion (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Reaction%E2%80%93diffusion_system' },
+      { label: 'Turing pattern (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Turing_pattern' },
+      { label: 'Pearson, Complex Patterns in a Simple System (1993)', url: 'https://www.science.org/doi/10.1126/science.261.5118.189' },
+      { label: 'Karl Sims — Reaction-Diffusion tutorial', url: 'https://www.karlsims.com/rd.html' },
+    ],
+  },
   lenia: {
     title: 'Lenia',
     about:

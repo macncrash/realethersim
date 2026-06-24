@@ -10,6 +10,7 @@ import { particleLifeFactory } from './particleLife';
 import { boidsFactory } from './boids';
 import { slimeMoldFactory } from './slimeMold';
 import { excitableMediumFactory } from './excitableMedium';
+import { grayScottFieldFactory } from './grayScottField';
 import { pointVorticesFactory } from './pointVortices';
 import { leniaFactory } from './lenia';
 import { dlaFactory } from './dla';
@@ -45,6 +46,7 @@ export function registerArchetypes(): void {
   register(boidsFactory);
   register(slimeMoldFactory);
   register(excitableMediumFactory);
+  register(grayScottFieldFactory);
   register(pointVorticesFactory);
   register(leniaFactory);
   register(dlaFactory);

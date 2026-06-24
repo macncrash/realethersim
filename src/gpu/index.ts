@@ -15,6 +15,7 @@ import { gpuBoids } from './gpuBoids';
 import { gpuSlimeMold } from './gpuSlimeMold';
 import { gpuPointVortices } from './gpuPointVortices';
 import { gpuExcitableMedium } from './gpuExcitableMedium';
+import { gpuGrayScottField } from './gpuGrayScottField';
 import { gpuKuramoto } from './gpuKuramoto';
 import { gpuChimera } from './gpuChimera';
 import { gpuKarman } from './gpuKarman';
@@ -31,6 +32,7 @@ const GPU_FACTORIES: Record<string, GpuFactory> = {
   slimeMold: gpuSlimeMold,
   pointVortices: gpuPointVortices,
   excitableMedium: gpuExcitableMedium,
+  grayScottField: gpuGrayScottField,
   kuramoto: gpuKuramoto,
   chimera: gpuChimera,
   karman: gpuKarman,

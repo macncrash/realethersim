@@ -36,6 +36,43 @@ export function selectArchetype(id: string): void {
   $archetypeId.set(id);
 }
 
+// Re-apply the current factory's factory defaults (params + particle count + dt + trail) without
+// switching systems — the "reset to defaults" action.
+export function resetCurrent(): void {
+  const factory = getFactory($archetypeId.get());
+  $params.set({ ...defaultParams(factory.params) });
+  $global.setKey('particleCount', factory.defaultParticleCount);
+  $global.setKey('dt', factory.defaultDt);
+  $global.setKey('trailLength', factory.defaultTrail ?? DEFAULT_GLOBAL.trailLength);
+}
+
+// Jump to a uniformly-random different system.
+export function selectRandom(): void {
+  const ids = listFactories().map((f) => f.id);
+  const cur = $archetypeId.get();
+  const others = ids.filter((id) => id !== cur);
+  if (others.length === 0) return;
+  selectArchetype(others[Math.floor(Math.random() * others.length)]);
+}
+
+// Demo mode: auto-cycle to a random system on a timer. The interval lives at module scope so it
+// survives component re-renders.
+export const $demoMode = atom<boolean>(false);
+let demoTimer: ReturnType<typeof setInterval> | null = null;
+const DEMO_INTERVAL_MS = 11_000;
+export function setDemoMode(on: boolean): void {
+  if (on === $demoMode.get()) return;
+  $demoMode.set(on);
+  if (demoTimer) {
+    clearInterval(demoTimer);
+    demoTimer = null;
+  }
+  if (on) {
+    selectRandom();
+    demoTimer = setInterval(selectRandom, DEMO_INTERVAL_MS);
+  }
+}
+
 export interface Telemetry {
   fps: number;
   particles: number;
