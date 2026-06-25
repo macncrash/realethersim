@@ -55,22 +55,53 @@ export function selectRandom(): void {
   selectArchetype(others[Math.floor(Math.random() * others.length)]);
 }
 
-// Demo mode: auto-cycle to a random system on a timer. The interval lives at module scope so it
-// survives component re-renders.
+// Demo mode: auto-cycle to a random system on a timer (a hands-off "screensaver"). The interval
+// lives at module scope so it survives component re-renders.
+// - $demoPaused: spacebar holds on the current system (timer stopped; the sim keeps animating).
+// - $demoDetails: show the current system's about + formulae as a bottom overlay (still in demo).
 export const $demoMode = atom<boolean>(false);
+export const $demoPaused = atom<boolean>(false);
+export const $demoDetails = atom<boolean>(false);
 let demoTimer: ReturnType<typeof setInterval> | null = null;
 const DEMO_INTERVAL_MS = 11_000;
-export function setDemoMode(on: boolean): void {
-  if (on === $demoMode.get()) return;
-  $demoMode.set(on);
+
+function startDemoTimer(): void {
+  if (!demoTimer) demoTimer = setInterval(selectRandom, DEMO_INTERVAL_MS);
+}
+function stopDemoTimer(): void {
   if (demoTimer) {
     clearInterval(demoTimer);
     demoTimer = null;
   }
+}
+
+export function setDemoMode(on: boolean): void {
+  if (on === $demoMode.get()) return;
+  $demoMode.set(on);
   if (on) {
+    $demoPaused.set(false);
     selectRandom();
-    demoTimer = setInterval(selectRandom, DEMO_INTERVAL_MS);
+    startDemoTimer();
+  } else {
+    stopDemoTimer();
+    $demoPaused.set(false);
+    $demoDetails.set(false);
   }
+}
+
+// Spacebar: pause/resume the auto-advance (stay on the current system; the sim keeps running).
+export function toggleDemoPause(): void {
+  if (!$demoMode.get()) return;
+  const paused = !$demoPaused.get();
+  $demoPaused.set(paused);
+  if (paused) stopDemoTimer();
+  else startDemoTimer();
+}
+
+// Toggle the bottom about/formula overlay without leaving demo mode.
+export function toggleDemoDetails(): void {
+  if (!$demoMode.get()) return;
+  $demoDetails.set(!$demoDetails.get());
 }
 
 export interface Telemetry {
