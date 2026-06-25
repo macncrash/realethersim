@@ -4,3 +4,7 @@ dist
 .DS_Store
 .vite
 .claude/
+
+# Hosting / observatory infrastructure is intentionally NOT in this public repo.
+# It lives in a separate private repo (see DEPLOY notes). Never commit it here.
+deploy/
