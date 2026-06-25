@@ -28,11 +28,11 @@ export class SnapshotControls extends LitElement {
     window.removeEventListener('keydown', this.onKey);
   }
 
-  private setStatus(msg: string, err = false): void {
+  private setStatus(msg: string, err = false, ms = 4500): void {
     this.status = msg;
     this.statusErr = err;
     this.requestUpdate();
-    if (msg) window.setTimeout(() => this.status === msg && this.setStatus(''), 4500);
+    if (msg) window.setTimeout(() => this.status === msg && this.setStatus(''), ms);
   }
 
   private onKey = (e: KeyboardEvent): void => {
@@ -88,22 +88,27 @@ export class SnapshotControls extends LitElement {
       const text = `${f.label} — a live ${f.category} simulation on ETHERSIM. Explore ${listFactories().length} dynamical systems → https://ethersim.ai`;
       const nav = navigator as Navigator & { canShare?: (d: ShareData) => boolean };
       if (nav.canShare?.({ files: [file] }) && nav.share) {
+        // Native share sheet — this DOES attach the image (mobile, Safari, Edge, recent Chrome).
         await nav.share({ title: `ETHERSIM — ${f.label}`, text, files: [file] });
         this.setStatus('shared ✓');
       } else {
+        // No Web Share file support here. A post can't be given an image via a URL (X's intent is
+        // text-only), so save the PNG + copy the caption + open the composer, and say so clearly.
         const url = URL.createObjectURL(file);
         const a = document.createElement('a');
         a.href = url;
         a.download = file.name;
         a.click();
         URL.revokeObjectURL(url);
+        let copied = false;
         try {
           await navigator.clipboard?.writeText(text);
+          copied = true;
         } catch {
           /* clipboard may be blocked */
         }
         window.open('https://twitter.com/intent/tweet?text=' + encodeURIComponent(text), '_blank', 'noopener');
-        this.setStatus('image saved + caption copied — attach it to your post');
+        this.setStatus(`📷 image saved to your downloads — attach it to the post${copied ? ' (caption copied)' : ''}`, false, 9000);
       }
     } catch (err) {
       if ((err as Error)?.name === 'AbortError') {

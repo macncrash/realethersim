@@ -56,27 +56,31 @@ export class LearnPanel extends LitElement {
     this.requestUpdate();
   }
 
-  // Lightweight, anonymous, user-initiated feedback. The vote is sent as a fire-and-forget beacon to
-  // /_vote/<dir>/<id>; the server-log → observatory pipeline counts it (no new endpoint, no PII).
-  // localStorage remembers your choice per system so the counter isn't spammed and the UI reflects it.
-  private myVote(id: string): string | null {
+  // Lightweight, anonymous, user-initiated favourites — a heart, no downvotes. The first heart sends
+  // a fire-and-forget beacon to /_vote/up/<id>; the server-log → observatory pipeline counts it (no
+  // new endpoint, no PII, deduped per system). localStorage remembers it so the UI reflects it.
+  private isHearted(id: string): boolean {
     try {
-      return localStorage.getItem('ethersim:vote:' + id);
+      return localStorage.getItem('ethersim:heart:' + id) === '1';
     } catch {
-      return null;
+      return false;
     }
   }
-  private vote(id: string, dir: 'up' | 'down'): void {
-    if (this.myVote(id) === dir) return; // already your vote — don't double-send
+  private toggleHeart(id: string): void {
+    const was = this.isHearted(id);
     try {
-      localStorage.setItem('ethersim:vote:' + id, dir);
+      if (was) localStorage.removeItem('ethersim:heart:' + id);
+      else localStorage.setItem('ethersim:heart:' + id, '1');
     } catch {
-      /* private mode — vote still sends, just won't persist the UI state */
+      /* private mode — heart still sends, just won't persist the UI state */
     }
-    try {
-      navigator.sendBeacon?.('/_vote/' + dir + '/' + encodeURIComponent(id));
-    } catch {
-      /* best-effort */
+    if (!was) {
+      // only beacon on the first heart (the server dedups by salted ip-hash anyway)
+      try {
+        navigator.sendBeacon?.('/_vote/up/' + encodeURIComponent(id));
+      } catch {
+        /* best-effort */
+      }
     }
     this.requestUpdate();
   }
@@ -151,17 +155,12 @@ export class LearnPanel extends LitElement {
             <button class="tab ${this.tab === 'math' ? 'active' : ''}" @click=${() => this.setTab('math')}>Math</button>
             <button class="tab ${this.tab === 'code' ? 'active' : ''}" @click=${() => this.setTab('code')}>Code</button>
           </div>
-          <div class="lactions" style="display:flex;align-items:center;gap:6px;margin-left:auto">
+          <div class="lactions" style="display:flex;align-items:center;gap:8px;margin-left:auto">
             <button
-              title="I like this one"
-              @click=${() => this.vote(id, 'up')}
-              style="font:inherit;font-size:13px;line-height:1;background:${this.myVote(id) === 'up' ? '#1f5a4a' : '#10303c'};border:1px solid ${this.myVote(id) === 'up' ? '#2f8a6a' : '#244'};border-radius:6px;padding:4px 8px;cursor:pointer"
-            >👍</button>
-            <button
-              title="Not a fan"
-              @click=${() => this.vote(id, 'down')}
-              style="font:inherit;font-size:13px;line-height:1;background:${this.myVote(id) === 'down' ? '#5a2f2f' : '#10303c'};border:1px solid ${this.myVote(id) === 'down' ? '#8a4a4a' : '#244'};border-radius:6px;padding:4px 8px;cursor:pointer"
-            >👎</button>
+              title=${this.isHearted(id) ? 'Loved — click to remove' : 'Love this one'}
+              @click=${() => this.toggleHeart(id)}
+              style="font:inherit;font-size:15px;line-height:1;background:transparent;border:none;cursor:pointer;padding:2px 4px;filter:${this.isHearted(id) ? 'none' : 'grayscale(1)'};opacity:${this.isHearted(id) ? '1' : '.5'};transition:filter .15s,opacity .15s"
+            >❤️</button>
             <button
               title="Report a problem (opens a GitHub issue)"
               @click=${() => this.report(id)}
