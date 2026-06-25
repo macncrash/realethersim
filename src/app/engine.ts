@@ -12,6 +12,8 @@ export interface Engine {
   // The same branded, metadata-embedded PNG as exportImage() but returned as a Blob (for sharing).
   captureImageBlob(): Promise<Blob>;
   togglePause(): boolean; // returns the new paused state
+  // Pan the view (camera + orbit target) without rotating; dx/dy are screen directions in [-1,1].
+  panView(dx: number, dy: number): void;
   reset(): void;
   // Highlight a contiguous particle range (hierarchy-tree selection). Pass null to clear.
   highlightParticles(start: number | null, count: number): void;

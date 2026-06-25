@@ -58,6 +58,20 @@ export class SnapshotControls extends LitElement {
     } else if (mod && k === 'i') {
       e.preventDefault();
       (this.querySelector('input[type=file]') as HTMLInputElement | null)?.click();
+    } else if (!mod && k.startsWith('arrow')) {
+      // Pan the view (no rotation) — the sim nudges in the arrow's direction. Focused sliders /
+      // selects already returned early above, so arrows there still adjust the control.
+      const pan: Record<string, [number, number]> = {
+        arrowup: [0, -1],
+        arrowdown: [0, 1],
+        arrowleft: [1, 0],
+        arrowright: [-1, 0],
+      };
+      const d = pan[k];
+      if (d) {
+        e.preventDefault();
+        $engine.get()?.panView(d[0], d[1]);
+      }
     }
   };
 

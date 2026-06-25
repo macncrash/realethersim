@@ -467,6 +467,20 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
       driver.setPaused(paused);
       return paused;
     },
+    // Pan the view (translate camera + orbit target together) without rotating. dx/dy are screen
+    // directions in [-1,1]; the step scales with zoom distance so it feels consistent. Used by the
+    // arrow keys to nudge the framing — handy when the Learn panel overlaps the sim.
+    panView(dx: number, dy: number): void {
+      camera.updateMatrixWorld();
+      const dist = Math.max(0.001, camera.position.distanceTo(controls.target));
+      const step = dist * 0.05;
+      const right = new THREE.Vector3().setFromMatrixColumn(camera.matrixWorld, 0).normalize();
+      const up = new THREE.Vector3().setFromMatrixColumn(camera.matrixWorld, 1).normalize();
+      const move = right.multiplyScalar(dx * step).add(up.multiplyScalar(dy * step));
+      camera.position.add(move);
+      controls.target.add(move);
+      controls.update();
+    },
     reset(): void {
       scheduleRebuild();
     },
