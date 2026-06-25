@@ -5,6 +5,8 @@ import {
   $demoMode,
   $demoPaused,
   $demoDetails,
+  $paused,
+  $engine,
   listFactories,
   selectArchetype,
   selectRandom,
@@ -12,6 +14,8 @@ import {
   setDemoMode,
   toggleDemoPause,
   toggleDemoDetails,
+  nudgePrimaryParam,
+  setPrimaryParamDecile,
 } from '../store';
 import { getFactory } from '../../core/registry';
 import { APP_VERSION } from '../../version';
@@ -31,7 +35,8 @@ export class CommandPalette extends LitElement {
   }
 
   private demo = new StoreController(this, $demoMode);
-  private paused = new StoreController(this, $demoPaused);
+  private demoPaused = new StoreController(this, $demoPaused); // auto-advance held (P)
+  private simPaused = new StoreController(this, $paused); // simulation frozen (Space)
   private details = new StoreController(this, $demoDetails);
   private cur = new StoreController(this, $archetypeId);
 
@@ -75,18 +80,33 @@ export class CommandPalette extends LitElement {
       this.show();
       return;
     }
-    // Demo-mode keys (only when the palette isn't open and the user isn't typing):
+    // Demo-mode keys (palette closed, not typing). Space is NOT here — it pauses the simulation
+    // (snapshot-controls), which separately halts the auto-advance. These are the demo-only keys:
     if (this.demo.value && !this.open && !this.isTyping(e)) {
+      const mod = e.metaKey || e.ctrlKey || e.altKey;
       if (k === 'escape') {
-        // Esc exits demo and brings the control panel back.
-        e.preventDefault();
+        e.preventDefault(); // exit demo, bring the control panel back
         setDemoMode(false);
         return;
       }
-      if (k === ' ') {
-        // Spacebar pauses/resumes the auto-advance (snapshot-controls skips Space while in demo).
-        e.preventDefault();
+      if (!mod && k === 'p') {
+        e.preventDefault(); // hold/release the auto-advance only (sim keeps running)
         toggleDemoPause();
+        return;
+      }
+      if (!mod && (k === '+' || k === '=')) {
+        e.preventDefault();
+        nudgePrimaryParam(1);
+        return;
+      }
+      if (!mod && (k === '-' || k === '_')) {
+        e.preventDefault();
+        nudgePrimaryParam(-1);
+        return;
+      }
+      if (!mod && k.length === 1 && k >= '1' && k <= '9') {
+        e.preventDefault(); // jump the primary slider to that point across its range
+        setPrimaryParamDecile(Number(k));
         return;
       }
     }
@@ -180,13 +200,18 @@ export class CommandPalette extends LitElement {
     } catch {
       /* current id not in registry (shouldn't happen) */
     }
-    const paused = this.paused.value;
+    const sim = this.simPaused.value;
+    const held = this.demoPaused.value;
     const details = this.details.value;
     return html`<div class="cmdp-badge">
-      <span class="cmdp-dot ${paused ? 'paused' : ''}"></span>
+      <span class="cmdp-dot ${sim || held ? 'paused' : ''}"></span>
       <span class="cmdp-brand">ETHERSIM <span class="cmdp-ver">v${APP_VERSION}</span></span>
       ${label ? html`<span class="cmdp-sys">${label}</span>` : nothing}
-      ${paused ? html`<span class="cmdp-pausetag">⏸ paused</span>` : nothing}
+      ${sim
+        ? html`<span class="cmdp-pausetag">⏸ sim paused</span>`
+        : held
+          ? html`<span class="cmdp-pausetag">⏸ demo held</span>`
+          : nothing}
       <button
         class="cmdp-mini ${details ? 'on' : ''}"
         @click=${() => toggleDemoDetails()}
@@ -194,6 +219,7 @@ export class CommandPalette extends LitElement {
       >
         ${details ? '✓ details' : 'ⓘ details'}
       </button>
+      <button class="cmdp-mini" @click=${() => void $engine.get()?.exportImage()} title="Save a screenshot (⌘S)">📷 shot</button>
       <button class="cmdp-mini" @click=${() => setDemoMode(false)} title="Exit demo mode (Esc)">✕ exit</button>
     </div>`;
   }

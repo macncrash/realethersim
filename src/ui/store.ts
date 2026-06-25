@@ -1,6 +1,6 @@
 import { atom, map } from 'nanostores';
 import type { Engine } from '../app/engine';
-import { defaultParams, type NodeSpec } from '../core/archetype';
+import { defaultParams, type NodeSpec, type ParamSpec } from '../core/archetype';
 import { DEFAULT_GLOBAL, type GlobalParams } from '../core/params';
 import { getFactory, listFactories } from '../core/registry';
 import { registerArchetypes } from '../archetypes';
@@ -57,23 +57,28 @@ export function selectRandom(): void {
 
 // Demo mode: auto-cycle to a random system on a timer (a hands-off "screensaver"). The interval
 // lives at module scope so it survives component re-renders.
-// - $demoPaused: spacebar holds on the current system (timer stopped; the sim keeps animating).
+// - $demoPaused: the demo auto-advance is HELD ("P" key) — stay on the current system; sim runs.
+// - $paused:     the SIMULATION is frozen ("Space"; set by the engine). This ALSO halts the
+//                auto-advance (you wouldn't want it to switch while frozen, e.g. before a screenshot).
 // - $demoDetails: show the current system's about + formulae as a bottom overlay (still in demo).
 export const $demoMode = atom<boolean>(false);
 export const $demoPaused = atom<boolean>(false);
 export const $demoDetails = atom<boolean>(false);
+export const $paused = atom<boolean>(false);
 let demoTimer: ReturnType<typeof setInterval> | null = null;
 const DEMO_INTERVAL_MS = 11_000;
 
-function startDemoTimer(): void {
-  if (!demoTimer) demoTimer = setInterval(selectRandom, DEMO_INTERVAL_MS);
-}
-function stopDemoTimer(): void {
-  if (demoTimer) {
+// The auto-advance runs only while demo is on, not explicitly held (P), and the sim isn't frozen.
+function updateDemoTimer(): void {
+  const run = $demoMode.get() && !$demoPaused.get() && !$paused.get();
+  if (run && !demoTimer) demoTimer = setInterval(selectRandom, DEMO_INTERVAL_MS);
+  else if (!run && demoTimer) {
     clearInterval(demoTimer);
     demoTimer = null;
   }
 }
+// Freezing the simulation (Space) implies holding the demo; resuming releases it.
+$paused.subscribe(() => updateDemoTimer());
 
 export function setDemoMode(on: boolean): void {
   if (on === $demoMode.get()) return;
@@ -81,27 +86,48 @@ export function setDemoMode(on: boolean): void {
   if (on) {
     $demoPaused.set(false);
     selectRandom();
-    startDemoTimer();
   } else {
-    stopDemoTimer();
     $demoPaused.set(false);
     $demoDetails.set(false);
   }
+  updateDemoTimer();
 }
 
-// Spacebar: pause/resume the auto-advance (stay on the current system; the sim keeps running).
+// "P": hold/release the auto-advance only (the simulation keeps animating).
 export function toggleDemoPause(): void {
   if (!$demoMode.get()) return;
-  const paused = !$demoPaused.get();
-  $demoPaused.set(paused);
-  if (paused) stopDemoTimer();
-  else startDemoTimer();
+  $demoPaused.set(!$demoPaused.get());
+  updateDemoTimer();
 }
 
 // Toggle the bottom about/formula overlay without leaving demo mode.
 export function toggleDemoDetails(): void {
   if (!$demoMode.get()) return;
   $demoDetails.set(!$demoDetails.get());
+}
+
+// Primary interactive knob: the first slider of the current system. Driven from the keyboard in
+// demo mode (+/− nudges, 1-9 jump across the range) so the full-screen view stays playable and the
+// equation values visibly update.
+export function primaryParam(): ParamSpec | null {
+  const specs = getFactory($archetypeId.get()).params;
+  return specs.length ? specs[0] : null;
+}
+function applyPrimary(spec: ParamSpec, value: number): void {
+  setParam(spec.key, Math.min(spec.max, Math.max(spec.min, value)));
+}
+export function nudgePrimaryParam(dir: number): void {
+  const spec = primaryParam();
+  if (!spec) return;
+  const cur = $params.get()[spec.key] ?? spec.default;
+  const step = Math.max(spec.step ?? 0, (spec.max - spec.min) / 50); // perceptible even when step is tiny
+  applyPrimary(spec, cur + dir * step);
+}
+export function setPrimaryParamDecile(d: number): void {
+  const spec = primaryParam();
+  if (!spec) return;
+  const frac = Math.min(1, Math.max(0, (d - 1) / 8)); // 1 → min, 5 → middle, 9 → max
+  applyPrimary(spec, spec.min + frac * (spec.max - spec.min));
 }
 
 export interface Telemetry {

@@ -22,7 +22,7 @@ import { APP_VERSION } from '../version';
 import { embedText } from '../state/pngMeta';
 import { detectCapabilities } from './capabilities';
 import type { Engine } from './engine';
-import { $archetypeId, $engine, $global, $hierarchy, $params, $selectedNode, $telemetry } from '../ui/store';
+import { $archetypeId, $engine, $global, $hierarchy, $params, $paused, $selectedNode, $telemetry } from '../ui/store';
 
 const SEED = 1;
 
@@ -470,6 +470,7 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
     togglePause(): boolean {
       paused = !paused;
       driver.setPaused(paused);
+      $paused.set(paused); // mirror to the store so demo cycling halts while frozen + the HUD reflects it
       return paused;
     },
     // Pan the view (translate camera + orbit target together) without rotating. dx/dy are screen
