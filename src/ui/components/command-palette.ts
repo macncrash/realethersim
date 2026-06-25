@@ -3,11 +3,15 @@ import { StoreController } from '@nanostores/lit';
 import {
   $archetypeId,
   $demoMode,
+  $demoPaused,
+  $demoDetails,
   listFactories,
   selectArchetype,
   selectRandom,
   resetCurrent,
   setDemoMode,
+  toggleDemoPause,
+  toggleDemoDetails,
 } from '../store';
 import { getFactory } from '../../core/registry';
 import { APP_VERSION } from '../../version';
@@ -27,6 +31,8 @@ export class CommandPalette extends LitElement {
   }
 
   private demo = new StoreController(this, $demoMode);
+  private paused = new StoreController(this, $demoPaused);
+  private details = new StoreController(this, $demoDetails);
   private cur = new StoreController(this, $archetypeId);
 
   private open = false;
@@ -58,16 +64,31 @@ export class CommandPalette extends LitElement {
       this.toggle();
       return;
     }
+    // ⌘D / Ctrl-D toggles demo mode from anywhere; starting it closes the search popup.
+    if ((e.metaKey || e.ctrlKey) && k === 'd') {
+      e.preventDefault();
+      this.toggleDemo();
+      return;
+    }
     if (k === '/' && !this.open && !this.isTyping(e)) {
       e.preventDefault();
       this.show();
       return;
     }
-    // Esc exits full-screen demo mode when the palette isn't open (brings the panel back).
-    if (k === 'escape' && !this.open && this.demo.value && !this.isTyping(e)) {
-      e.preventDefault();
-      setDemoMode(false);
-      return;
+    // Demo-mode keys (only when the palette isn't open and the user isn't typing):
+    if (this.demo.value && !this.open && !this.isTyping(e)) {
+      if (k === 'escape') {
+        // Esc exits demo and brings the control panel back.
+        e.preventDefault();
+        setDemoMode(false);
+        return;
+      }
+      if (k === ' ') {
+        // Spacebar pauses/resumes the auto-advance (snapshot-controls skips Space while in demo).
+        e.preventDefault();
+        toggleDemoPause();
+        return;
+      }
     }
     if (!this.open) return;
     if (k === 'escape') {
@@ -144,6 +165,13 @@ export class CommandPalette extends LitElement {
     this.requestUpdate();
   }
 
+  // Toggle demo mode; when starting, close the search popup so the full-screen view is unobstructed.
+  private toggleDemo(): void {
+    const turningOn = !this.demo.value;
+    setDemoMode(turningOn);
+    if (turningOn && this.open) this.hide();
+  }
+
   private demoBadge(): TemplateResult | typeof nothing {
     if (!this.demo.value) return nothing;
     let label = '';
@@ -152,12 +180,22 @@ export class CommandPalette extends LitElement {
     } catch {
       /* current id not in registry (shouldn't happen) */
     }
-    return html`<button class="cmdp-badge" @click=${() => setDemoMode(false)} title="Exit demo mode (Esc)">
-      <span class="cmdp-dot"></span>
+    const paused = this.paused.value;
+    const details = this.details.value;
+    return html`<div class="cmdp-badge">
+      <span class="cmdp-dot ${paused ? 'paused' : ''}"></span>
       <span class="cmdp-brand">ETHERSIM <span class="cmdp-ver">v${APP_VERSION}</span></span>
       ${label ? html`<span class="cmdp-sys">${label}</span>` : nothing}
-      <span class="cmdp-exit">click or Esc to exit</span>
-    </button>`;
+      ${paused ? html`<span class="cmdp-pausetag">⏸ paused</span>` : nothing}
+      <button
+        class="cmdp-mini ${details ? 'on' : ''}"
+        @click=${() => toggleDemoDetails()}
+        title="Show the about + formulae at the bottom (stays in demo)"
+      >
+        ${details ? '✓ details' : 'ⓘ details'}
+      </button>
+      <button class="cmdp-mini" @click=${() => setDemoMode(false)} title="Exit demo mode (Esc)">✕ exit</button>
+    </div>`;
   }
 
   override render(): TemplateResult | typeof nothing {
@@ -166,15 +204,22 @@ export class CommandPalette extends LitElement {
         ? html`<style>
               .cmdp-badge {
                 position: fixed; left: 50%; top: 14px; transform: translateX(-50%); z-index: 9998;
-                display: flex; align-items: center; gap: 7px; font: inherit; font-size: 12px; color: #eafff7;
-                background: #163d33cc; border: 1px solid #2f8a6a; border-radius: 999px; padding: 6px 14px;
-                cursor: pointer; backdrop-filter: blur(4px);
+                display: flex; align-items: center; gap: 9px; font: inherit; font-size: 12px; color: #eafff7;
+                background: #163d33cc; border: 1px solid #2f8a6a; border-radius: 999px; padding: 5px 7px 5px 14px;
+                backdrop-filter: blur(4px); max-width: 94vw; flex-wrap: wrap; justify-content: center;
               }
               .cmdp-dot { width: 8px; height: 8px; border-radius: 50%; background: #5af0c8; animation: cmdpPulse 1.6s infinite; }
+              .cmdp-dot.paused { animation: none; background: #e0bf5a; }
               .cmdp-brand { font-weight: 600; letter-spacing: 0.06em; }
               .cmdp-ver { font-weight: 400; opacity: 0.5; letter-spacing: 0; }
               .cmdp-sys { color: #5af0c8; padding-left: 9px; border-left: 1px solid #2f8a6a66; }
-              .cmdp-exit { opacity: 0.55; font-size: 11px; padding-left: 7px; }
+              .cmdp-pausetag { color: #f0d28a; font-size: 11px; }
+              .cmdp-mini {
+                font: inherit; font-size: 11px; color: #cfe; background: #14323f; border: 1px solid #2a4a58;
+                border-radius: 999px; padding: 4px 10px; cursor: pointer;
+              }
+              .cmdp-mini:hover { background: #1c4252; }
+              .cmdp-mini.on { background: #1f5a4a; border-color: #2f8a6a; color: #eafff7; }
               @keyframes cmdpPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
             </style>
             ${this.demoBadge()}`
@@ -278,7 +323,7 @@ export class CommandPalette extends LitElement {
             >
               ↺ Reset defaults
             </button>
-            <button class="cmdp-act ${this.demo.value ? 'on' : ''}" @click=${() => setDemoMode(!this.demo.value)}>
+            <button class="cmdp-act ${this.demo.value ? 'on' : ''}" @click=${() => this.toggleDemo()} title="Demo / screensaver (⌘D)">
               ${this.demo.value ? '⏸ Demo on' : '▶ Demo'}
             </button>
             <span class="cmdp-hint"><kbd>↑↓</kbd> <kbd>↵</kbd> <kbd>esc</kbd></span>

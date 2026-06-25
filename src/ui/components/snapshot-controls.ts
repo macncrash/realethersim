@@ -1,5 +1,5 @@
 import { LitElement, html, type TemplateResult } from 'lit';
-import { $engine, $archetypeId } from '../store';
+import { $engine, $archetypeId, $demoMode } from '../store';
 import { migrate } from '../../state/migrations';
 import { getFactory } from '../../core/registry';
 import { extractText } from '../../state/pngMeta';
@@ -46,6 +46,10 @@ export class SnapshotControls extends LitElement {
     const ae = document.activeElement;
     const onControl = !!ae && ['BUTTON', 'A', 'INPUT', 'SELECT', 'TEXTAREA'].includes(ae.tagName);
     if (k === ' ' && !mod) {
+      if ($demoMode.get()) {
+        e.preventDefault();
+        return; // in demo mode, Space pauses the auto-advance (handled in command-palette)
+      }
       if (onControl) return; // let a focused button take the space
       e.preventDefault();
       const paused = $engine.get()?.togglePause();

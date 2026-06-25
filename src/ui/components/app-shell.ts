@@ -11,6 +11,7 @@ import './snapshot-controls';
 import './learn-panel';
 import './command-palette';
 import './code-viewer';
+import './demo-details';
 
 // Renders into light DOM (createRenderRoot -> this) so the global stylesheet and Tweakpane's
 // injected styles apply, and so the canvas lives in the normal document for the renderer.
@@ -68,6 +69,7 @@ export class EtherApp extends LitElement {
           <ether-snapshot-controls></ether-snapshot-controls>
         </aside>
         <ether-learn-panel style=${hide}></ether-learn-panel>
+        <ether-demo-details></ether-demo-details>
         <ether-command-palette></ether-command-palette>
         <ether-code-viewer></ether-code-viewer>
       </div>
