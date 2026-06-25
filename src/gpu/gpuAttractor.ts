@@ -22,9 +22,13 @@ interface GpuSystem {
   // Map the (possibly 4-D) state node to a vec3 render position (before center/scale). Defaults to
   // the state itself for 3-D, or its xyz for 4-D. The double pendulum projects angles → bob Cartesian.
   project?: (state: GpuNode) => GpuNode;
-  // Spread factor applied to the projected y when picking the blue→pink colour. Defaults to 0.02
+  // Spread factor applied to the projected y when picking the gradient colour. Defaults to 0.02
   // (tuned for the large-extent 3-D attractors); the compact 4-D clouds set it higher.
   colorK?: number;
+  // Gradient endpoints (low→high projected y). Default to the blue→pink house palette; the
+  // conservative-chaos flows override to a teal↔orange "energy" look (after @Mathelirium).
+  colorA?: number;
+  colorB?: number;
 }
 
 export const GPU_SYSTEMS: Record<string, GpuSystem> = {
@@ -336,6 +340,8 @@ export const GPU_SYSTEMS: Record<string, GpuSystem> = {
     scale: 3.0,
     center: [0, 0, 0],
     colorK: 1.2, // projected y is the small (±0.5) state y → widen the colour spread
+    colorA: 0xff7a30, // orange (low y)
+    colorB: 0x16e0c8, // teal (high y)
     pointSize: 0.012,
   },
   'double-pendulum': {
@@ -371,6 +377,8 @@ export const GPU_SYSTEMS: Record<string, GpuSystem> = {
       return vec3(x1.add(X.y.sin()), X.x.cos().negate().sub(X.y.cos()), x1);
     },
     colorK: 0.5, // projected y is bob height (±2)
+    colorA: 0xff7a30, // orange (low / hanging)
+    colorB: 0x16e0c8, // teal (high / swung up)
     pointSize: 0.012,
   },
 };
@@ -417,7 +425,7 @@ function buildAttractor(sys: GpuSystem, count: number, dt0: number): GpuSim {
   material.opacity = 0.85;
   const c = sys.center;
   material.positionNode = proj.sub(vec3(c[0], c[1], c[2])).mul(sys.scale);
-  material.colorNode = mix(color(0x3aa0ff), color(0xff5a8a), proj.y.mul(sys.colorK ?? 0.02).add(0.5).clamp(0, 1));
+  material.colorNode = mix(color(sys.colorA ?? 0x3aa0ff), color(sys.colorB ?? 0xff5a8a), proj.y.mul(sys.colorK ?? 0.02).add(0.5).clamp(0, 1));
 
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(count * 3), 3));

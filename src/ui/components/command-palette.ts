@@ -9,6 +9,8 @@ import {
   resetCurrent,
   setDemoMode,
 } from '../store';
+import { getFactory } from '../../core/registry';
+import { APP_VERSION } from '../../version';
 
 interface Item {
   id: string;
@@ -59,6 +61,12 @@ export class CommandPalette extends LitElement {
     if (k === '/' && !this.open && !this.isTyping(e)) {
       e.preventDefault();
       this.show();
+      return;
+    }
+    // Esc exits full-screen demo mode when the palette isn't open (brings the panel back).
+    if (k === 'escape' && !this.open && this.demo.value && !this.isTyping(e)) {
+      e.preventDefault();
+      setDemoMode(false);
       return;
     }
     if (!this.open) return;
@@ -138,8 +146,17 @@ export class CommandPalette extends LitElement {
 
   private demoBadge(): TemplateResult | typeof nothing {
     if (!this.demo.value) return nothing;
-    return html`<button class="cmdp-badge" @click=${() => setDemoMode(false)} title="Stop demo mode">
-      <span class="cmdp-dot"></span> demo · click to stop
+    let label = '';
+    try {
+      label = getFactory(this.cur.value).label;
+    } catch {
+      /* current id not in registry (shouldn't happen) */
+    }
+    return html`<button class="cmdp-badge" @click=${() => setDemoMode(false)} title="Exit demo mode (Esc)">
+      <span class="cmdp-dot"></span>
+      <span class="cmdp-brand">ETHERSIM <span class="cmdp-ver">v${APP_VERSION}</span></span>
+      ${label ? html`<span class="cmdp-sys">${label}</span>` : nothing}
+      <span class="cmdp-exit">click or Esc to exit</span>
     </button>`;
   }
 
@@ -154,6 +171,10 @@ export class CommandPalette extends LitElement {
                 cursor: pointer; backdrop-filter: blur(4px);
               }
               .cmdp-dot { width: 8px; height: 8px; border-radius: 50%; background: #5af0c8; animation: cmdpPulse 1.6s infinite; }
+              .cmdp-brand { font-weight: 600; letter-spacing: 0.06em; }
+              .cmdp-ver { font-weight: 400; opacity: 0.5; letter-spacing: 0; }
+              .cmdp-sys { color: #5af0c8; padding-left: 9px; border-left: 1px solid #2f8a6a66; }
+              .cmdp-exit { opacity: 0.55; font-size: 11px; padding-left: 7px; }
               @keyframes cmdpPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
             </style>
             ${this.demoBadge()}`
