@@ -14,6 +14,8 @@ export interface Engine {
   togglePause(): boolean; // returns the new paused state
   // Pan the view (camera + orbit target) without rotating; dx/dy are screen directions in [-1,1].
   panView(dx: number, dy: number): void;
+  // Place the camera + orbit target directly (used to restore a shared deep-link view).
+  setCamera(position: [number, number, number], target: [number, number, number]): void;
   reset(): void;
   // Highlight a contiguous particle range (hierarchy-tree selection). Pass null to clear.
   highlightParticles(start: number | null, count: number): void;
