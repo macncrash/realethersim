@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { PointsNodeMaterial } from 'three/webgpu';
-import { attributeArray, color, float, Fn, hash, instanceIndex, mix, uniform, vec3 } from 'three/tsl';
+import { attributeArray, color, float, Fn, hash, instanceIndex, mix, uniform, vec3, vec4 } from 'three/tsl';
 import type { GpuFactory, GpuNode, GpuSim } from './types';
 
 // GPU-resident strange attractors (Phase 2): RK4 integration as a TSL compute kernel over a
@@ -11,12 +11,20 @@ import type { GpuFactory, GpuNode, GpuSim } from './types';
 interface GpuSystem {
   paramKeys: string[];
   defaults: Record<string, number>;
-  deriv: (X: GpuNode, u: Record<string, GpuNode>) => GpuNode; // vec3 node = dX/dt
-  seedRange: [number, number, number];
-  seedOffset: [number, number, number];
+  deriv: (X: GpuNode, u: Record<string, GpuNode>) => GpuNode; // vec3 (or vec4 for stateDim:4) node = dX/dt
+  seedRange: number[]; // length === stateDim
+  seedOffset: number[]; // length === stateDim
   scale: number;
   center: [number, number, number];
   pointSize: number;
+  // 4 for the conservative Hamiltonian flows (Hénon–Heiles, double pendulum); defaults to 3.
+  stateDim?: 3 | 4;
+  // Map the (possibly 4-D) state node to a vec3 render position (before center/scale). Defaults to
+  // the state itself for 3-D, or its xyz for 4-D. The double pendulum projects angles → bob Cartesian.
+  project?: (state: GpuNode) => GpuNode;
+  // Spread factor applied to the projected y when picking the blue→pink colour. Defaults to 0.02
+  // (tuned for the large-extent 3-D attractors); the compact 4-D clouds set it higher.
+  colorK?: number;
 }
 
 export const GPU_SYSTEMS: Record<string, GpuSystem> = {
@@ -309,22 +317,82 @@ export const GPU_SYSTEMS: Record<string, GpuSystem> = {
       ),
     seedRange: [1, 1, 1], seedOffset: [3.22, 1.54, 4.31], scale: 0.0429, center: [1.0, 0.0, 2.0], pointSize: 0.012,
   },
+  // --- 4-D conservative Hamiltonian flows (state = vec4). TSL twins of the CPU derivatives in
+  // strangeAttractor.ts; seedRange/seedOffset/scale/center match the CPU systems exactly. ---
+  'henon-heiles': {
+    paramKeys: ['lambda'],
+    defaults: { lambda: 1 },
+    stateDim: 4,
+    // state [x, y, px, py]: ẋ=px, ẏ=py, ṗx=−x−2λxy, ṗy=−y−λ(x²−y²)
+    deriv: (X, u) =>
+      vec4(
+        X.z,
+        X.w,
+        X.x.negate().sub(u.lambda.mul(2).mul(X.x).mul(X.y)),
+        X.y.negate().sub(u.lambda.mul(X.x.mul(X.x).sub(X.y.mul(X.y)))),
+      ),
+    seedRange: [0.55, 0.55, 0.45, 0.45],
+    seedOffset: [0, 0, 0, 0],
+    scale: 3.0,
+    center: [0, 0, 0],
+    colorK: 1.2, // projected y is the small (±0.5) state y → widen the colour spread
+    pointSize: 0.012,
+  },
+  'double-pendulum': {
+    paramKeys: ['g'],
+    defaults: { g: 1 },
+    stateDim: 4,
+    // state [θ1, θ2, ω1, ω2], equal masses & lengths; coupled Euler–Lagrange (den = 3 − cos 2Δ)
+    deriv: (X, u) => {
+      const t1 = X.x, t2 = X.y, w1 = X.z, w2 = X.w;
+      const d = t1.sub(t2);
+      const cd = d.cos();
+      const sd = d.sin();
+      const den = float(3).sub(d.mul(2).cos());
+      const dw1 = u.g
+        .mul(-3)
+        .mul(t1.sin())
+        .sub(u.g.mul(t1.sub(t2.mul(2)).sin()))
+        .sub(sd.mul(2).mul(w2.mul(w2).add(w1.mul(w1).mul(cd))))
+        .div(den);
+      const dw2 = sd
+        .mul(2)
+        .mul(w1.mul(w1).mul(2).add(u.g.mul(2).mul(t1.cos())).add(w2.mul(w2).mul(cd)))
+        .div(den);
+      return vec4(w1, w2, dw1, dw2);
+    },
+    seedRange: [0.1, 0.1, 0.05, 0.05],
+    seedOffset: [2.5, 2.5, 0, 0],
+    scale: 0.8,
+    center: [-0.05, 0.26, 0.11],
+    // render the lower bob in Cartesian space (bounded; raw angles run over the top): x₂,y₂ + depth
+    project: (X) => {
+      const x1 = X.x.sin();
+      return vec3(x1.add(X.y.sin()), X.x.cos().negate().sub(X.y.cos()), x1);
+    },
+    colorK: 0.5, // projected y is bob height (±2)
+    pointSize: 0.012,
+  },
 };
 
 function buildAttractor(sys: GpuSystem, count: number, dt0: number): GpuSim {
-  const pos: GpuNode = attributeArray(count, 'vec3');
+  const dim = sys.stateDim ?? 3;
+  // The bundled TSL d.ts under-declares attributeArray's element-type arg (rejects a string union);
+  // both 'vec3' and 'vec4' are valid at runtime, so cast the type-only check to one literal.
+  const pos: GpuNode = attributeArray(count, (dim === 4 ? 'vec4' : 'vec3') as 'vec3');
   const u: Record<string, GpuNode> = {};
   for (const k of sys.paramKeys) u[k] = uniform(sys.defaults[k]);
   const uDt: GpuNode = uniform(dt0);
 
-  const [rx, ry, rz] = sys.seedRange;
-  const [ox, oy, oz] = sys.seedOffset;
+  // Seed each of the `dim` state components from an independent hash of the instance index. For
+  // dim=3 the hash inputs (idx*3, idx*3+1, idx*3+2) match the original 3-D seeding exactly.
   const init: GpuNode = (Fn(() => {
     const p = pos.element(instanceIndex);
-    const r1 = hash(instanceIndex.mul(3));
-    const r2 = hash(instanceIndex.mul(3).add(1));
-    const r3 = hash(instanceIndex.mul(3).add(2));
-    p.assign(vec3(r1.sub(0.5).mul(rx).add(ox), r2.sub(0.5).mul(ry).add(oy), r3.sub(0.5).mul(rz).add(oz)));
+    const s: GpuNode[] = [];
+    for (let k = 0; k < dim; k++) {
+      s.push(hash(instanceIndex.mul(dim).add(k)).sub(0.5).mul(sys.seedRange[k]).add(sys.seedOffset[k]));
+    }
+    p.assign(dim === 4 ? vec4(s[0], s[1], s[2], s[3]) : vec3(s[0], s[1], s[2]));
   })() as GpuNode).compute(count);
 
   const deriv = (X: GpuNode): GpuNode => sys.deriv(X, u);
@@ -339,14 +407,17 @@ function buildAttractor(sys: GpuSystem, count: number, dt0: number): GpuSim {
   })() as GpuNode).compute(count);
 
   const attr: GpuNode = pos.toAttribute();
+  // Project the state to a 3-D render position: identity for 3-D, xyz for 4-D, or a custom map
+  // (the double pendulum renders its bob in Cartesian space).
+  const proj: GpuNode = sys.project ? sys.project(attr) : dim === 4 ? attr.xyz : attr;
   const material = new PointsNodeMaterial();
   material.transparent = true;
   material.depthWrite = false;
   material.blending = THREE.AdditiveBlending;
   material.opacity = 0.85;
   const c = sys.center;
-  material.positionNode = attr.sub(vec3(c[0], c[1], c[2])).mul(sys.scale);
-  material.colorNode = mix(color(0x3aa0ff), color(0xff5a8a), attr.y.mul(0.02).add(0.5).clamp(0, 1));
+  material.positionNode = proj.sub(vec3(c[0], c[1], c[2])).mul(sys.scale);
+  material.colorNode = mix(color(0x3aa0ff), color(0xff5a8a), proj.y.mul(sys.colorK ?? 0.02).add(0.5).clamp(0, 1));
 
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(count * 3), 3));

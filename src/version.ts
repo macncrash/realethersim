@@ -2,4 +2,4 @@
 // image records the version that produced it). Bump the PATCH on every shipped change — new
 // systems, features, or any change to the snapshot/import file format or its validation — even
 // when backward-compatible. Bump MINOR for larger feature waves, MAJOR for breaking format changes.
-export const APP_VERSION = '0.1.16';
+export const APP_VERSION = '0.1.17';
