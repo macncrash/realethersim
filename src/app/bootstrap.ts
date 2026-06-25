@@ -386,6 +386,11 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
       controls.target.set(tx, ty, tz);
       controls.update();
     },
+    setCamera(position, target) {
+      camera.position.set(position[0], position[1], position[2]);
+      controls.target.set(target[0], target[1], target[2]);
+      controls.update();
+    },
     async captureImageBlob(): Promise<Blob> {
       // Render the current view into an offscreen target (the WebGPU swap-chain isn't readable),
       // sRGB so it matches the screen, then composite a branded overlay and embed the snapshot.

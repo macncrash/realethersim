@@ -2,6 +2,79 @@ import type { SystemDoc } from './content';
 
 // Curated learn-panel content for additional emergent systems (Lenia, DLA).
 export const EXTRA_DOCS: Record<string, SystemDoc> = {
+  'henon-heiles': {
+    title: 'Hénon–Heiles',
+    about:
+      'In 1964 Michel Hénon and Carl Heiles asked whether a star orbiting in a galaxy conserves a third quantity beyond its energy and angular momentum. Their toy potential — a harmonic well with a cubic distortion that gives it three-fold symmetry — became one of the cleanest windows into *conservative* chaos. Unlike a strange attractor nothing dissipates: energy is exactly conserved and the motion fills a constant-energy surface. Below the escape energy E = 1/6 the orbits split into two coexisting worlds — orderly KAM tori and a chaotic sea — the shape chaos takes before it looks fully random.',
+    howItWorks:
+      'A particle moves in the potential V(x,y) = ½(x²+y²) + λ(x²y − ⅓y³). Hamilton’s equations turn the energy H into four coupled first-order ODEs for position (x,y) and momentum (px,py), integrated with RK4 across an ensemble of ~100k slightly different starting points. The equipotential V = 1/6 forms a triangle with three saddle channels; seed energies stay below it so every orbit remains bound. We render (x, y, px) — a 3-D slice of the 4-D phase space.',
+    equations: [
+      { label: 'Hamiltonian (energy)', latex: 'H = \\tfrac12(p_x^2+p_y^2) + \\tfrac12(x^2+y^2) + \\lambda\\,(x^2 y - \\tfrac13 y^3)' },
+      { label: 'position', latex: '\\dot x = p_x, \\qquad \\dot y = p_y' },
+      { label: 'momentum', latex: '\\dot p_x = -x - 2\\lambda x y, \\qquad \\dot p_y = -y - \\lambda(x^2 - y^2)' },
+      { label: 'escape energy (λ=1)', latex: 'E_{\\text{esc}} = \\tfrac16' },
+    ],
+    params: [
+      { key: 'lambda', symbol: '\\lambda', meaning: 'strength of the cubic (anharmonic) coupling; λ=1 is the classic case with escape energy 1/6' },
+    ],
+    code: `// H = ½(px²+py²) + ½(x²+y²) + λ(x²y − ⅓y³)
+dx  = px;
+dy  = py;
+dpx = -x - 2*lambda*x*y;
+dpy = -y - lambda*(x*x - y*y);`,
+    links: [
+      { label: 'Hénon–Heiles system (Wikipedia)', url: 'https://en.wikipedia.org/wiki/H%C3%A9non%E2%80%93Heiles_system' },
+      { label: 'KAM theorem (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Kolmogorov%E2%80%93Arnold%E2%80%93Moser_theorem' },
+    ],
+  },
+  'double-pendulum': {
+    title: 'Double Pendulum',
+    about:
+      'A pendulum hanging from a pendulum — two rigid arms, one joint, gravity. It is the most famous demonstration of deterministic chaos: the equations are exact and reversible, yet two pendulums released from almost the same angle diverge into completely different motions within seconds. Here ~100k pendulums start from a tight cloud of nearly identical angles; watch it explode apart as sensitive dependence on initial conditions takes over. Like Hénon–Heiles it is conservative — energy is preserved, so the motion never settles onto an attractor.',
+    howItWorks:
+      'The state is four numbers: the two arm angles (θ1,θ2) and their angular velocities (ω1,ω2). The coupled Euler–Lagrange equations (equal masses and lengths) give the angular accelerations; RK4 advances every pendulum each frame. Because an arm can swing over the top, the raw angles grow without bound — so instead of plotting angles we render the lower bob’s actual Cartesian position (x₂,y₂), which always stays within reach, using the upper arm’s x as depth.',
+    equations: [
+      { label: 'angles evolve by their velocities', latex: '\\dot\\theta_1=\\omega_1,\\qquad \\dot\\theta_2=\\omega_2' },
+      { label: 'angular acceleration · arm 1 (m=l=1, Δ=θ₁−θ₂)', latex: '\\dot\\omega_1 = \\frac{-3g\\sin\\theta_1 - g\\sin(\\theta_1-2\\theta_2) - 2\\sin\\Delta\\,(\\omega_2^2+\\omega_1^2\\cos\\Delta)}{3-\\cos 2\\Delta}' },
+      { label: 'angular acceleration · arm 2', latex: '\\dot\\omega_2 = \\frac{2\\sin\\Delta\\,(2\\omega_1^2 + 2g\\cos\\theta_1 + \\omega_2^2\\cos\\Delta)}{3-\\cos 2\\Delta}' },
+      { label: 'lower bob (rendered position, not an ODE)', latex: 'x_2=\\sin\\theta_1+\\sin\\theta_2,\\quad y_2=-\\cos\\theta_1-\\cos\\theta_2' },
+    ],
+    params: [
+      { key: 'g', symbol: 'g', meaning: 'gravitational strength; sets the swing rate and how energetic (chaotic) the motion is' },
+    ],
+    code: `// equal masses & lengths; Δ = θ1 − θ2, den = 3 − cos(2Δ)
+dω1 = (-3*g*sin(θ1) - g*sin(θ1-2θ2) - 2*sin(Δ)*(ω2² + ω1²*cos(Δ))) / den;
+dω2 = ( 2*sin(Δ)*(2*ω1² + 2*g*cos(θ1) + ω2²*cos(Δ)) ) / den;`,
+    links: [
+      { label: 'Double pendulum (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Double_pendulum' },
+      { label: 'Chaos theory (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Chaos_theory' },
+    ],
+  },
+  'einstein-rosen': {
+    title: 'Einstein–Rosen Bridge',
+    about:
+      'In 1935 Einstein and Rosen rewrote the Schwarzschild solution — the geometry around a spherical mass — and found it describes two universes joined by a "bridge": a non-traversable wormhole. This is the picture of spacetime as a stretched rubber sheet, made precise. It is Flamm’s paraboloid: the curved 2-D space around a black hole, lifted into 3-D so its curvature is visible. The narrow waist is the throat (the horizon at r = 2M); the two flaring funnels are the two asymptotically flat sheets.',
+    howItWorks:
+      'Take the equatorial slice of the Schwarzschild metric at a frozen instant and ask which surface of revolution in flat 3-D has the same intrinsic geometry. The answer has height z(r) = √(8M(r − 2M)) for r ≥ 2M; reflecting it and gluing the two copies at the throat gives the full bridge. We sample by embedding height h rather than radius r (so the throat, where the surface turns vertical, stays smooth): r = 2M + h²/(8M), then sweep the angle φ around. A static surface — drag the mass and reach to reshape it.',
+    equations: [
+      { label: 'embedding height (Flamm’s paraboloid)', latex: 'z(r) = \\sqrt{8M\\,(r - 2M)}, \\qquad r \\ge 2M' },
+      { label: 'radius at embedding height h (= z, sampled directly)', latex: 'r = 2M + \\frac{h^2}{8M}' },
+      { label: 'surface of revolution', latex: '(x,\\,y,\\,z) = (r\\cos\\varphi,\\; h,\\; r\\sin\\varphi)' },
+    ],
+    params: [
+      { key: 'mass', symbol: 'M', meaning: 'black-hole mass; sets the throat radius (2M) and how sharply the funnels flare' },
+      { key: 'reach', symbol: 'h_{\\max}', meaning: 'how far each sheet extends from the throat' },
+    ],
+    code: `// Flamm's paraboloid, parametrized by embedding height h (both sheets):
+const h   = (a*2 - 1) * reach;     // −reach … +reach
+const r   = 2*M + (h*h) / (8*M);   // throat radius 2M
+const phi = b * 2*Math.PI;
+x = r*Math.cos(phi);  y = h;  z = r*Math.sin(phi);`,
+    links: [
+      { label: 'Einstein–Rosen bridge (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Einstein%E2%80%93Rosen_bridge' },
+      { label: 'Schwarzschild metric (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Schwarzschild_metric' },
+    ],
+  },
   grayScottField: {
     title: 'Gray-Scott (Turing)',
     about:

@@ -18,7 +18,7 @@ import { mulberry32, type Rng } from '../state/rng';
 export interface AttractorSystem {
   id: string;
   label: string;
-  dim: number; // 3 for all classic attractors here
+  dim: number; // 3 for classic attractors; 4 for the conservative Hamiltonian flows (Hénon–Heiles, double pendulum)
   dt: number; // per-system integration step (set on the global dt when this system is selected)
   defaults: Record<string, number>; // system params (σ, ρ, β …)
   paramSpec: ParamSpec[]; // UI controls for this system
@@ -28,6 +28,11 @@ export interface AttractorSystem {
   scale: number; // world-space render scale
   center: [number, number, number]; // subtracted before scaling to recentre the manifold
   pointSize: number;
+  // Optional projection from the (≥3-D) state to the 3 render coordinates, written into
+  // out[po..po+2]; defaults to the first three state components. The 4-D Hamiltonian flows use it —
+  // e.g. the double pendulum renders its bob in Cartesian space because the raw angles grow
+  // without bound when an arm swings over the top.
+  project?: (state: Float64Array, so: number, out: Float32Array, po: number) => void;
 }
 
 export const LORENZ: AttractorSystem = {
@@ -236,12 +241,94 @@ const NEW_FLOWS: AttractorSystem[] = [
     deriv: (o, x, p) => { o[0] = -x[0] + x[1] + x[1] * x[2]; o[1] = -x[0] - x[1] + p.a * x[0] * x[2]; o[2] = x[2] - p.b * x[0] * x[1]; } }),
 ];
 
+// --- Conservative (Hamiltonian) chaos: 4-D phase-space flows that conserve energy and preserve
+// phase-space volume, rather than dissipating onto a thin strange-attractor manifold. The
+// archetype already integrates `dim` components generically (rk4 MAX_DIM=8); these add a 4th
+// component and, for the pendulum, a Cartesian render projection.
+
+// Hénon–Heiles: a star orbiting in a galactic potential. H = ½(px²+py²) + ½(x²+y²) + λ(x²y − ⅓y³).
+// Below the escape energy E=1/6 (λ=1) the motion is bounded and mixes regular KAM tori with a
+// chaotic sea — "the shape chaos takes before it looks random." Renders (x, y, px).
+export const HENON_HEILES: AttractorSystem = {
+  id: 'henon-heiles',
+  label: 'Hénon–Heiles',
+  dim: 4, // [x, y, px, py]
+  dt: 0.02,
+  defaults: { lambda: 1 },
+  paramSpec: [{ key: 'lambda', label: 'λ', min: 0, max: 1.2, step: 0.01, default: 1 }],
+  // ẋ=px, ẏ=py, ṗx=−x−2λxy, ṗy=−y−λ(x²−y²)
+  deriv: (o, x, p) => {
+    o[0] = x[2];
+    o[1] = x[3];
+    o[2] = -x[0] - 2 * p.lambda * x[0] * x[1];
+    o[3] = -x[1] - p.lambda * (x[0] * x[0] - x[1] * x[1]);
+  },
+  seedPoint: [0, 0, 0, 0],
+  // Seed each particle's conserved energy safely below the escape threshold E=1/6≈0.167 (λ=1);
+  // above it the equipotential opens three saddle channels and trajectories run to infinity.
+  // Verified energy band ≈ [0.002, 0.123], zero escapes over the 800-step smoke test.
+  sampleInit: (out, off, rng) => {
+    out[off] = (rng() - 0.5) * 0.55; // x
+    out[off + 1] = (rng() - 0.5) * 0.55; // y
+    out[off + 2] = (rng() - 0.5) * 0.45; // px
+    out[off + 3] = (rng() - 0.5) * 0.45; // py
+  },
+  scale: 3.0, // FIXED, not bounds-derived: an escaping particle must never be allowed to rescale the cloud
+  center: [0, 0, 0],
+  pointSize: 0.012,
+};
+
+// Double pendulum: the iconic chaos demo. A conservative 4-D Hamiltonian (θ1,θ2,ω1,ω2) with equal
+// masses & lengths (m=l=1). A tight cloud of almost-identical initial angles diverges to fill the
+// energy shell — sensitive dependence on initial conditions made visible.
+export const DOUBLE_PENDULUM: AttractorSystem = {
+  id: 'double-pendulum',
+  label: 'Double Pendulum',
+  dim: 4, // [θ1, θ2, ω1, ω2]
+  dt: 0.02,
+  defaults: { g: 1 },
+  paramSpec: [{ key: 'g', label: 'gravity', min: 0.2, max: 3, step: 0.01, default: 1 }],
+  // Coupled Euler–Lagrange equations of motion (m₁=m₂=l₁=l₂=1):
+  deriv: (o, x, p) => {
+    const t1 = x[0], t2 = x[1], w1 = x[2], w2 = x[3];
+    const d = t1 - t2;
+    const cd = Math.cos(d), sd = Math.sin(d);
+    const den = 3 - Math.cos(2 * d);
+    o[0] = w1;
+    o[1] = w2;
+    o[2] = (-3 * p.g * Math.sin(t1) - p.g * Math.sin(t1 - 2 * t2) - 2 * sd * (w2 * w2 + w1 * w1 * cd)) / den;
+    o[3] = (2 * sd * (2 * w1 * w1 + 2 * p.g * Math.cos(t1) + w2 * w2 * cd)) / den;
+  },
+  seedPoint: [2.5, 2.5, 0, 0],
+  // A tight ε-cloud around a chaotic regime (≈2.5 rad) — the "812 near-identical pendulums" demo.
+  sampleInit: (out, off, rng) => {
+    out[off] = 2.5 + (rng() - 0.5) * 0.1; // θ1
+    out[off + 1] = 2.5 + (rng() - 0.5) * 0.1; // θ2
+    out[off + 2] = (rng() - 0.5) * 0.05; // ω1
+    out[off + 3] = (rng() - 0.5) * 0.05; // ω2
+  },
+  // Render the lower bob's Cartesian position (x₂,y₂) with the upper link's x as depth — bounded by
+  // construction, unlike the raw angles which grow without bound when an arm goes over the top.
+  project: (s, so, out, po) => {
+    const t1 = s[so], t2 = s[so + 1];
+    const x1 = Math.sin(t1);
+    out[po] = x1 + Math.sin(t2); // x₂
+    out[po + 1] = -Math.cos(t1) - Math.cos(t2); // y₂
+    out[po + 2] = x1; // depth: upper-link x
+  },
+  scale: 0.8,
+  center: [-0.05, 0.26, 0.11], // recentre the verified render-space mean of the chaotic cloud
+  pointSize: 0.012,
+};
+
 export const SYSTEMS: Record<string, AttractorSystem> = {
   lorenz: LORENZ,
   rossler: ROSSLER,
   aizawa: AIZAWA,
   thomas: THOMAS,
   ...Object.fromEntries(NEW_FLOWS.map((s) => [s.id, s])),
+  'henon-heiles': HENON_HEILES,
+  'double-pendulum': DOUBLE_PENDULUM,
 };
 
 class StrangeAttractorArchetype implements Archetype {
@@ -289,19 +376,25 @@ class StrangeAttractorArchetype implements Archetype {
     const [cx, cy, cz] = system.center;
     const s = system.scale;
     const n = this.particleCount;
+    const project = system.project;
     for (let i = 0; i < n; i++) {
       const so = i * dim;
       const po = i * 3;
       // Guard against blow-ups (e.g. dt too large): re-seed a stuck particle to the seed point.
-      const x = state[so];
-      if (!Number.isFinite(x)) {
-        state[so] = system.seedPoint[0];
-        state[so + 1] = system.seedPoint[1];
-        state[so + 2] = system.seedPoint[2];
+      // Reseed all `dim` components so a recovered 4-D particle restarts at a valid phase point.
+      if (!Number.isFinite(state[so])) {
+        for (let k = 0; k < dim; k++) state[so + k] = system.seedPoint[k] ?? 0;
       }
-      positions[po] = (state[so] - cx) * s;
-      positions[po + 1] = (state[so + 1] - cy) * s;
-      positions[po + 2] = (state[so + 2] - cz) * s;
+      if (project) {
+        project(state, so, positions, po); // writes the 3 raw render coords
+      } else {
+        positions[po] = state[so];
+        positions[po + 1] = state[so + 1];
+        positions[po + 2] = state[so + 2];
+      }
+      positions[po] = (positions[po] - cx) * s;
+      positions[po + 1] = (positions[po + 1] - cy) * s;
+      positions[po + 2] = (positions[po + 2] - cz) * s;
     }
   }
 

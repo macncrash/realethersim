@@ -1,8 +1,9 @@
 import { LitElement, html, type TemplateResult } from 'lit';
-import { $engine, $archetypeId, listFactories } from '../store';
+import { $engine, $archetypeId } from '../store';
 import { migrate } from '../../state/migrations';
 import { getFactory } from '../../core/registry';
 import { extractText } from '../../state/pngMeta';
+import { buildShareUrl } from '../../app/shareLink';
 
 const MAX_JSON = 8 * 1024 * 1024; // 8 MB cap for snapshot JSON
 const MAX_PNG = 64 * 1024 * 1024; // 64 MB cap for an imported image
@@ -99,11 +100,14 @@ export class SnapshotControls extends LitElement {
       const id = $archetypeId.get();
       const f = getFactory(id);
       const file = new File([blob], `ethersim-${id}.png`, { type: 'image/png' });
-      const text = `${f.label} — a live ${f.category} simulation on ETHERSIM. Explore ${listFactories().length} dynamical systems → https://ethersim.ai`;
+      // Deep link that reopens this exact view (system + params + camera). Social platforms strip
+      // the PNG's embedded snapshot, so the link is how a recipient gets the live, same-settings sim.
+      const link = buildShareUrl(engine.exportSnapshot());
+      const text = `${f.label} — a live ${f.category} simulation on ETHERSIM. Open this exact view → ${link}`;
       const nav = navigator as Navigator & { canShare?: (d: ShareData) => boolean };
       if (nav.canShare?.({ files: [file] }) && nav.share) {
         // Native share sheet — this DOES attach the image (mobile, Safari, Edge, recent Chrome).
-        await nav.share({ title: `ETHERSIM — ${f.label}`, text, files: [file] });
+        await nav.share({ title: `ETHERSIM — ${f.label}`, text, url: link, files: [file] });
         this.setStatus('shared ✓');
       } else {
         // No Web Share file support here. A post can't be given an image via a URL (X's intent is

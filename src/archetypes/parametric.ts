@@ -917,6 +917,26 @@ export const PARAMETRIC_SYSTEMS: Record<string, ParamSurface> = {
       });
     },
   },
+  einsteinRosen: {
+    id: 'einstein-rosen', label: 'Einstein–Rosen Bridge', defaultParticleCount: 200_000, scale: 0.5, pointSize: 0.008,
+    params: [
+      { key: 'mass', label: 'mass M', min: 0.2, max: 1.2, step: 0.01, default: 0.5 },
+      { key: 'reach', label: 'reach', min: 1.5, max: 5, step: 0.05, default: 3 },
+    ],
+    // Flamm's paraboloid: the equatorial t=const slice of the Schwarzschild metric, isometrically
+    // embedded in flat 3-space — the wormhole Einstein & Rosen (1935) found inside gravity. We
+    // parametrize by the embedding height h (NOT the radius r), so the throat, where dz/dr→∞, is
+    // sampled smoothly: r = 2M + h²/(8M). Both sheets (h ≷ 0) meet at the throat r = 2M.
+    position: (i, n, p, out, o) => {
+      const [a, b] = uv(i, n);
+      const h = (a * 2 - 1) * p.reach; // embedding height, −reach…+reach spanning both sheets
+      const r = 2 * p.mass + (h * h) / (8 * p.mass); // throat radius 2M; paraboloid flare
+      const phi = b * TAU;
+      out[o] = r * Math.cos(phi);
+      out[o + 1] = h; // vertical embedding axis
+      out[o + 2] = r * Math.sin(phi);
+    },
+  },
 };
 
 class ParametricArchetype implements Archetype {
