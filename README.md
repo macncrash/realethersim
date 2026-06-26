@@ -6,7 +6,7 @@
   <img src="https://img.shields.io/badge/license-MIT-3aa0ff.svg" alt="MIT License">
   <img src="https://img.shields.io/badge/WebGPU-Three.js%20r184-4ad6c8" alt="WebGPU / Three.js">
   <img src="https://img.shields.io/badge/TypeScript-strict-7aa8ff" alt="TypeScript strict">
-  <img src="https://img.shields.io/badge/tests-66%20passing-4ad6c8" alt="66 tests passing">
+  <img src="https://img.shields.io/badge/tests-176%20passing-4ad6c8" alt="176 tests passing">
 </p>
 
 # ETHERSIM
@@ -137,6 +137,18 @@ renders **f32** (WGSL has no f64) — the split that satisfies "double-precision
 single-precision fallback".
 
 ## Run
+
+**Just use it** — open **[ethersim.ai](https://ethersim.ai)**. It runs entirely in your browser; there's nothing to install.
+
+**Explore & edit the code, zero install** — [**open in StackBlitz**](https://stackblitz.com/github/macncrash/realethersim): the whole source in a live in-browser editor — no git, no compilers, no setup. (Editing works anywhere; the live preview runs best in a WebGPU browser.)
+
+**Run it locally in one line** (macOS / Linux; on Windows use WSL or Git Bash):
+```bash
+curl -fsSL https://ethersim.ai/run.sh | bash
+```
+This installs [bun](https://bun.sh) if you don't have it, downloads the source (no git needed), and opens ETHERSIM at http://localhost:5173. Read the script first if you like — it's short.
+
+**Or the usual way** — clone the repo, or download the source ZIP from the green **Code** button on GitHub (no git required), then:
 ```bash
 bun install
 bun run dev        # http://localhost:5173 — open in a WebGPU browser (Chrome / Edge / Safari 26+)
