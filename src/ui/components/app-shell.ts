@@ -2,7 +2,7 @@ import { LitElement, html, type TemplateResult } from 'lit';
 import { StoreController } from '@nanostores/lit';
 import { bootstrap } from '../../app/bootstrap';
 import { APP_VERSION } from '../../version';
-import { $demoMode } from '../store';
+import { $demoMode, $guides, toggleGuides } from '../store';
 import './archetype-switcher';
 import './params-panel';
 import './hierarchy-tree';
@@ -24,6 +24,7 @@ export class EtherApp extends LitElement {
   // Demo mode goes full-screen: the control panel + learn box hide so the sim fills the view with
   // minimal distraction (exit via the badge or Esc — see command-palette).
   private demo = new StoreController(this, $demoMode);
+  private guides = new StoreController(this, $guides);
 
   override firstUpdated(): void {
     const canvas = this.querySelector('canvas.view') as HTMLCanvasElement | null;
@@ -61,6 +62,13 @@ export class EtherApp extends LitElement {
               style="font:inherit;font-size:11px;letter-spacing:.04em;color:#9fd;background:#10303c;border:1px solid #244;border-radius:6px;padding:4px 10px;cursor:pointer"
             >
               &lt;/&gt;&nbsp;source
+            </button>
+            <button
+              title="Toggle guide overlays — equipotential boundaries, reach circles, etc. (G)"
+              @click=${() => toggleGuides()}
+              style="font:inherit;font-size:11px;letter-spacing:.04em;border-radius:6px;padding:4px 10px;cursor:pointer;color:${this.guides.value ? '#06140e' : '#9fd'};background:${this.guides.value ? '#2f8a6a' : '#10303c'};border:1px solid ${this.guides.value ? '#3fb795' : '#244'}"
+            >
+              ⊞&nbsp;guides
             </button>
           </div>
           <ether-archetype-switcher></ether-archetype-switcher>

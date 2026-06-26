@@ -68,10 +68,16 @@ export const $paused = atom<boolean>(false);
 let demoTimer: ReturnType<typeof setInterval> | null = null;
 const DEMO_INTERVAL_MS = 11_000;
 
+// Demo history (← / →): the systems shown this session, with a cursor, so the user can step back to
+// a previous one or skip ahead. New randoms append at the end; back/forward walk the list.
+let demoHistory: string[] = [];
+let demoPos = -1;
+let navInProgress = false; // true while ←/→ drives the change, so we don't re-record a nav step
+
 // The auto-advance runs only while demo is on, not explicitly held (P), and the sim isn't frozen.
 function updateDemoTimer(): void {
   const run = $demoMode.get() && !$demoPaused.get() && !$paused.get();
-  if (run && !demoTimer) demoTimer = setInterval(selectRandom, DEMO_INTERVAL_MS);
+  if (run && !demoTimer) demoTimer = setInterval(demoNext, DEMO_INTERVAL_MS);
   else if (!run && demoTimer) {
     clearInterval(demoTimer);
     demoTimer = null;
@@ -83,9 +89,11 @@ $paused.subscribe(() => updateDemoTimer());
 export function setDemoMode(on: boolean): void {
   if (on === $demoMode.get()) return;
   $demoMode.set(on);
+  demoHistory = [];
+  demoPos = -1;
   if (on) {
     $demoPaused.set(false);
-    selectRandom();
+    selectRandom(); // recorded as the first history entry by the subscription below
   } else {
     $demoPaused.set(false);
     $demoDetails.set(false);
@@ -128,6 +136,46 @@ export function setPrimaryParamDecile(d: number): void {
   if (!spec) return;
   const frac = Math.min(1, Math.max(0, (d - 1) / 8)); // 1 → min, 5 → middle, 9 → max
   applyPrimary(spec, spec.min + frac * (spec.max - spec.min));
+}
+
+// Record fresh visits (auto-random or a manual search-jump) while in demo; ←/→ steps are skipped.
+$archetypeId.subscribe((id) => {
+  if (!$demoMode.get() || navInProgress) return;
+  demoHistory = demoHistory.slice(0, demoPos + 1); // drop forward history on a new branch
+  if (demoHistory[demoPos] !== id) {
+    demoHistory.push(id);
+    demoPos = demoHistory.length - 1;
+  }
+});
+
+export function demoCanPrev(): boolean {
+  return $demoMode.get() && demoPos > 0;
+}
+// "←": step back to the previously-shown system.
+export function demoPrev(): void {
+  if (!$demoMode.get() || demoPos <= 0) return;
+  navInProgress = true;
+  demoPos--;
+  selectArchetype(demoHistory[demoPos]);
+  navInProgress = false;
+}
+// "→" / auto-advance: re-show the next already-seen system, or (at the end) pick a fresh random.
+export function demoNext(): void {
+  if (!$demoMode.get()) return;
+  if (demoPos < demoHistory.length - 1) {
+    navInProgress = true;
+    demoPos++;
+    selectArchetype(demoHistory[demoPos]);
+    navInProgress = false;
+  } else {
+    selectRandom();
+  }
+}
+
+// Static guide-geometry overlay (equipotential boundaries, reach circles, …) — a global show/hide.
+export const $guides = atom<boolean>(true);
+export function toggleGuides(): void {
+  $guides.set(!$guides.get());
 }
 
 export interface Telemetry {
