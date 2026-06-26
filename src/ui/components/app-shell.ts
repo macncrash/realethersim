@@ -1,8 +1,8 @@
-import { LitElement, html, type TemplateResult } from 'lit';
+import { LitElement, html, nothing, type TemplateResult } from 'lit';
 import { StoreController } from '@nanostores/lit';
 import { bootstrap } from '../../app/bootstrap';
 import { APP_VERSION } from '../../version';
-import { $demoMode, $guides, toggleGuides } from '../store';
+import { $demoMode, $guides, $panelOpen, setPanelOpen, toggleGuides } from '../store';
 import './archetype-switcher';
 import './params-panel';
 import './hierarchy-tree';
@@ -25,6 +25,7 @@ export class EtherApp extends LitElement {
   // minimal distraction (exit via the badge or Esc — see command-palette).
   private demo = new StoreController(this, $demoMode);
   private guides = new StoreController(this, $guides);
+  private panelOpen = new StoreController(this, $panelOpen);
 
   override firstUpdated(): void {
     const canvas = this.querySelector('canvas.view') as HTMLCanvasElement | null;
@@ -40,10 +41,21 @@ export class EtherApp extends LitElement {
   }
 
   override render(): TemplateResult {
-    const hide = this.demo.value ? 'display:none' : '';
+    // Panel + learn show only when not in demo and the UI isn't collapsed (immersive view).
+    const showUI = !this.demo.value && this.panelOpen.value;
+    const hide = showUI ? '' : 'display:none';
     return html`
       <div class="layout">
         <canvas class="view"></canvas>
+        ${this.demo.value
+          ? nothing
+          : html`<button
+              class="ui-toggle"
+              @click=${() => setPanelOpen(!this.panelOpen.value)}
+              title=${this.panelOpen.value ? 'Hide controls (immersive view)' : 'Show controls'}
+            >
+              ${this.panelOpen.value ? '✕ hide' : '☰ controls'}
+            </button>`}
         <aside class="panel" style=${hide}>
           <h1 class="brand" style="margin-bottom:6px">
             ETHERSIM <span style="font-size:.5em;font-weight:400;opacity:.45;letter-spacing:0">v${APP_VERSION}</span>

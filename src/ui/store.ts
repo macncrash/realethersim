@@ -65,8 +65,8 @@ export const $demoMode = atom<boolean>(false);
 export const $demoPaused = atom<boolean>(false);
 export const $demoDetails = atom<boolean>(false);
 export const $paused = atom<boolean>(false);
+export const $demoInterval = atom<number>(30); // seconds between auto-advances (20s … 20min, slider)
 let demoTimer: ReturnType<typeof setInterval> | null = null;
-const DEMO_INTERVAL_MS = 11_000;
 
 // Demo history (← / →): the systems shown this session, with a cursor, so the user can step back to
 // a previous one or skip ahead. New randoms append at the end; back/forward walk the list.
@@ -77,7 +77,7 @@ let navInProgress = false; // true while ←/→ drives the change, so we don't 
 // The auto-advance runs only while demo is on, not explicitly held (P), and the sim isn't frozen.
 function updateDemoTimer(): void {
   const run = $demoMode.get() && !$demoPaused.get() && !$paused.get();
-  if (run && !demoTimer) demoTimer = setInterval(demoNext, DEMO_INTERVAL_MS);
+  if (run && !demoTimer) demoTimer = setInterval(demoNext, $demoInterval.get() * 1000);
   else if (!run && demoTimer) {
     clearInterval(demoTimer);
     demoTimer = null;
@@ -85,6 +85,17 @@ function updateDemoTimer(): void {
 }
 // Freezing the simulation (Space) implies holding the demo; resuming releases it.
 $paused.subscribe(() => updateDemoTimer());
+// Changing the interval restarts a running timer so the new cadence takes effect immediately.
+$demoInterval.subscribe(() => {
+  if (demoTimer) {
+    clearInterval(demoTimer);
+    demoTimer = null;
+    updateDemoTimer();
+  }
+});
+export function setDemoInterval(sec: number): void {
+  $demoInterval.set(Math.min(1200, Math.max(20, Math.round(sec))));
+}
 
 export function setDemoMode(on: boolean): void {
   if (on === $demoMode.get()) return;
@@ -176,6 +187,13 @@ export function demoNext(): void {
 export const $guides = atom<boolean>(true);
 export function toggleGuides(): void {
   $guides.set(!$guides.get());
+}
+
+// Control-UI visibility (panel + learn box). An immersive show/hide so the visualization can go
+// full-screen — defaults open on wide screens, collapsed on phones where the panel would dominate.
+export const $panelOpen = atom<boolean>(typeof window !== 'undefined' ? window.innerWidth > 640 : true);
+export function setPanelOpen(on: boolean): void {
+  $panelOpen.set(on);
 }
 
 export interface Telemetry {
