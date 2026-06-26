@@ -45,7 +45,8 @@ export class LearnPanel extends LitElement {
   private archId = new StoreController(this, $archetypeId);
   private params = new StoreController(this, $params);
   private tab: Tab = 'about';
-  private open = true;
+  // Collapsed by default on phones (where it would overlap the full-width control panel); open on desktop.
+  private open = typeof window !== 'undefined' ? window.innerWidth > 640 : true;
 
   private setTab(t: Tab): void {
     this.tab = t;

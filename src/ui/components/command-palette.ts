@@ -6,6 +6,8 @@ import {
   $demoPaused,
   $demoDetails,
   $paused,
+  $demoInterval,
+  setDemoInterval,
   $engine,
   listFactories,
   selectArchetype,
@@ -23,6 +25,14 @@ import {
 } from '../store';
 import { getFactory } from '../../core/registry';
 import { APP_VERSION } from '../../version';
+
+// Format an interval (seconds) compactly: "30s", "2m 35s", "20m".
+function fmtInterval(sec: number): string {
+  if (sec < 60) return `${sec}s`;
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  return s ? `${m}m ${s}s` : `${m}m`;
+}
 
 interface Item {
   id: string;
@@ -42,6 +52,7 @@ export class CommandPalette extends LitElement {
   private demoPaused = new StoreController(this, $demoPaused); // auto-advance held (P)
   private simPaused = new StoreController(this, $paused); // simulation frozen (Space)
   private details = new StoreController(this, $demoDetails);
+  private interval = new StoreController(this, $demoInterval); // seconds between auto-advances
   private cur = new StoreController(this, $archetypeId);
 
   private open = false;
@@ -213,26 +224,44 @@ export class CommandPalette extends LitElement {
     const sim = this.simPaused.value;
     const held = this.demoPaused.value;
     const details = this.details.value;
+    const secs = this.interval.value;
+    // Log-mapped slider so the wide 20s…20min range is comfortable to set.
+    const sliderVal = Math.round((100 * Math.log(secs / 20)) / Math.log(60));
     return html`<div class="cmdp-badge">
-      <span class="cmdp-dot ${sim || held ? 'paused' : ''}"></span>
-      <span class="cmdp-brand">ETHERSIM <span class="cmdp-ver">v${APP_VERSION}</span></span>
-      ${label ? html`<span class="cmdp-sys">${label}</span>` : nothing}
-      <button class="cmdp-mini cmdp-nav" @click=${() => demoPrev()} ?disabled=${!demoCanPrev()} title="Back to the previous system (←)">‹</button>
-      <button class="cmdp-mini cmdp-nav" @click=${() => demoNext()} title="Skip to the next system (→)">›</button>
-      ${sim
-        ? html`<span class="cmdp-pausetag">⏸ sim paused</span>`
-        : held
-          ? html`<span class="cmdp-pausetag">⏸ demo held</span>`
-          : nothing}
-      <button
-        class="cmdp-mini ${details ? 'on' : ''}"
-        @click=${() => toggleDemoDetails()}
-        title="Show the about + formulae at the bottom (stays in demo)"
-      >
-        ${details ? '✓ details' : 'ⓘ details'}
-      </button>
-      <button class="cmdp-mini" @click=${() => void $engine.get()?.exportImage()} title="Save a screenshot (⌘S)">📷 shot</button>
-      <button class="cmdp-mini" @click=${() => setDemoMode(false)} title="Exit demo mode (Esc)">✕ exit</button>
+      <div class="cmdp-r1">
+        <button class="cmdp-ic" @click=${() => demoPrev()} ?disabled=${!demoCanPrev()} title="Previous system (←)">‹</button>
+        <button class="cmdp-ic" @click=${() => demoNext()} title="Next / skip (→)">›</button>
+        <span class="cmdp-dot ${sim || held ? 'paused' : ''}"></span>
+        <span class="cmdp-brand">ETHERSIM <span class="cmdp-ver">v${APP_VERSION}</span></span>
+        <span class="cmdp-sys" title=${label}>· ${label}</span>
+        ${sim
+          ? html`<span class="cmdp-pausetag" title="Simulation paused (Space)">⏸</span>`
+          : held
+            ? html`<span class="cmdp-pausetag" title="Demo held (P)">❙❙</span>`
+            : nothing}
+        <button
+          class="cmdp-ic ${details ? 'on' : ''}"
+          @click=${() => toggleDemoDetails()}
+          title="Details — about + formulae (stays in demo)"
+        >
+          ⓘ
+        </button>
+        <button class="cmdp-ic" @click=${() => void $engine.get()?.exportImage()} title="Screenshot (⌘S)">📷</button>
+        <button class="cmdp-ic" @click=${() => setDemoMode(false)} title="Exit demo (Esc)">✕</button>
+      </div>
+      <div class="cmdp-r2">
+        <span class="cmdp-clock" title="Seconds on each system">⏱</span>
+        <input
+          class="cmdp-slider"
+          type="range"
+          min="0"
+          max="100"
+          .value=${String(sliderVal)}
+          @input=${(e: Event) => setDemoInterval(20 * Math.pow(60, +(e.target as HTMLInputElement).value / 100))}
+          title="Time on each system (20s – 20min)"
+        />
+        <span class="cmdp-int">${fmtInterval(secs)}</span>
+      </div>
     </div>`;
   }
 
@@ -242,24 +271,28 @@ export class CommandPalette extends LitElement {
         ? html`<style>
               .cmdp-badge {
                 position: fixed; left: 50%; top: 14px; transform: translateX(-50%); z-index: 9998;
-                display: flex; align-items: center; gap: 9px; font: inherit; font-size: 12px; color: #eafff7;
-                background: #163d33cc; border: 1px solid #2f8a6a; border-radius: 999px; padding: 5px 7px 5px 14px;
-                backdrop-filter: blur(4px); max-width: 94vw; flex-wrap: wrap; justify-content: center;
+                box-sizing: border-box; width: min(470px, 94vw);
+                display: flex; flex-direction: column; gap: 7px; font: inherit; font-size: 12px; color: #eafff7;
+                background: #163d33ee; border: 1px solid #2f8a6a; border-radius: 14px; padding: 8px 12px;
+                backdrop-filter: blur(6px);
               }
-              .cmdp-dot { width: 8px; height: 8px; border-radius: 50%; background: #5af0c8; animation: cmdpPulse 1.6s infinite; }
+              .cmdp-r1, .cmdp-r2 { display: flex; align-items: center; gap: 7px; }
+              .cmdp-dot { flex: none; width: 8px; height: 8px; border-radius: 50%; background: #5af0c8; animation: cmdpPulse 1.6s infinite; }
               .cmdp-dot.paused { animation: none; background: #e0bf5a; }
-              .cmdp-brand { font-weight: 600; letter-spacing: 0.06em; }
+              .cmdp-brand { flex: none; font-weight: 600; letter-spacing: 0.06em; }
               .cmdp-ver { font-weight: 400; opacity: 0.5; letter-spacing: 0; }
-              .cmdp-sys { color: #5af0c8; padding-left: 9px; border-left: 1px solid #2f8a6a66; }
-              .cmdp-pausetag { color: #f0d28a; font-size: 11px; }
-              .cmdp-mini {
-                font: inherit; font-size: 11px; color: #cfe; background: #14323f; border: 1px solid #2a4a58;
-                border-radius: 999px; padding: 4px 10px; cursor: pointer;
+              .cmdp-sys { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #5af0c8; }
+              .cmdp-pausetag { flex: none; color: #f0d28a; }
+              .cmdp-ic {
+                flex: none; font: inherit; font-size: 14px; line-height: 1; color: #cfe; min-width: 30px; text-align: center;
+                background: #14323f; border: 1px solid #2a4a58; border-radius: 8px; padding: 5px 8px; cursor: pointer;
               }
-              .cmdp-mini:hover { background: #1c4252; }
-              .cmdp-mini.on { background: #1f5a4a; border-color: #2f8a6a; color: #eafff7; }
-              .cmdp-mini:disabled { opacity: 0.3; cursor: default; }
-              .cmdp-nav { padding: 3px 9px; font-size: 14px; line-height: 1; }
+              .cmdp-ic:hover { background: #1c4252; }
+              .cmdp-ic.on { background: #1f5a4a; border-color: #2f8a6a; color: #eafff7; }
+              .cmdp-ic:disabled { opacity: 0.3; cursor: default; }
+              .cmdp-clock { flex: none; opacity: 0.8; }
+              .cmdp-slider { flex: 1; min-width: 0; height: 4px; accent-color: #3fb795; cursor: pointer; }
+              .cmdp-int { flex: none; min-width: 56px; text-align: right; color: #bfeee0; font-variant-numeric: tabular-nums; }
               @keyframes cmdpPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
             </style>
             ${this.demoBadge()}`

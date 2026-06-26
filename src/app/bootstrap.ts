@@ -348,6 +348,10 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
     camera.updateProjectionMatrix();
   }
   window.addEventListener('resize', resize);
+  // Mobile: rotation + the visual viewport (URL bar show/hide) don't always fire a plain 'resize'
+  // promptly, so listen explicitly. The small delay lets the new dimensions settle after a rotate.
+  window.addEventListener('orientationchange', () => setTimeout(resize, 120));
+  window.visualViewport?.addEventListener('resize', resize);
   resize();
 
   // --- render loop (decoupled from the sim) ---
