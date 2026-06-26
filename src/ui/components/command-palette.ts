@@ -16,6 +16,10 @@ import {
   toggleDemoDetails,
   nudgePrimaryParam,
   setPrimaryParamDecile,
+  demoPrev,
+  demoNext,
+  demoCanPrev,
+  toggleGuides,
 } from '../store';
 import { getFactory } from '../../core/registry';
 import { APP_VERSION } from '../../version';
@@ -78,6 +82,12 @@ export class CommandPalette extends LitElement {
     if (k === '/' && !this.open && !this.isTyping(e)) {
       e.preventDefault();
       this.show();
+      return;
+    }
+    // "G" toggles the guide-geometry overlay (works in or out of demo).
+    if (!e.metaKey && !e.ctrlKey && !e.altKey && k === 'g' && !this.open && !this.isTyping(e)) {
+      e.preventDefault();
+      toggleGuides();
       return;
     }
     // Demo-mode keys (palette closed, not typing). Space is NOT here — it pauses the simulation
@@ -207,6 +217,8 @@ export class CommandPalette extends LitElement {
       <span class="cmdp-dot ${sim || held ? 'paused' : ''}"></span>
       <span class="cmdp-brand">ETHERSIM <span class="cmdp-ver">v${APP_VERSION}</span></span>
       ${label ? html`<span class="cmdp-sys">${label}</span>` : nothing}
+      <button class="cmdp-mini cmdp-nav" @click=${() => demoPrev()} ?disabled=${!demoCanPrev()} title="Back to the previous system (←)">‹</button>
+      <button class="cmdp-mini cmdp-nav" @click=${() => demoNext()} title="Skip to the next system (→)">›</button>
       ${sim
         ? html`<span class="cmdp-pausetag">⏸ sim paused</span>`
         : held
@@ -246,6 +258,8 @@ export class CommandPalette extends LitElement {
               }
               .cmdp-mini:hover { background: #1c4252; }
               .cmdp-mini.on { background: #1f5a4a; border-color: #2f8a6a; color: #eafff7; }
+              .cmdp-mini:disabled { opacity: 0.3; cursor: default; }
+              .cmdp-nav { padding: 3px 9px; font-size: 14px; line-height: 1; }
               @keyframes cmdpPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
             </style>
             ${this.demoBadge()}`

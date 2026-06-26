@@ -22,7 +22,7 @@ import { APP_VERSION } from '../version';
 import { embedText } from '../state/pngMeta';
 import { detectCapabilities } from './capabilities';
 import type { Engine } from './engine';
-import { $archetypeId, $engine, $global, $hierarchy, $params, $paused, $selectedNode, $telemetry } from '../ui/store';
+import { $archetypeId, $engine, $global, $guides, $hierarchy, $params, $paused, $selectedNode, $telemetry } from '../ui/store';
 
 const SEED = 1;
 
@@ -107,6 +107,56 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
   scene.add(cloud.points);
   scene.add(trailCloud.group);
   $hierarchy.set(driver.hierarchy);
+
+  // Static guide-geometry overlay (equipotential boundaries, reach circles, …): opt-in per factory
+  // (factory.guides), drawn in render space, globally toggled by $guides. Rebuilt on every switch.
+  // Rendered as dense additive POINTS (the proven WebGPU render path) rather than line primitives.
+  const guideGroup = new THREE.Group();
+  scene.add(guideGroup);
+  function sampleGuide(pts: Array<[number, number, number]>, closed: boolean): Float32Array {
+    const out: number[] = [];
+    const segs = closed ? pts.length : pts.length - 1;
+    for (let i = 0; i < segs; i++) {
+      const a = pts[i], b = pts[(i + 1) % pts.length];
+      const dx = b[0] - a[0], dy = b[1] - a[1], dz = b[2] - a[2];
+      const n = Math.max(2, Math.ceil(Math.hypot(dx, dy, dz) / 0.025)); // ~1 point / 0.025 render units
+      for (let j = 0; j < n; j++) {
+        const t = j / n;
+        out.push(a[0] + dx * t, a[1] + dy * t, a[2] + dz * t);
+      }
+    }
+    return new Float32Array(out);
+  }
+  function updateGuides(): void {
+    for (const c of guideGroup.children) {
+      const p = c as THREE.Points;
+      p.geometry.dispose();
+      (p.material as THREE.Material).dispose();
+    }
+    guideGroup.clear();
+    guideGroup.visible = $guides.get();
+    if (!$guides.get()) return;
+    const spec = getFactory($archetypeId.get()).guides?.();
+    if (!spec) return;
+    for (const gl of spec) {
+      const geom = new THREE.BufferGeometry();
+      geom.setAttribute('position', new THREE.BufferAttribute(sampleGuide(gl.points, !!gl.closed), 3));
+      geom.boundingSphere = new THREE.Sphere(new THREE.Vector3(), Infinity);
+      const mat = new THREE.PointsMaterial({
+        color: gl.color ?? 0x6f7a8a,
+        size: 0.03,
+        sizeAttenuation: true,
+        transparent: true,
+        opacity: 0.85,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+      });
+      const p = new THREE.Points(geom, mat);
+      p.frustumCulled = false;
+      guideGroup.add(p);
+    }
+  }
+  $guides.subscribe(() => updateGuides()); // fires now (initial) + on every toggle
 
   function makeTrailCloud(): TrailCloud {
     const tc = createTrailCloud(driver.trailRing(), driver.particleCount, driver.trailSlots(), driver.colors, driver.pointSize);
@@ -231,6 +281,7 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
     teardownGpu(); // force a fresh GPU sim for the new archetype / particle count
     teardownRaymarch(); // force a fresh raymarch pass (e.g. switching between 3D fractals)
     applyMode(); // re-establish raymarch vs GPU vs CPU
+    updateGuides(); // refresh the overlay for the new system
     // The Kármán field is a flat horizontal sheet — frame it near top-down (the classic CFD view).
     if ($archetypeId.get() === 'karman') {
       controls.target.set(0, 0, 0);

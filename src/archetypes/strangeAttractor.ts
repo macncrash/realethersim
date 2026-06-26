@@ -3,6 +3,7 @@ import type {
   ArchetypeConfig,
   ArchetypeFactory,
   Derivative,
+  GuideSpec,
   NodeSpec,
   ParamSpec,
   RenderHint,
@@ -33,6 +34,8 @@ export interface AttractorSystem {
   // e.g. the double pendulum renders its bob in Cartesian space because the raw angles grow
   // without bound when an arm swings over the top.
   project?: (state: Float64Array, so: number, out: Float32Array, po: number) => void;
+  // Optional static overlay geometry in render space (matches this system's scale/center).
+  guides?: () => GuideSpec;
 }
 
 export const LORENZ: AttractorSystem = {
@@ -276,6 +279,24 @@ export const HENON_HEILES: AttractorSystem = {
   scale: 3.0, // FIXED, not bounds-derived: an escaping particle must never be allowed to rescale the cloud
   center: [0, 0, 0],
   pointSize: 0.012,
+  // The iconic escape equipotential (λ=1): a triangle with vertices (0,1), (±√3/2,−1/2), drawn in
+  // the px=0 plane and scaled to match the cloud. Below it the motion is bound; cross it and a
+  // trajectory escapes to infinity.
+  guides: () => {
+    const s = 3.0;
+    const r3 = Math.sqrt(3) / 2;
+    return [
+      {
+        points: [
+          [0, s, 0],
+          [r3 * s, -0.5 * s, 0],
+          [-r3 * s, -0.5 * s, 0],
+        ],
+        color: 0xff7a30,
+        closed: true,
+      },
+    ];
+  },
 };
 
 // Double pendulum: the iconic chaos demo. A conservative 4-D Hamiltonian (θ1,θ2,ω1,ω2) with equal
@@ -319,6 +340,18 @@ export const DOUBLE_PENDULUM: AttractorSystem = {
   scale: 0.8,
   center: [-0.05, 0.26, 0.11], // recentre the verified render-space mean of the chaotic cloud
   pointSize: 0.012,
+  // The lower bob can never get farther than l₁+l₂ = 2 from the pivot — draw that reach boundary as
+  // a circle (radius 2 in bob space), scaled/centred to match the cloud.
+  guides: () => {
+    const s = 0.8;
+    const cx = -0.05, cy = 0.26, cz = 0.11;
+    const pts: Array<[number, number, number]> = [];
+    for (let i = 0; i < 72; i++) {
+      const t = (i / 72) * Math.PI * 2;
+      pts.push([(2 * Math.cos(t) - cx) * s, (2 * Math.sin(t) - cy) * s, (0 - cz) * s]);
+    }
+    return [{ points: pts, color: 0x16e0c8, closed: true }];
+  },
 };
 
 export const SYSTEMS: Record<string, AttractorSystem> = {
@@ -446,6 +479,7 @@ export function makeAttractorFactory(system: AttractorSystem): ArchetypeFactory 
     params: system.paramSpec,
     defaultParticleCount: 100_000,
     defaultDt: system.dt,
+    guides: system.guides,
     create: (config) => new StrangeAttractorArchetype(system, config),
   };
 }

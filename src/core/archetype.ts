@@ -47,6 +47,17 @@ export interface RenderHint {
   // Graphics owns material creation from these hints, so Physics never imports three.
 }
 
+// Optional static "guide geometry" a system can draw over its cloud — an equipotential boundary, a
+// reach circle, fixed points, an axis, a torus cell, etc. A general, opt-in overlay: ANY factory may
+// provide it (most don't). Points are in RENDER space (already scaled/centred to match the cloud),
+// so Physics still never imports three — Graphics just draws the line strips.
+export interface GuideLine {
+  points: Array<[number, number, number]>;
+  color?: number;
+  closed?: boolean; // connect the last point back to the first (a loop)
+}
+export type GuideSpec = GuideLine[];
+
 export interface ArchetypeConfig {
   particleCount: number;
   seed: number;
@@ -83,6 +94,7 @@ export interface ArchetypeFactory {
   readonly defaultDt: number; // global dt applied when this system is selected (its stable step)
   readonly particleCountOptions?: number[]; // overrides the UI's default count choices (e.g. N-body caps lower)
   readonly defaultTrail?: number; // trail length applied on selection (0 for static systems — no motion)
+  readonly guides?: () => GuideSpec; // optional static overlay geometry (render space); see GuideSpec
   create(config: ArchetypeConfig): Archetype;
 }
 
