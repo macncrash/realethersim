@@ -20,6 +20,25 @@ registerArchetypes();
   }
 }
 
+// Copy-the-install-command button (logic lives here, not inline, so the strict script-src CSP holds).
+{
+  const btn = document.getElementById('copyBtn');
+  const cmd = document.getElementById('installCmd');
+  if (btn && cmd) {
+    btn.addEventListener('click', () => {
+      const text = cmd.textContent ?? '';
+      const done = (msg: string): void => {
+        btn.textContent = msg;
+        window.setTimeout(() => (btn.textContent = 'copy'), 1800);
+      };
+      navigator.clipboard?.writeText(text).then(
+        () => done('copied ✓'),
+        () => done('⌘C to copy'),
+      );
+    });
+  }
+}
+
 interface View {
   count: number;
   dt: number;
