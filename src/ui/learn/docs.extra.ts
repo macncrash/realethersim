@@ -50,6 +50,111 @@ dω2 = ( 2*sin(Δ)*(2*ω1² + 2*g*cos(θ1) + ω2²*cos(Δ)) ) / den;`,
       { label: 'Chaos theory (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Chaos_theory' },
     ],
   },
+  pendulumWave: {
+    title: 'Pendulum Wave',
+    about:
+      'The "pendulum snake" — a row of uncoupled pendulums whose lengths are tuned so that, in one fixed cycle, the longest completes a set number of swings and each shorter neighbour does exactly one more. Released together from a straight line they drift out of step into a travelling wave, tangle into what looks like chaos, then — because every period divides the cycle evenly — snap back into perfect alignment. It is the opposite of chaos: fully deterministic and exactly periodic, yet mesmerising. A staple science-museum demo (famously at Harvard).',
+    howItWorks:
+      'Each pendulum is an independent simple-harmonic oscillator with its own angular frequency ωᵢ = 2π(baseOsc + i)/T. No integrator is needed — the motion is the closed form θᵢ(t) = A·cos(ωᵢ t), which can never drift or blow up. Because every ωᵢ·T is an exact integer multiple of 2π, all phases realign every T seconds. We render the pendulums as hanging strings that swing in depth (z), so the travelling wave reads as a curtain rippling across the row.',
+    equations: [
+      { label: 'per-pendulum frequency (index i sets it)', latex: '\\omega_i = \\dfrac{2\\pi\\,(\\text{baseOsc} + i)}{T}' },
+      { label: 'closed-form motion (no integration)', latex: '\\theta_i(t) = A\\,\\cos(\\omega_i\\,t)' },
+      { label: 'exact re-synchronisation every cycle', latex: '\\omega_i\\,T = 2\\pi\\,(\\text{baseOsc}+i) \\in 2\\pi\\,\\mathbb{Z}' },
+    ],
+    params: [
+      { key: 'baseOsc', symbol: 'n_0', meaning: 'swings the longest (first) pendulum makes per cycle; each successive one does +1' },
+      { key: 'cycleTime', symbol: 'T', meaning: 'seconds for the whole row to drift apart and re-synchronise' },
+      { key: 'amplitude', symbol: 'A', meaning: 'swing amplitude (radians)' },
+    ],
+    code: `// each pendulum i has its own frequency from its index
+omega_i = 2*Math.PI * (baseOsc + i) / cycleTime;
+phase_i = (phase_i + omega_i * dt) % (2*Math.PI);
+theta_i = amplitude * Math.cos(phase_i);   // exact SHM`,
+    links: [
+      { label: 'Pendulum wave (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Pendulum_wave' },
+      { label: 'Simple harmonic motion (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Simple_harmonic_motion' },
+    ],
+  },
+  duffing: {
+    title: 'Duffing (forced)',
+    about:
+      'A mass sitting in a double-well potential, gently damped and shaken by a periodic force — the textbook example of how a simple nonlinear oscillator slides into chaos. For the right drive, the particle hops between the two wells in a sequence that never repeats: tiny differences in starting point grow exponentially (a positive Lyapunov exponent). Strobe the motion once per drive cycle and the scattered points trace a fractal strange attractor.',
+    howItWorks:
+      'The driven equation ẍ + δẋ − x + x³ = γcos(ωt) is made autonomous by carrying the drive phase φ = ωt as a third variable, giving three first-order ODEs for (x, v, φ) integrated with RK4 across ~100k starting points. The cubic −x + x³ is the double well; δ damps; γ and ω set the forcing. The phase φ grows without bound, so for display it is wrapped to [−π, π) — the attractor folds neatly onto a phase cylinder.',
+    equations: [
+      { label: 'forced Duffing oscillator (double well)', latex: '\\ddot x + \\delta\\dot x - x + x^3 = \\gamma\\cos(\\omega t)' },
+      { label: 'autonomous first-order form', latex: '\\dot x = v,\\quad \\dot v = -\\delta v + x - x^3 + \\gamma\\cos\\varphi,\\quad \\dot\\varphi = \\omega' },
+      { label: 'drive phase wrapped for display', latex: '\\varphi \\;\\to\\; ((\\varphi \\bmod 2\\pi) + 2\\pi)\\bmod 2\\pi - \\pi' },
+    ],
+    params: [
+      { key: 'delta', symbol: '\\delta', meaning: 'damping; small values let chaos persist, large values settle to a cycle' },
+      { key: 'gamma', symbol: '\\gamma', meaning: 'drive amplitude; the main knob that pushes the system into chaos' },
+      { key: 'omega', symbol: '\\omega', meaning: 'drive frequency' },
+    ],
+    code: `// state [x, v, φ];  φ = ωt carried so the system is autonomous
+dx = v;
+dv = -delta*v + x - x*x*x + gamma*Math.cos(phi);
+dphi = omega;`,
+    links: [
+      { label: 'Duffing equation (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Duffing_equation' },
+      { label: 'Strange attractor (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Attractor#Strange_attractor' },
+    ],
+  },
+  'magnetic-pendulum': {
+    title: 'Magnetic Pendulum',
+    about:
+      'An iron bob swings on a string above three magnets set at the corners of a triangle. Eventually friction parks it over one magnet — but which one depends so exquisitely on where it started that the map of "starting point → final magnet" is a fractal, with the three colours interwoven down to infinitely fine scales. Release a whole disc of ~100k bobs and watch them stream and settle into the three basins.',
+    howItWorks:
+      'Newton’s second law in the plane: a central spring-like pull toward the origin, linear friction, and an attraction to each magnet softened by a length h that removes the 1/r² blow-up at close range. The state is the bob’s position and velocity (x, y, vₓ, v_y), advanced with RK4. We render (x, y, |v|): the basin plane with speed as height, so fast bobs ride high and settling ones sink onto the magnet sites (drawn as rings).',
+    equations: [
+      { label: 'planar equation of motion', latex: '\\ddot{\\mathbf r} = -k\\,\\mathbf r - c\\,\\dot{\\mathbf r} + \\sum_{j=1}^{3} \\frac{s\\,(\\mathbf m_j - \\mathbf r)}{\\big(|\\mathbf m_j - \\mathbf r|^2 + h^2\\big)^{3/2}}' },
+      { label: 'magnets on a unit triangle', latex: '\\mathbf m_j = \\big(\\cos\\theta_j,\\ \\sin\\theta_j\\big),\\quad \\theta_j = \\tfrac{\\pi}{2},\\ -\\tfrac{\\pi}{6},\\ \\tfrac{7\\pi}{6}' },
+    ],
+    params: [
+      { key: 'k', symbol: 'k', meaning: 'central restoring strength (the “gravity” pulling the bob back to centre)' },
+      { key: 'c', symbol: 'c', meaning: 'friction; higher values settle the bobs faster' },
+      { key: 'h', symbol: 'h', meaning: 'magnet softening length — smooths the pull at close range (kept ≥ 0.12 for stability)' },
+      { key: 'strength', symbol: 's', meaning: 'magnet strength' },
+    ],
+    code: `// softened pull toward each magnet (no 1/r² singularity)
+let ax = -k*px - c*vx, ay = -k*py - c*vy;
+for (const [mx,my] of magnets) {
+  const dx=mx-px, dy=my-py, r2=dx*dx+dy*dy+h*h;
+  const inv = strength / (r2*Math.sqrt(r2));   // = s / r2^1.5
+  ax += dx*inv;  ay += dy*inv;
+}`,
+    links: [
+      { label: 'Magnetic pendulum & fractal basins', url: 'https://en.wikipedia.org/wiki/Magnetic_pendulum' },
+      { label: 'Basin of attraction (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Attractor#Basins_of_attraction' },
+    ],
+  },
+  kuramotoSivashinsky: {
+    title: 'Kuramoto–Sivashinsky',
+    about:
+      'One of the simplest equations that turns order into turbulence all by itself. Born from models of flame fronts and thin liquid films, it balances an instability that pumps energy into long, lazy waves against a strong damping that crushes short, sharp ones; the nonlinearity then shuffles energy between scales. The result is never-repeating, cell-like spatiotemporal chaos. Shown here as a scrolling space–time plot — each new row of the field slides toward you over time.',
+    howItWorks:
+      'The field u(x,t) on a periodic domain of length L obeys uₜ = −u·uₓ − uₓₓ − uₓₓₓₓ. The −uₓₓ term is anti-diffusion (it grows long waves); −uₓₓₓₓ is hyper-diffusion (it kills short ones). It is solved in Fourier space with ETDRK2: the stiff linear operator λ(k) = k² − k⁴ is integrated *exactly* via the integrating factor e^{λΔt}, so the fourth-derivative term doesn’t force an impossibly small timestep. Space is the x-axis, time is the depth axis, and the field height drives both the relief and the colour.',
+    equations: [
+      { label: 'Kuramoto–Sivashinsky equation', latex: 'u_t = -\\,u\\,u_x - u_{xx} - u_{xxxx}' },
+      { label: 'linear operator in Fourier space (per wavenumber k)', latex: '\\lambda(k) = k^2 - k^4' },
+      { label: 'exact linear step (integrating factor)', latex: '\\hat u \\;\\to\\; e^{\\lambda \\Delta t}\\,\\hat u \\;+\\; (\\text{nonlinear correction})' },
+    ],
+    params: [
+      { key: 'domainL', symbol: 'L', meaning: 'domain length; chaos sets in around L ≈ 22 and grows richer (more cells) as L increases' },
+      { key: 'relief', symbol: 'h_y', meaning: 'vertical scale of the rendered height field (cosmetic)' },
+      { key: 'spaceN', symbol: 'N', meaning: 'spatial / spectral resolution (grid points)' },
+      { key: 'timeM', symbol: 'M', meaning: 'rows of time history kept in the scrolling plot' },
+    ],
+    code: `// spectral ETDRK2: linear part λ=k²−k⁴ solved exactly
+const lam = k*k - k*k*k*k;          // per wavenumber
+E = Math.exp(lam*dt);               // exact linear factor
+// nonlinear term  −½·∂ₓ(u²)  in spectral space = −½·i·k·FFT(u²)
+// û_{n+1} = E·û + Q·N(û) + (N(a)−N(û))·f2   (Cox–Matthews)`,
+    links: [
+      { label: 'Kuramoto–Sivashinsky equation (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Kuramoto%E2%80%93Sivashinsky_equation' },
+      { label: 'Exponential time differencing (Kassam & Trefethen)', url: 'https://people.maths.ox.ac.uk/trefethen/publication/PDF/2005_111.pdf' },
+    ],
+  },
   'einstein-rosen': {
     title: 'Einstein–Rosen Bridge',
     about:
