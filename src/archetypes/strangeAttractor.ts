@@ -354,6 +354,118 @@ export const DOUBLE_PENDULUM: AttractorSystem = {
   },
 };
 
+// Forced Duffing oscillator: ẍ + δẋ − x + x³ = γ·cos(ωt) — the classic double-well chaotic flow
+// (distinct from our discrete `duffing-map`). Made autonomous with a drive-phase state φ=ωt; the
+// phase grows without bound so we render (x, v, φ wrapped to [−π,π)) — folding it onto a cylinder.
+export const DUFFING: AttractorSystem = {
+  id: 'duffing',
+  label: 'Duffing (forced)',
+  dim: 3, // [x, v, φ]
+  dt: 0.02,
+  defaults: { delta: 0.15, gamma: 0.3, omega: 1.0 },
+  // Explicit spec, NOT autoParams: δ and γ must not go negative (negative damping → energy injection
+  // → blow-up). Verified chaotic at the defaults (largest Lyapunov ≈ +0.19).
+  paramSpec: [
+    { key: 'delta', label: 'δ', min: 0, max: 1, step: 0.005, default: 0.15 },
+    { key: 'gamma', label: 'γ', min: 0, max: 1, step: 0.005, default: 0.3 },
+    { key: 'omega', label: 'ω', min: 0.2, max: 3, step: 0.01, default: 1.0 },
+  ],
+  deriv: (o, x, p) => {
+    const xx = x[0];
+    o[0] = x[1];
+    o[1] = -p.delta * x[1] + xx - xx * xx * xx + p.gamma * Math.cos(x[2]);
+    o[2] = p.omega;
+  },
+  seedPoint: [0.5, 0.5, 0],
+  sampleInit: (out, off, rng) => {
+    out[off] = (rng() * 2 - 1) * 1.0; // x
+    out[off + 1] = (rng() * 2 - 1) * 0.6; // v
+    out[off + 2] = rng() * Math.PI * 2; // φ over a full drive cycle → the sheet has z-thickness at once
+  },
+  project: (s, so, out, po) => {
+    const tau = Math.PI * 2;
+    out[po] = s[so]; // x
+    out[po + 1] = s[so + 1]; // v
+    out[po + 2] = (((s[so + 2] % tau) + tau) % tau) - Math.PI; // φ wrapped to [−π, π)
+  },
+  scale: 1.0, // FIXED — never bounds-derived; keeps the φ-cylinder (±π·scale) inside the frame
+  center: [0, 0, 0],
+  pointSize: 0.012,
+};
+
+// Magnetic pendulum: a bob in a plane over 3 magnets at an equilateral triangle, with a central
+// gravity-like restoring force, friction, and softened attraction to each magnet. Bobs route into one
+// of the three magnets — the famous fractal basin of attraction.
+const MAGPEND_R = 1.0;
+const MAGPEND_MAGNETS: Array<[number, number]> = [
+  [0, MAGPEND_R],
+  [MAGPEND_R * Math.cos(-Math.PI / 6), MAGPEND_R * Math.sin(-Math.PI / 6)],
+  [MAGPEND_R * Math.cos((7 * Math.PI) / 6), MAGPEND_R * Math.sin((7 * Math.PI) / 6)],
+];
+export const MAGNETIC_PENDULUM: AttractorSystem = {
+  id: 'magnetic-pendulum',
+  label: 'Magnetic Pendulum',
+  dim: 4, // [x, y, vx, vy]
+  dt: 0.04,
+  defaults: { k: 0.4, c: 0.35, h: 0.25, strength: 1.0 },
+  paramSpec: [
+    { key: 'k', label: 'gravity', min: 0.05, max: 1.0, step: 0.01, default: 0.4 },
+    { key: 'c', label: 'friction', min: 0.0, max: 0.8, step: 0.01, default: 0.35 },
+    // min 0.12 (not lower): below it the well is too sharp for RK4 and the c=0 corner can blow up.
+    { key: 'h', label: 'softening', min: 0.12, max: 0.6, step: 0.01, default: 0.25 },
+    { key: 'strength', label: 'magnets', min: 0.2, max: 2.0, step: 0.01, default: 1.0 },
+  ],
+  deriv: (o, x, p) => {
+    const px = x[0], py = x[1], vx = x[2], vy = x[3];
+    let ax = -p.k * px - p.c * vx;
+    let ay = -p.k * py - p.c * vy;
+    const h2 = p.h * p.h;
+    for (let m = 0; m < 3; m++) {
+      const dx = MAGPEND_MAGNETS[m][0] - px;
+      const dy = MAGPEND_MAGNETS[m][1] - py;
+      const r2 = dx * dx + dy * dy + h2; // softened — no singularity at a magnet
+      const inv = p.strength / (r2 * Math.sqrt(r2)); // = strength / r2^1.5, cheaper than Math.pow
+      ax += dx * inv;
+      ay += dy * inv;
+    }
+    o[0] = vx;
+    o[1] = vy;
+    o[2] = ax;
+    o[3] = ay;
+  },
+  seedPoint: [0, MAGPEND_R, 0, 0],
+  sampleInit: (out, off, rng) => {
+    const a = rng() * Math.PI * 2;
+    const r = Math.sqrt(rng()) * 2.6; // area-uniform disc, wider than the R=1 magnet ring
+    out[off] = Math.cos(a) * r;
+    out[off + 1] = Math.sin(a) * r;
+    out[off + 2] = 0; // released from rest
+    out[off + 3] = 0;
+  },
+  // Render the bob plane (x, y) with speed as depth — moving bobs lift, settled bobs drop to z≈0.
+  project: (s, so, out, po) => {
+    out[po] = s[so];
+    out[po + 1] = s[so + 1];
+    const vx = s[so + 2], vy = s[so + 3];
+    out[po + 2] = Math.sqrt(vx * vx + vy * vy);
+  },
+  scale: 0.9, // FIXED
+  center: [0, 0, 0],
+  pointSize: 0.012,
+  // mark the 3 magnet sites as small rings in the z=0 plane (where settled bobs rest)
+  guides: () => {
+    const sc = 0.9; // must match scale
+    return MAGPEND_MAGNETS.map(([mx, my]) => {
+      const pts: Array<[number, number, number]> = [];
+      for (let i = 0; i < 32; i++) {
+        const t = (i / 32) * Math.PI * 2;
+        pts.push([(mx + 0.12 * Math.cos(t)) * sc, (my + 0.12 * Math.sin(t)) * sc, 0]);
+      }
+      return { points: pts, color: 0xff7a30, closed: true };
+    });
+  },
+};
+
 export const SYSTEMS: Record<string, AttractorSystem> = {
   lorenz: LORENZ,
   rossler: ROSSLER,
@@ -362,6 +474,8 @@ export const SYSTEMS: Record<string, AttractorSystem> = {
   ...Object.fromEntries(NEW_FLOWS.map((s) => [s.id, s])),
   'henon-heiles': HENON_HEILES,
   'double-pendulum': DOUBLE_PENDULUM,
+  duffing: DUFFING,
+  'magnetic-pendulum': MAGNETIC_PENDULUM,
 };
 
 class StrangeAttractorArchetype implements Archetype {

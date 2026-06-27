@@ -17,6 +17,8 @@ import { dlaFactory } from './dla';
 import { kuramotoFactory } from './kuramoto';
 import { chimeraFactory } from './chimera';
 import { karmanFactory } from './karman';
+import { pendulumWaveFactory } from './pendulumWave';
+import { kuramotoSivashinskyFactory } from './kuramotoSivashinsky';
 import { makeParametricFactory, PARAMETRIC_SYSTEMS } from './parametric';
 import { makeRaymarchFactory, RAYMARCH_SYSTEMS } from './raymarchFractal';
 
@@ -53,6 +55,8 @@ export function registerArchetypes(): void {
   register(kuramotoFactory);
   register(chimeraFactory);
   register(karmanFactory);
+  register(pendulumWaveFactory);
+  register(kuramotoSivashinskyFactory);
   for (const system of Object.values(PARAMETRIC_SYSTEMS)) {
     register(makeParametricFactory(system));
   }
