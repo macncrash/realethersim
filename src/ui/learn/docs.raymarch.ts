@@ -1265,4 +1265,144 @@ const F = (x,y,z) => { const a=x*x,b=y*y,c=z*z, s=a+b+c-1;
       }
     ]
   },
+  plasmaOrb: {
+    "title": "Plasma Orb",
+    "about": "A glowing spherical shell of plasma — a luminous, hollow orb whose surface seethes with high-frequency filaments that drift and churn in time. Unlike the distance-estimated fractals and surfaces here, nothing is a hard surface: the camera ray marches straight through a 3D density field and accumulates emission at every step, so the orb reads as translucent glowing gas, brightest in a thin band at radius 1 and transparent in its hollow centre. It is the simplest member of the Volume family — a mostly-analytic spherical-shell mask textured by a single domain-warp octave — and the cheapest to render.",
+    "howItWorks": "For each pixel a ray is launched from the camera and stepped a fixed distance Δs through space (no ray bending). At each sample point p the shader evaluates a DENSITY e(p) and adds emission o += exp(−e·k)·pal(e)·e·Δs·E, the volumetric-emission integral used by twigl/つぶやきGLSL tweet-shaders. The density is a spherical SHELL: base = clamp(1 − |‖p‖ − R| / T, 0, 1) gates a band of thickness T=0.6 around radius R=1 (validated: peaks 0.72 at r=1, exactly 0 for r<0.4 and r>1.6 — a genuinely hollow shell), multiplied by a high-frequency animated trig texture cos(8x+t)·cos(8y−0.7t)·cos(8z) and one octave of IQ domain warp warp1(1.5p) for organic filaments. The warp is built from the project's new noise stack: a sin-free integer-lattice hash → trilinear value noise with a quintic (C1) fade → a 3-octave FBM → a single domain-warp feedback q=fbm(p), d=fbm(p+4q) that bends the field into marbled veins (validated: doubles vein density vs plain FBM). The exp(−e·k) factor self-attenuates — e·exp(−e·k) peaks at e=1/k — so mid-density wisps glow brightest and the dense shell never blows out to a solid blob. A per-channel tanh tone-map compresses the accumulated emission into [0,1) so it asymptotes to white instead of clipping. The whole domain slowly rotates about Y (driven by the time uniform) so the surface plasma appears to boil.",
+    "equations": [
+      {
+        "label": "Volumetric-emission integral (what the loop accumulates)",
+        "latex": "o \\mathrel{+}= e^{-k\\,e}\\,\\mathrm{pal}(e)\\,e\\,\\Delta s\\,E"
+      },
+      {
+        "label": "Self-attenuation peak (why mid-density glows brightest)",
+        "latex": "\\frac{d}{de}\\big(e\\,e^{-k e}\\big)=0 \\;\\Rightarrow\\; e^\\star = 1/k"
+      },
+      {
+        "label": "Spherical shell density mask",
+        "latex": "\\rho(\\mathbf p)=\\operatorname{clamp}\\!\\Big(1-\\tfrac{\\big|\\,\\lVert\\mathbf p\\rVert-R\\,\\big|}{T},\\,0,\\,1\\Big)"
+      },
+      {
+        "label": "Value noise with quintic (C1) fade",
+        "latex": "n(\\mathbf p)=\\operatorname{trilerp}\\big(h(\\mathbf i+\\mathbf c)\\big),\\quad u=f^{3}\\!\\big(f(6f-15)+10\\big)"
+      },
+      {
+        "label": "Single-octave domain warp",
+        "latex": "\\mathbf q=\\mathrm{fbm}(\\mathbf p+\\boldsymbol\\omega),\\qquad d=\\mathrm{fbm}(\\mathbf p+4\\mathbf q)"
+      },
+      {
+        "label": "Cosine emission palette",
+        "latex": "\\mathrm{pal}(e)=0.5+0.5\\cos\\!\\big(2\\pi(e+\\phi)+\\boldsymbol\\Phi\\big),\\;\\boldsymbol\\Phi=(0,2.1,4.2)"
+      }
+    ],
+    "params": [
+      {
+        "key": "scale",
+        "symbol": "s",
+        "meaning": "spatial frequency of the warp texture — higher = finer surface filaments (capped at 2.5 to keep noise cells in fp32-safe range)"
+      },
+      {
+        "key": "absorb",
+        "symbol": "k",
+        "meaning": "self-attenuation strength; the brightest density is e=1/k, so larger k makes thin wisps dominate and dense regions darker"
+      },
+      {
+        "key": "exposure",
+        "symbol": "E",
+        "meaning": "overall glow brightness (linear emission multiplier, applied before the tanh tone-map)"
+      },
+      {
+        "key": "colShift",
+        "symbol": "\\phi",
+        "meaning": "hue offset rotating the whole density→colour palette"
+      }
+    ],
+    "code": "// per pixel: march a fixed-step ray through the density field, accumulate emission\nlet pos = ro, emis = vec3(0), entered = 0;\nfor (let i = 0; i < maxSteps; i++) {\n  const r = length(pos);\n  if (r < bound) entered = 1;\n  if (entered && r > bound) break;            // only exit AFTER entering (camDist > bound)\n  if (r < bound) {\n    const q = rotateY(pos, time*0.15) * scale; // domain churns over time\n    // hollow plasma shell at R=1, thickness T=0.6, textured by trig × one warp octave\n    const base = clamp(1 - abs(length(q) - 1.0) / 0.6, 0, 1);\n    const tex  = 0.5 + 0.5*cos(q.x*8+t)*cos(q.y*8-0.7*t)*cos(q.z*8);\n    const e    = clamp(base * tex * (0.6 + 0.8*warp1(q*1.5)), 0, 1);\n    const a    = e*2 + colShift*6.2832 + 0.3;\n    const pal  = 0.5 + 0.5*cos(vec3(a, a+2.1, a+4.2));\n    emis += pal * e * exp(-e*absorb) * step * exposure; // o += exp(-e k) pal e ds\n  }\n  pos += rd * step;\n}\ncol += vec3(tanh(emis.x), tanh(emis.y), tanh(emis.z)); // tone-map over the bg gradient",
+    "links": [
+      {
+        "label": "Inigo Quilez — Domain warping",
+        "url": "https://iquilezles.org/articles/warp/"
+      },
+      {
+        "label": "Inigo Quilez — Value noise derivatives",
+        "url": "https://iquilezles.org/articles/morenoise/"
+      },
+      {
+        "label": "Volume ray casting (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Volume_ray_casting"
+      },
+      {
+        "label": "twigl — GLSL tweet-shader editor (the look this emulates)",
+        "url": "https://twigl.app/"
+      }
+    ]
+  },
+  nebula: {
+    "title": "Nebula",
+    "about": "A soft, wispy cloud of emissive gas filling the frame — the classic interstellar-nebula look of GLSL tweet-shaders. Brighter filaments thread through a diffuse glow, the structure flows slowly over time, and a radial falloff fades the cloud toward the edges of the volume. This is the richest and heaviest preset in the Volume family: its density is a full recursive IQ domain warp (seven noise evaluations per step), which produces the swirling, marbled, fluid-like filaments that distinguish a real nebula from flat fog.",
+    "howItWorks": "Each pixel marches a fixed-step ray through a 3D density field and accumulates emission o += exp(−e·k)·pal(e)·e·Δs·E. The density is a domain-warped FBM cloud: cloud = warp(0.9·p + drift), where warp is the full IQ feedback q=fbm(p), r=fbm(p+4q), d=fbm(p+4r) — the recursive structure that bends smooth noise into swirling veins (validated: 244 vein-crossings vs 34 for plain FBM, autocorrelation 0.94→0 confirming a coherent, non-white field). A threshold max(cloud−0.45, 0)·2 carves the diffuse haze into distinct wisps, and a radial falloff clamp(1 − ‖p‖/2.6, 0, 1) fades the cloud to nothing at the volume edge. The noise stack underneath is the project's new procedural-noise infrastructure: a sin-free Hoskins hash (validated white, neighbour covariance 0.0009) → trilinear value noise with a quintic C1 fade (validated continuous derivative across cell boundaries, no kinks) → normalised 3-octave FBM bounded in [0,1]. Because the raw density approaches ~0.74 over a dense column, a tone-map is mandatory: per-channel tanh compresses the accumulation into [0,1) (validated max channel 0.63 — never clips to white). The cloud drifts via a time offset fed into the warp lookup, and the whole domain rotates slowly about Y. This preset deliberately runs at a modest step count (88) because each step is the full 7-call warp (~2.7k ops); pushing steps higher before lowering octaves is the wrong trade.",
+    "equations": [
+      {
+        "label": "Volumetric-emission integral",
+        "latex": "o \\mathrel{+}= e^{-k\\,e}\\,\\mathrm{pal}(e)\\,e\\,\\Delta s\\,E"
+      },
+      {
+        "label": "Full recursive IQ domain warp",
+        "latex": "\\mathbf q=\\mathrm{fbm}(\\mathbf p),\\;\\mathbf r=\\mathrm{fbm}(\\mathbf p+4\\mathbf q),\\;d=\\mathrm{fbm}(\\mathbf p+4\\mathbf r)"
+      },
+      {
+        "label": "Normalised fractional Brownian motion",
+        "latex": "\\mathrm{fbm}(\\mathbf p)=\\frac{\\sum_{o} 2^{-o}\\,n(2^{o}\\mathbf p)}{\\sum_{o} 2^{-o}}\\in[0,1]"
+      },
+      {
+        "label": "Wisp threshold × radial falloff",
+        "latex": "e=\\max(\\mathrm{cloud}-0.45,\\,0)\\cdot 2\\cdot\\operatorname{clamp}\\!\\big(1-\\tfrac{\\lVert\\mathbf p\\rVert}{2.6},0,1\\big)"
+      },
+      {
+        "label": "Tone-map (asymptotes to white, never clips)",
+        "latex": "\\mathbf c_{\\text{out}}=\\tanh(\\mathbf o),\\qquad \\lim_{\\mathbf o\\to\\infty}\\tanh(\\mathbf o)=1"
+      }
+    ],
+    "params": [
+      {
+        "key": "scale",
+        "symbol": "s",
+        "meaning": "spatial frequency of the cloud — higher = smaller, finer filaments (capped at 2.0 for fp32 hash stability)"
+      },
+      {
+        "key": "absorb",
+        "symbol": "k",
+        "meaning": "self-attenuation; sets which density e=1/k glows brightest, controlling whether thin haze or dense cores dominate"
+      },
+      {
+        "key": "exposure",
+        "symbol": "E",
+        "meaning": "overall brightness of the emissive gas before tone-mapping"
+      },
+      {
+        "key": "colShift",
+        "symbol": "\\phi",
+        "meaning": "hue offset rotating the density→colour palette (violet/gold by default)"
+      }
+    ],
+    "code": "// per pixel: fixed-step emission march; density = full IQ domain-warp cloud\nlet pos = ro, emis = vec3(0), entered = 0;\nfor (let i = 0; i < maxSteps; i++) {\n  const r = length(pos);\n  if (r < bound) entered = 1;\n  if (entered && r > bound) break;\n  if (r < bound) {\n    const q = rotateY(pos, time*0.15) * scale;\n    // warp = fbm(p + 4*fbm(p + 4*fbm(p))) — swirling marbled filaments\n    const cloud = warp(q*0.9 + vec3(time*0.05, 0, 0));\n    const fall  = clamp(1 - length(q)/2.6, 0, 1);    // fade to volume edge\n    const e     = clamp(max(cloud - 0.45, 0) * 2.0 * fall, 0, 1);\n    const a     = e*2 + colShift*6.2832 + 0.3;\n    const pal   = 0.5 + 0.5*cos(vec3(a, a+2.1, a+4.2));\n    emis += pal * e * exp(-e*absorb) * step * exposure;\n  }\n  pos += rd * step;\n}\ncol += vec3(tanh(emis.x), tanh(emis.y), tanh(emis.z)); // tone-map MANDATORY here",
+    "links": [
+      {
+        "label": "Inigo Quilez — Domain warping",
+        "url": "https://iquilezles.org/articles/warp/"
+      },
+      {
+        "label": "Inigo Quilez — FBM",
+        "url": "https://iquilezles.org/articles/fbm/"
+      },
+      {
+        "label": "Dave Hoskins — Hash without sine (Shadertoy)",
+        "url": "https://www.shadertoy.com/view/4djSRW"
+      },
+      {
+        "label": "twigl — GLSL tweet-shader editor",
+        "url": "https://twigl.app/"
+      }
+    ]
+  },
 };

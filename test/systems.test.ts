@@ -63,7 +63,7 @@ describe('all registered systems are finite, bounded, and non-degenerate', () =>
       const ids = new Set(raymarch.map((f) => f.id));
       for (const id of ['mandelbulb', 'qjulia', 'mandelbox', 'menger', 'gyroid', 'chmutov', 'schoenIWP']) expect(ids.has(id)).toBe(true);
       for (const f of raymarch) {
-        expect(['Fractal', 'Surface', 'Spacetime']).toContain(f.category);
+        expect(['Fractal', 'Surface', 'Spacetime', 'Volume']).toContain(f.category);
         expect(f.params.length).toBeGreaterThan(0);
       }
     });

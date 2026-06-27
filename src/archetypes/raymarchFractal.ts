@@ -35,7 +35,8 @@ export type RaymarchKind =
   | 'decocube'
   | 'endrassOctic'
   | 'cassini'
-  | 'blackhole';
+  | 'blackhole'
+  | 'volumetric';
 
 export interface RaymarchSystem {
   id: string;
@@ -55,6 +56,9 @@ export interface RaymarchSystem {
   rs?: number; // Schwarzschild / event-horizon radius (geometric units, =1)
   diskIn?: number; // accretion-disk inner edge (ISCO = 3·r_s); outer edge is the live 'disk' param
   photonStep?: number; // adaptive-dt fraction in dt = clamp(photonStep·r, 0.02, 0.6)
+  // Volumetric emission marcher only (sdf:'volumetric'); ignored by the other paths:
+  volStep?: number; // fixed march step
+  sdf2?: 'plasmaOrb' | 'nebula'; // which density field the volumetric branch dispatches
 }
 
 const COL: ParamSpec = { key: 'colShift', label: 'colour', min: 0, max: 1, step: 0.01, default: 0.5 };
@@ -250,6 +254,28 @@ export const RAYMARCH_SYSTEMS: Record<string, RaymarchSystem> = {
       { key: 'beaming', label: 'beaming', min: 0, max: 1, step: 0.01, default: 1 },
       { key: 'disk', label: 'disk size', min: 6, max: 16, step: 0.5, default: 7 },
       { key: 'colShift', label: 'colour', min: 0, max: 1, step: 0.01, default: 0 }, // 0 = warm/golden
+    ],
+  },
+
+  // ── Volume: twigl-style volumetric-emission raymarch (non-SDF; domain-warped density + emission) ──
+  plasmaOrb: {
+    id: 'plasmaOrb', label: 'Plasma Orb', sdf: 'volumetric', sdf2: 'plasmaOrb', category: 'Volume',
+    iters: 0, bound: 1.8, camDist: 3.6, maxSteps: 110, volStep: 0.05,
+    params: [
+      { key: 'scale', label: 'detail', min: 0.5, max: 2.5, step: 0.05, default: 1.7 },
+      { key: 'absorb', label: 'density', min: 1, max: 8, step: 0.1, default: 3.5 },
+      { key: 'exposure', label: 'glow', min: 0.5, max: 8, step: 0.05, default: 6 },
+      { key: 'colShift', label: 'colour', min: 0, max: 1, step: 0.01, default: 0.3 }, // ≈ cyan/blue
+    ],
+  },
+  nebula: {
+    id: 'nebula', label: 'Nebula', sdf: 'volumetric', sdf2: 'nebula', category: 'Volume',
+    iters: 0, bound: 3.0, camDist: 5.2, maxSteps: 88, volStep: 0.07,
+    params: [
+      { key: 'scale', label: 'detail', min: 0.4, max: 2.0, step: 0.05, default: 0.9 },
+      { key: 'absorb', label: 'density', min: 1, max: 8, step: 0.1, default: 5 },
+      { key: 'exposure', label: 'glow', min: 0.5, max: 6, step: 0.05, default: 3.4 },
+      { key: 'colShift', label: 'colour', min: 0, max: 1, step: 0.01, default: 0.1 }, // ≈ violet/magenta
     ],
   },
 };
