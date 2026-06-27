@@ -669,6 +669,47 @@ export function createRaymarch(sys: RaymarchSystem, backend: 'webgpu' | 'webgl2'
       const sky = mix(BG_LO, BG_HI, skyDir.y.mul(0.5).add(0.5)).add(star);
       col.assign(sky.add(emis)); // disk glows over the bent sky
       col.assign(mix(col, vec3(0), done)); // horizon → pure black
+    } else if (sys.sdf === 'conformal') {
+      // ── 2D conformal map: per-pixel w=f(z) of the complex plane, coloured by a checkerboard of w
+      //    (NO marching). Complex numbers are vec2; every divide floors |denom|² so poles stay finite.
+      const cmul = (a: Node, b: Node): Node => vec2(a.x.mul(b.x).sub(a.y.mul(b.y)), a.x.mul(b.y).add(a.y.mul(b.x)));
+      const cdiv = (a: Node, b: Node): Node => {
+        const den = max(b.x.mul(b.x).add(b.y.mul(b.y)), 1e-6); // pole guard → finite everywhere
+        return vec2(a.x.mul(b.x).add(a.y.mul(b.y)), a.y.mul(b.x).sub(a.x.mul(b.y))).div(den);
+      };
+      const z0 = vec2(ndc.x, ndc.y).mul(u.zoom).toVar();
+      const th = uTime.mul(0.25).mul(u.animate); // conformal: rotating z preserves the look
+      const z = cmul(z0, vec2(cos(th), sin(th))).toVar();
+      const w = vec2(0).toVar();
+      if (sys.sdf3 === 'mobius') {
+        // fixed points p,q + complex multiplier λ=|λ|e^{iφ} (φ drifts with time): the Möbius flow
+        const p = vec2(u.px, u.py);
+        const q = vec2(u.qx, u.qy);
+        const phi = u.lphase.mul(6.2832).add(uTime.mul(0.15).mul(u.animate));
+        const k = vec2(cos(phi), sin(phi)).mul(u.lam).toVar();
+        const rhs = cmul(k, cdiv(z.sub(p), z.sub(q))).toVar(); // (w−p)/(w−q)=λ(z−p)/(z−q)
+        w.assign(cdiv(p.sub(cmul(q, rhs)), vec2(1, 0).sub(rhs)));
+      } else if (sys.sdf3 === 'inverse') {
+        w.assign(cdiv(vec2(1, 0), z)); // 1/z
+      } else if (sys.sdf3 === 'square') {
+        w.assign(cmul(z, z)); // z²
+      } else if (sys.sdf3 === 'cexp') {
+        const ex = exp(clamp(z.x, -8, 8)); // clamp Re so e^Re can't overflow fp32
+        w.assign(vec2(ex.mul(cos(z.y)), ex.mul(sin(z.y))));
+      } else {
+        w.assign(z.add(cdiv(vec2(1, 0), z)).mul(0.5)); // joukowski ½(z+1/z)
+      }
+      // checkerboard of w with pixel-footprint smoothstep AA (band widens where |w| varies fast)
+      const sw = vec2(sin(w.x.mul(u.scale)), sin(w.y.mul(u.scale)));
+      const prod = sw.x.mul(sw.y).toVar();
+      const aa = clamp(length(w).mul(0.04).add(0.06), 0.04, 0.5);
+      const chk = smoothstep(aa.negate(), aa, prod).toVar();
+      const a0 = u.colShift.mul(6.2832);
+      const cA = vec3(cos(a0), cos(a0.add(2.1)), cos(a0.add(4.2))).mul(0.35).add(0.4);
+      const cB = vec3(cos(a0.add(0.9)), cos(a0.add(3.0)), cos(a0.add(5.1))).mul(0.35).add(0.18);
+      const tile = mix(cA, cB, chk).toVar();
+      const fade = float(1).div(float(1).add(length(w).mul(0.18))); // far cells dissolve into the BG
+      col.assign(mix(col, tile, fade));
     } else if (sys.sdf === 'volumetric') {
       // ── Non-SDF marcher: accumulate volumetric EMISSION through a domain-warped density field. ──
       // Fixed-step ray, no bending. Density e drives o += exp(−e·k)·palette·e·Δs·E (the twigl look).

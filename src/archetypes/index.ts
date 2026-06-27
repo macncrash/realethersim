@@ -20,6 +20,8 @@ import { karmanFactory } from './karman';
 import { pendulumWaveFactory } from './pendulumWave';
 import { kuramotoSivashinskyFactory } from './kuramotoSivashinsky';
 import { billiardFactory } from './billiard';
+import { crystalFactory } from './molecularDynamics';
+import { hmcFactory } from './hmc';
 import { makeParametricFactory, PARAMETRIC_SYSTEMS } from './parametric';
 import { makeRaymarchFactory, RAYMARCH_SYSTEMS } from './raymarchFractal';
 
@@ -59,6 +61,8 @@ export function registerArchetypes(): void {
   register(pendulumWaveFactory);
   register(kuramotoSivashinskyFactory);
   register(billiardFactory);
+  register(crystalFactory);
+  register(hmcFactory);
   for (const system of Object.values(PARAMETRIC_SYSTEMS)) {
     register(makeParametricFactory(system));
   }

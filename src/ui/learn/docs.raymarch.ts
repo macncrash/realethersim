@@ -1487,4 +1487,298 @@ const F = (x,y,z) => { const a=x*x,b=y*y,c=z*z, s=a+b+c-1;
       }
     ]
   },
+  mobiusFlow: {
+    "title": "Möbius Flow",
+    "about": "A Möbius transformation w=(az+b)/(cz+d) — the most general angle-preserving (conformal) map of the complex plane — applied to a checkerboard. Every such map is determined by two fixed points and a complex multiplier λ: points spiral away from one fixed point and into the other, the loxodromic flow that makes the checkerboard swirl. It is the geometry of the Riemann sphere seen flat.",
+    "howItWorks": "For each pixel a complex coordinate z is read from the screen, transformed by w=f(z), and coloured by which square of an infinite checkerboard w lands in (sign of sin(s·Re w)·sin(s·Im w), softened by anti-aliasing). The map is written in fixed-point form: (w−p)/(w−q) = λ·(z−p)/(z−q), so p and q are the two fixed points and λ=|λ|e^{iφ} the multiplier — |λ|≠1 makes one fixed point an attractor and the other a repeller (loxodromic), pure rotation of λ makes it elliptic. Every complex division floors the denominator magnitude so the pole c·z+d=0 stays finite. λ's phase drifts with time so the whole field rotates.",
+    "equations": [
+      {
+        "label": "Möbius (linear-fractional) transformation",
+        "latex": "w = \\dfrac{a z + b}{c z + d}, \\qquad ad - bc \\neq 0"
+      },
+      {
+        "label": "fixed-point form (p, q fixed; λ the multiplier)",
+        "latex": "\\dfrac{w-p}{w-q} = \\lambda\\,\\dfrac{z-p}{z-q}"
+      },
+      {
+        "label": "conformal: it preserves angles everywhere",
+        "latex": "f'(z) = \\dfrac{ad-bc}{(cz+d)^2} \\neq 0"
+      }
+    ],
+    "params": [
+      {
+        "key": "px",
+        "symbol": "p_x",
+        "meaning": "real part of the first fixed point"
+      },
+      {
+        "key": "py",
+        "symbol": "p_y",
+        "meaning": "imaginary part of the first fixed point"
+      },
+      {
+        "key": "qx",
+        "symbol": "q_x",
+        "meaning": "real part of the second fixed point"
+      },
+      {
+        "key": "qy",
+        "symbol": "q_y",
+        "meaning": "imaginary part of the second fixed point"
+      },
+      {
+        "key": "lam",
+        "symbol": "|\\lambda|",
+        "meaning": "multiplier magnitude; ≠1 = loxodromic spiral (attract/repel), =1 = elliptic rotation"
+      },
+      {
+        "key": "lphase",
+        "symbol": "\\arg\\lambda",
+        "meaning": "multiplier phase (×2π) — the rotational twist of the flow"
+      },
+      {
+        "key": "scale",
+        "symbol": "s",
+        "meaning": "checkerboard frequency"
+      },
+      {
+        "key": "zoom",
+        "symbol": "Z",
+        "meaning": "view scale on the complex plane"
+      },
+      {
+        "key": "animate",
+        "symbol": "\\omega",
+        "meaning": "animation speed (rotates z and drifts λ)"
+      },
+      {
+        "key": "colShift",
+        "symbol": "\\phi",
+        "meaning": "hue of the two checkerboard colours"
+      }
+    ],
+    "code": "// per pixel: z from screen, w = Möbius(z), colour by a checkerboard of w\nconst rhs = cmul(lambda, cdiv(sub(z,p), sub(z,q)));   // λ(z−p)/(z−q)\nconst w   = cdiv(sub(p, cmul(q,rhs)), sub([1,0], rhs)); // (p−q·rhs)/(1−rhs)\nconst chk = sign(sin(s*w.re) * sin(s*w.im));          // checkerboard cell",
+    "links": [
+      {
+        "label": "Möbius transformation (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/M%C3%B6bius_transformation"
+      },
+      {
+        "label": "Conformal map (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Conformal_map"
+      },
+      {
+        "label": "Riemann sphere (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Riemann_sphere"
+      }
+    ]
+  },
+  inversion: {
+    "title": "Inversion 1/z",
+    "about": "The complex reciprocal w=1/z — inversion through the unit circle composed with a reflection. It turns the inside of the unit circle out and the outside in (the origin maps to infinity), yet it is conformal: every line and circle maps to a line or circle, and all angles are preserved. The checkerboard shows the warp.",
+    "howItWorks": "Each pixel's complex coordinate z is mapped to w=1/z = z̄/|z|² and coloured by a checkerboard of w. Points near the origin fly out to large |w| (huge cells that the distance fade dissolves into the background), while distant points pull in toward 0. The single pole at z=0 is guarded by flooring |z|² so the centre stays finite.",
+    "equations": [
+      {
+        "label": "complex inversion",
+        "latex": "w = \\dfrac{1}{z} = \\dfrac{\\bar z}{|z|^2}"
+      },
+      {
+        "label": "magnitude inverts, angle negates",
+        "latex": "|w| = 1/|z|, \\qquad \\arg w = -\\arg z"
+      }
+    ],
+    "params": [
+      {
+        "key": "scale",
+        "symbol": "s",
+        "meaning": "checkerboard frequency"
+      },
+      {
+        "key": "zoom",
+        "symbol": "Z",
+        "meaning": "view scale on the complex plane"
+      },
+      {
+        "key": "animate",
+        "symbol": "\\omega",
+        "meaning": "animation speed (rotates z over time)"
+      },
+      {
+        "key": "colShift",
+        "symbol": "\\phi",
+        "meaning": "hue of the two checkerboard colours"
+      }
+    ],
+    "code": "const w = cdiv([1,0], z);            // 1/z, denominator magnitude floored for the z=0 pole\nconst chk = sign(sin(s*w.re)*sin(s*w.im));",
+    "links": [
+      {
+        "label": "Inversive geometry (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Inversive_geometry"
+      },
+      {
+        "label": "Conformal map (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Conformal_map"
+      },
+      {
+        "label": "Riemann sphere (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Riemann_sphere"
+      }
+    ]
+  },
+  zSquared: {
+    "title": "Square z²",
+    "about": "The map w=z² — the simplest non-trivial analytic function. It doubles every angle about the origin and squares every distance, wrapping the plane around itself twice. It is conformal everywhere except at the origin (where the angle-doubling pinches), which the checkerboard reveals as a four-fold rosette at the centre.",
+    "howItWorks": "Each pixel's z is squared (z² = (x²−y², 2xy)) and coloured by a checkerboard of w. Because arg(w)=2·arg(z), the checkerboard squares spiral and double around the origin; because |w|=|z|², cells stretch rapidly outward. A rotation of z with time spins the whole figure.",
+    "equations": [
+      {
+        "label": "complex square",
+        "latex": "w = z^2 = (x^2 - y^2) + 2xy\\,i"
+      },
+      {
+        "label": "doubles the angle, squares the modulus",
+        "latex": "|w| = |z|^2, \\qquad \\arg w = 2\\arg z"
+      }
+    ],
+    "params": [
+      {
+        "key": "scale",
+        "symbol": "s",
+        "meaning": "checkerboard frequency"
+      },
+      {
+        "key": "zoom",
+        "symbol": "Z",
+        "meaning": "view scale on the complex plane"
+      },
+      {
+        "key": "animate",
+        "symbol": "\\omega",
+        "meaning": "animation speed (rotates z over time)"
+      },
+      {
+        "key": "colShift",
+        "symbol": "\\phi",
+        "meaning": "hue of the two checkerboard colours"
+      }
+    ],
+    "code": "const w = cmul(z, z);               // z²\nconst chk = sign(sin(s*w.re)*sin(s*w.im));",
+    "links": [
+      {
+        "label": "Analytic function (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Analytic_function"
+      },
+      {
+        "label": "Conformal map (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Conformal_map"
+      },
+      {
+        "label": "Riemann sphere (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Riemann_sphere"
+      }
+    ]
+  },
+  complexExp: {
+    "title": "Exponential eᶻ",
+    "about": "The complex exponential w=e^z. It maps horizontal lines to rays from the origin and vertical lines to concentric circles, turning the checkerboard's grid into a polar fan. Because e^z is periodic in the imaginary direction (period 2πi), the pattern repeats vertically — a conformal map that wraps the strip into the whole plane.",
+    "howItWorks": "Each pixel's z=(x,y) becomes w=e^x·(cos y, sin y): the real part sets the radius, the imaginary part the angle. The checkerboard of w therefore reads as rings (constant x) crossed by spokes (constant y). The real part is clamped before exponentiation so e^x can't overflow.",
+    "equations": [
+      {
+        "label": "complex exponential",
+        "latex": "w = e^{z} = e^{x}\\,(\\cos y + i\\sin y)"
+      },
+      {
+        "label": "periodic in the imaginary direction",
+        "latex": "e^{z + 2\\pi i} = e^{z}"
+      }
+    ],
+    "params": [
+      {
+        "key": "scale",
+        "symbol": "s",
+        "meaning": "checkerboard frequency"
+      },
+      {
+        "key": "zoom",
+        "symbol": "Z",
+        "meaning": "view scale on the complex plane"
+      },
+      {
+        "key": "animate",
+        "symbol": "\\omega",
+        "meaning": "animation speed (rotates z over time)"
+      },
+      {
+        "key": "colShift",
+        "symbol": "\\phi",
+        "meaning": "hue of the two checkerboard colours"
+      }
+    ],
+    "code": "const ex = exp(clamp(z.re, -8, 8));  // clamp Re so eˣ can't overflow\nconst w  = [ex*cos(z.im), ex*sin(z.im)];\nconst chk = sign(sin(s*w.re)*sin(s*w.im));",
+    "links": [
+      {
+        "label": "Exponential function (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Exponential_function#Complex_plane"
+      },
+      {
+        "label": "Conformal map (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Conformal_map"
+      },
+      {
+        "label": "Riemann sphere (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Riemann_sphere"
+      }
+    ]
+  },
+  joukowskiMap: {
+    "title": "Joukowski ½(z+1/z)",
+    "about": "The Joukowski transform w=½(z+1/z) — the classical map that turns circles into aerofoil shapes, the foundation of early aerodynamics. It folds the plane around the segment [−1,1] (the images of the unit circle), and away from its two critical points ±1 it is conformal. On a checkerboard it produces the characteristic lens-and-wing folds.",
+    "howItWorks": "Each pixel's z is mapped to ½(z+1/z) and coloured by a checkerboard of w. The unit circle collapses onto the real segment [−1,1]; circles offset from the origin become aerofoil (wing) profiles, which is why the warped checkerboard sweeps into wing-like bands. The 1/z term's pole at z=0 is guarded.",
+    "equations": [
+      {
+        "label": "Joukowski transform",
+        "latex": "w = \\tfrac12\\left(z + \\dfrac{1}{z}\\right)"
+      },
+      {
+        "label": "critical points (angle-doubling) at",
+        "latex": "z = \\pm 1, \\qquad w = \\pm 1"
+      }
+    ],
+    "params": [
+      {
+        "key": "scale",
+        "symbol": "s",
+        "meaning": "checkerboard frequency"
+      },
+      {
+        "key": "zoom",
+        "symbol": "Z",
+        "meaning": "view scale on the complex plane"
+      },
+      {
+        "key": "animate",
+        "symbol": "\\omega",
+        "meaning": "animation speed (rotates z over time)"
+      },
+      {
+        "key": "colShift",
+        "symbol": "\\phi",
+        "meaning": "hue of the two checkerboard colours"
+      }
+    ],
+    "code": "const w = mul(add(z, cdiv([1,0], z)), 0.5);  // ½(z + 1/z)\nconst chk = sign(sin(s*w.re)*sin(s*w.im));",
+    "links": [
+      {
+        "label": "Joukowsky transform (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Joukowsky_transform"
+      },
+      {
+        "label": "Conformal map (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Conformal_map"
+      },
+      {
+        "label": "Riemann sphere (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Riemann_sphere"
+      }
+    ]
+  },
 };

@@ -15,7 +15,7 @@ describe('all registered systems are finite, bounded, and non-degenerate', () =>
   it('has a sizeable catalog across categories', () => {
     expect(factories.length).toBeGreaterThanOrEqual(30);
     const cats = new Set(factories.map((f) => f.category));
-    for (const c of ['Attractor', 'Map', 'Fractal', 'Surface', 'Parametric', 'Life', 'Fluid', 'Field', 'Oscillator', 'N-Body']) expect(cats.has(c)).toBe(true);
+    for (const c of ['Attractor', 'Map', 'Fractal', 'Surface', 'Parametric', 'Life', 'Fluid', 'Field', 'Oscillator', 'N-Body', 'Billiard', 'Matter', 'Sampler']) expect(cats.has(c)).toBe(true);
   });
 
   // Raymarch (3D sphere-traced) fractals have no point cloud — they're rendered by a fragment
@@ -63,7 +63,7 @@ describe('all registered systems are finite, bounded, and non-degenerate', () =>
       const ids = new Set(raymarch.map((f) => f.id));
       for (const id of ['mandelbulb', 'qjulia', 'mandelbox', 'menger', 'gyroid', 'chmutov', 'schoenIWP']) expect(ids.has(id)).toBe(true);
       for (const f of raymarch) {
-        expect(['Fractal', 'Surface', 'Spacetime', 'Volume']).toContain(f.category);
+        expect(['Fractal', 'Surface', 'Spacetime', 'Volume', 'Conformal']).toContain(f.category);
         expect(f.params.length).toBeGreaterThan(0);
       }
     });
