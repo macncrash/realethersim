@@ -43,6 +43,8 @@ const {
   fract,
   floor,
   smoothstep,
+  exp,
+  tanh,
 } = tsl as any;
 
 export interface RaymarchPass {
@@ -85,6 +87,67 @@ const rotYX = Fn(([v, ay, ax]: [Node, Node, Node]) => {
 const sdBox = Fn(([p, b]: [Node, Node]) => {
   const d = abs(p).sub(b);
   return max(d, vec3(0)).length().add(min(max(d.x, max(d.y, d.z)), 0));
+});
+
+// ── Procedural noise for the volumetric (Volume) systems: hash → 3D value noise → FBM → IQ domain
+// warp. Pure straight-line expression graphs (no Loop/If), so they compose inside the per-pixel march.
+// sin-free Hoskins hash (GPU-portable). value noise uses a quintic (C1) fade so it's smooth across cells.
+const hash31 = Fn(([c]: [Node]) => {
+  const p = fract(c.mul(0.1031)).toVar();
+  p.addAssign(dot(p, p.yzx.add(33.33)));
+  return fract(p.x.add(p.y).mul(p.z));
+});
+const vnoise = Fn(([p]: [Node]) => {
+  const i = floor(p).toVar();
+  const f = fract(p).toVar();
+  const u = f.mul(f).mul(f).mul(f.mul(f.mul(6).sub(15)).add(10)).toVar(); // 6t⁵−15t⁴+10t³
+  const c000 = hash31(i.add(vec3(0, 0, 0)));
+  const c100 = hash31(i.add(vec3(1, 0, 0)));
+  const c010 = hash31(i.add(vec3(0, 1, 0)));
+  const c110 = hash31(i.add(vec3(1, 1, 0)));
+  const c001 = hash31(i.add(vec3(0, 0, 1)));
+  const c101 = hash31(i.add(vec3(1, 0, 1)));
+  const c011 = hash31(i.add(vec3(0, 1, 1)));
+  const c111 = hash31(i.add(vec3(1, 1, 1)));
+  const x00 = mix(c000, c100, u.x);
+  const x10 = mix(c010, c110, u.x);
+  const x01 = mix(c001, c101, u.x);
+  const x11 = mix(c011, c111, u.x);
+  const y0 = mix(x00, x10, u.y);
+  const y1 = mix(x01, x11, u.y);
+  return mix(y0, y1, u.z); // [0,1]
+});
+function makeFbm(OCT: number) {
+  return Fn(([p]: [Node]) => {
+    const pp = p.toVar();
+    const sum = float(0).toVar();
+    const amp = float(0.5).toVar();
+    const norm = float(0).toVar();
+    for (let o = 0; o < OCT; o++) {
+      sum.addAssign(amp.mul(vnoise(pp)));
+      norm.addAssign(amp);
+      amp.mulAssign(0.5);
+      pp.mulAssign(2.0);
+    }
+    return sum.div(norm); // [0,1]
+  });
+}
+const fbm3 = makeFbm(3);
+// cheap single-octave IQ domain warp (4 fbm calls) — plasma + tunnel
+const warp1 = Fn(([p]: [Node]) => {
+  const q = vec3(fbm3(p), fbm3(p.add(vec3(5.2, 1.3, 2.8))), fbm3(p.add(vec3(1.7, 9.2, 3.4)))).toVar();
+  return fbm3(p.add(q.mul(4.0)));
+});
+// full recursive IQ domain warp (7 fbm calls) — nebula only (flowing filaments are the whole look)
+const warpFull = Fn(([p]: [Node]) => {
+  const q = vec3(fbm3(p), fbm3(p.add(vec3(5.2, 1.3, 2.8))), fbm3(p.add(vec3(1.7, 9.2, 3.4)))).toVar();
+  const pq = p.add(q.mul(4.0)).toVar();
+  const r = vec3(
+    fbm3(pq.add(vec3(1.7, 9.2, 8.3))),
+    fbm3(pq.add(vec3(8.3, 2.8, 1.7))),
+    fbm3(pq.add(vec3(2.6, 6.1, 5.4))),
+  ).toVar();
+  return fbm3(p.add(r.mul(4.0)));
 });
 
 // Build the distance-estimator for one fractal. Returns a TSL Fn(p) -> vec2(distance, orbitTrap).
@@ -606,6 +669,56 @@ export function createRaymarch(sys: RaymarchSystem, backend: 'webgpu' | 'webgl2'
       const sky = mix(BG_LO, BG_HI, skyDir.y.mul(0.5).add(0.5)).add(star);
       col.assign(sky.add(emis)); // disk glows over the bent sky
       col.assign(mix(col, vec3(0), done)); // horizon → pure black
+    } else if (sys.sdf === 'volumetric') {
+      // ── Non-SDF marcher: accumulate volumetric EMISSION through a domain-warped density field. ──
+      // Fixed-step ray, no bending. Density e drives o += exp(−e·k)·palette·e·Δs·E (the twigl look).
+      const STEP = float(sys.volStep ?? 0.06);
+      const K = u.absorb; // self-attenuation: e·exp(−e·k) peaks at e=1/k → mid-density wisps glow most
+      const SCALE = u.scale; // field frequency (capped in the registry for fp32 hash safety)
+      const RB = float(sys.bound);
+
+      const pos = ro.toVar();
+      const emis = vec3(0).toVar();
+      // camDist often EXCEEDS bound for these compact volumes, so only break once we've entered then left
+      const entered = float(0).toVar();
+      const ca = cos(uTime.mul(0.15)).toVar(); // slow domain churn about Y so the volume evolves
+      const sa = sin(uTime.mul(0.15)).toVar();
+
+      Loop(sys.maxSteps, () => {
+        const r = length(pos).toVar();
+        If(r.lessThan(RB), () => { entered.assign(1); });
+        If(entered.greaterThan(0.5).and(r.greaterThan(RB)), () => { Break(); });
+        If(r.lessThan(RB), () => {
+          const q = vec3(
+            pos.x.mul(ca).sub(pos.z.mul(sa)),
+            pos.y,
+            pos.x.mul(sa).add(pos.z.mul(ca)),
+          ).mul(SCALE).toVar();
+          const e = float(0).toVar();
+          if (sys.sdf2 === 'plasmaOrb') {
+            // hollow plasma shell at r≈1 (thin), textured by hi-freq trig × one warp octave; pow → contrast
+            const base = clamp(float(1).sub(abs(length(q).sub(1.0)).div(0.42)), 0, 1).toVar();
+            const tex = cos(q.x.mul(9).add(uTime))
+              .mul(cos(q.y.mul(9).sub(uTime.mul(0.7))))
+              .mul(cos(q.z.mul(9))).mul(0.5).add(0.5).toVar();
+            const fil = warp1(q.mul(2.2)).toVar(); // marbled filaments
+            e.assign(pow(base, 1.5).mul(tex.mul(0.45).add(0.25)).mul(fil.mul(1.6).pow(1.5)));
+          } else {
+            // nebula: fbm cloud (full recursive warp) thresholded to wisps, with a radial falloff
+            const cloud = warpFull(q.mul(0.9).add(vec3(uTime.mul(0.05), 0, 0))).toVar();
+            const fall = clamp(float(1).sub(length(q).div(2.6)), 0, 1).toVar();
+            e.assign(max(cloud.sub(0.45), 0).mul(2.0).mul(fall));
+          }
+          const ec = clamp(e, 0, 1).toVar();
+          // cosine palette keyed by density + live colShift (matches the SDF orbit-trap palette)
+          const a = ec.mul(2.0).add(u.colShift.mul(6.2832)).add(0.3).toVar();
+          const pal = vec3(cos(a), cos(a.add(2.1)), cos(a.add(4.2))).mul(0.5).add(0.5);
+          emis.addAssign(pal.mul(ec).mul(exp(ec.mul(K.negate()))).mul(STEP).mul(u.exposure));
+        });
+        pos.addAssign(rd.mul(STEP));
+      });
+      // tanh tone-map so accumulated emission asymptotes to <1 instead of hard-clipping
+      col.assign(col.add(vec3(tanh(emis.x), tanh(emis.y), tanh(emis.z))));
     } else {
     // clip the march to the fractal's bounding sphere (origin, radius bound)
     const bnd = float(sys.bound);
