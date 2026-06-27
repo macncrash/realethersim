@@ -58,7 +58,9 @@ export interface RaymarchSystem {
   photonStep?: number; // adaptive-dt fraction in dt = clamp(photonStep·r, 0.02, 0.6)
   // Volumetric emission marcher only (sdf:'volumetric'); ignored by the other paths:
   volStep?: number; // fixed march step
-  sdf2?: 'plasmaOrb' | 'nebula'; // which density field the volumetric branch dispatches
+  sdf2?: 'plasmaOrb' | 'nebula' | 'voxelCloud'; // which density field the volumetric branch dispatches
+  cells?: number; // voxelCloud only: cubic-lattice resolution (cells per q-unit), compile-time const
+  occlude?: boolean; // volumetric only: front-to-back compositing (crisp solid voxels) vs additive emission
 }
 
 const COL: ParamSpec = { key: 'colShift', label: 'colour', min: 0, max: 1, step: 0.01, default: 0.5 };
@@ -276,6 +278,17 @@ export const RAYMARCH_SYSTEMS: Record<string, RaymarchSystem> = {
       { key: 'absorb', label: 'density', min: 1, max: 8, step: 0.1, default: 5 },
       { key: 'exposure', label: 'glow', min: 0.5, max: 6, step: 0.05, default: 3.4 },
       { key: 'colShift', label: 'colour', min: 0, max: 1, step: 0.01, default: 0.1 }, // ≈ violet/magenta
+    ],
+  },
+  voxelCloud: {
+    id: 'voxelCloud', label: 'Voxel Cloud', sdf: 'volumetric', sdf2: 'voxelCloud', category: 'Volume',
+    iters: 0, bound: 2.2, camDist: 5.4, maxSteps: 190, volStep: 0.04, cells: 3.0, occlude: true,
+    params: [
+      { key: 'scale', label: 'detail', min: 0.3, max: 2.0, step: 0.05, default: 0.6 },
+      { key: 'absorb', label: 'density', min: 1, max: 12, step: 0.1, default: 6.0 }, // higher → crisper opaque cubes
+      { key: 'exposure', label: 'glow', min: 0.5, max: 6, step: 0.05, default: 1.8 },
+      { key: 'edge', label: 'edges', min: 0, max: 1.5, step: 0.05, default: 0.5 },
+      { key: 'colShift', label: 'colour', min: 0, max: 1, step: 0.01, default: 0.05 }, // ≈ warm/fire base
     ],
   },
 };

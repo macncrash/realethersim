@@ -1405,4 +1405,86 @@ const F = (x,y,z) => { const a=x*x,b=y*y,c=z*z, s=a+b+c-1;
       }
     ]
   },
+  voxelCloud: {
+    "title": "Voxel Cloud",
+    "about": "A volume of glowing cubic chunks — fire-and-ice voxels suspended in space, each block flat-lit in one of two opposed hues with a bright rim along its faces. It is the blocky cousin of the Plasma Orb and Nebula: the camera ray still marches straight through a 3D emission field with no hard surface, but the field is QUANTIZED to a cubic lattice before it is evaluated, so the smooth wisps collapse into discrete Minecraft-scale cubes. Some cells glow warm (ember/fire), others cold (ice/cyan), set by a per-cell hash, and a fract()-distance edge term lights up the cell faces so the chunks read as solid blocks rather than fog.",
+    "howItWorks": "For each pixel a ray is stepped a fixed distance Δs through the volume (no bending), accumulating emission o += pal(e)·e·exp(−e·K)·Δs·E exactly like the other Volume presets — the only thing that changes is how the density e(p) is built. At each sample the world point is first rotated slowly about Y (time-driven churn) and scaled by the 'detail' uniform into a coord q. q is then floor-quantized into a cubic lattice: cell = floor(q·N) is the integer voxel id, and the density is sampled at the CELL CENTRE cc = (cell+0.5)/N. Because density depends only on the quantized centre, every sample inside one voxel returns the identical value — a flat-shaded cube. The density itself is the project's 3-octave value-noise FBM thresholded, max(fbm(2·cc) − 0.5, 0)·(1/(1−0.5)), which leaves ~50% of voxels genuinely empty (validated) so the cloud reads as scattered chunks instead of a solid block. Colour is split two ways by hashing the integer cell id (hash31(cell) → a flat per-cube value): the hash shifts the shared cosine palette's phase by ≈±1.3 rad, partitioning the voxels into a near-even warm/cold mix (validated 52/48). Finally a glowing-edge term lights the faces: lf = fract(q·N) is the position inside the cell, edgeDist is its distance to the nearest of the six faces (0 at a face, 0.5 at the centre), and clamp(1 − edgeDist/0.1, 0, 1)·edges adds a rim that is masked to filled voxels only (validated: e at a face ≈ 0.49 vs 0.08 at the centre). The accumulated emission is tanh tone-mapped per channel so it asymptotes into [0,1) instead of clipping. The exp(−e·K) self-attenuation (peaks at e=1/K) keeps the densest cubes from blowing out, and the whole lattice slowly rotates so the chunks tumble.",
+    "equations": [
+      {
+        "label": "Volumetric-emission integral (the marched accumulation, shared with all Volume presets)",
+        "latex": "o \\mathrel{+}= \\mathrm{pal}(e)\\, e\\, e^{-eK}\\, \\Delta s\\, E"
+      },
+      {
+        "label": "Cubic quantization — sample density at the voxel centre (blocky, flat per cell)",
+        "latex": "\\mathbf{cell}=\\lfloor N\\,\\mathbf{q}\\rfloor,\\qquad \\mathbf{c}_c=\\frac{\\mathbf{cell}+\\tfrac12}{N}"
+      },
+      {
+        "label": "Thresholded FBM density (carves empty voxels)",
+        "latex": "d=\\frac{\\max\\big(\\mathrm{fbm}(2\\mathbf{c}_c)-\\tau,\\,0\\big)}{1-\\tau},\\qquad \\tau=0.5"
+      },
+      {
+        "label": "Per-cell two-tone palette phase split (warm vs cold)",
+        "latex": "\\Delta\\phi = 2.6\\,\\big(\\mathrm{hash}(\\mathbf{cell})-\\tfrac12\\big)\\in[-1.3,\\,1.3]"
+      },
+      {
+        "label": "Cell-face rim glow (distance of the in-cell coord to the nearest face)",
+        "latex": "g=\\mathrm{clamp}\\!\\Big(1-\\tfrac{\\min_i\\min(f_i,\\,1-f_i)}{0.1},\\,0,\\,1\\Big),\\quad \\mathbf{f}=\\mathrm{fract}(N\\mathbf{q})"
+      },
+      {
+        "label": "Final clamped voxel density (rim added only to filled cells)",
+        "latex": "e=\\mathrm{clamp}\\big(d + g\\cdot\\mathrm{edges}\\cdot[d>0],\\,0,\\,1\\big)"
+      }
+    ],
+    "params": [
+      {
+        "key": "scale",
+        "symbol": "N_q (detail)",
+        "meaning": "Spatial frequency applied to the sample coord before quantization. Higher = finer FBM structure across the cloud (more variety between voxels); lower = broader, smoother chunks."
+      },
+      {
+        "key": "cells",
+        "symbol": "N",
+        "meaning": "Cubic-lattice resolution (cells per q-unit), a compile-time constant in the registry (default 3). Larger N = smaller, more numerous voxels; smaller N = big chunky blocks."
+      },
+      {
+        "key": "absorb",
+        "symbol": "K",
+        "meaning": "Self-attenuation in e·exp(−eK); emission peaks at density e=1/K, so larger K makes the dense cube cores darker and favours mid-density faces, smaller K lets cubes glow more solidly."
+      },
+      {
+        "key": "exposure",
+        "symbol": "E",
+        "meaning": "Overall emission gain before the tanh tone-map. Higher = brighter, more saturated glowing cubes."
+      },
+      {
+        "key": "edge",
+        "symbol": "edges",
+        "meaning": "Rim-glow gain on the cell faces. 0 = matte blocks (density only); higher = bright glowing edges that make the voxels read as wireframe-lit cubes."
+      },
+      {
+        "key": "colShift",
+        "symbol": "colour",
+        "meaning": "Base phase of the cosine palette (the warm/cold two-tone split is layered on top of this). Sweeps the overall hue of the whole cloud."
+      }
+    ],
+    "code": "// volumetric branch, sdf2 dispatch — the new arm (full code in branchCode):\nconst N = float(sys.cells ?? 4.0);\nconst cell = floor(q.mul(N)).toVar();              // integer voxel id\nconst cc = cell.add(0.5).div(N).toVar();           // cell centre → blocky\nconst thr = float(0.5);\nconst dens = max(fbm3(cc.mul(2.0)).sub(thr), 0).mul(float(1).div(float(1).sub(thr))).toVar();\nconst tone = hash31(cell).toVar();                 // per-cell hash\nconst toneShift = tone.sub(0.5).mul(2.6).toVar();  // ±1.3 rad palette swing\nconst lf = fract(q.mul(N)).toVar();\nconst edgeDist = min(min(lf.x, float(1).sub(lf.x)),\n  min(min(lf.y, float(1).sub(lf.y)), min(lf.z, float(1).sub(lf.z)))).toVar();\nconst edge = clamp(float(1).sub(edgeDist.div(0.1)), 0, 1).mul(u.edge).toVar();\nconst filled = clamp(dens.mul(1e4), 0, 1).toVar();\ne.assign(clamp(dens.add(edge.mul(filled)), 0, 1));\ntoneOff.assign(toneShift);                         // feeds the shared cosine-palette phase\n// shared tail (palette + emis) is reused verbatim, with `.add(toneOff)` on the palette phase `a`.",
+    "links": [
+      {
+        "label": "Volume ray casting (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Volume_ray_casting"
+      },
+      {
+        "label": "Inigo Quilez — value noise & FBM",
+        "url": "https://iquilezles.org/articles/fbm/"
+      },
+      {
+        "label": "Inigo Quilez — domain warping",
+        "url": "https://iquilezles.org/articles/warp/"
+      },
+      {
+        "label": "Inigo Quilez — palettes (cosine palette)",
+        "url": "https://iquilezles.org/articles/palettes/"
+      }
+    ]
+  },
 };
