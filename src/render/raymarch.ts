@@ -36,6 +36,13 @@ const {
   cameraProjectionMatrixInverse,
   cameraWorldMatrix,
   positionGeometry,
+  cross,
+  length,
+  dot,
+  sqrt,
+  fract,
+  floor,
+  smoothstep,
 } = tsl as any;
 
 export interface RaymarchPass {
@@ -524,6 +531,82 @@ export function createRaymarch(sys: RaymarchSystem, backend: 'webgpu' | 'webgl2'
 
     const col = mix(BG_LO, BG_HI, ndc.y.mul(0.5).add(0.5)).toVar();
 
+    if (sys.sdf === 'blackhole') {
+      // ── Non-SDF marcher: integrate a photon along a bent null geodesic (Schwarzschild). ──
+      // Geometric units r_s = 1 (M = ½). The accel a = −1.5·r_s·L²·p/r⁵ is purely radial, so
+      // L² = |p×v|² is conserved exactly and computed once → velocity-Verlet keeps the orbit shape.
+      const RS = float(sys.rs ?? 1); // event-horizon radius
+      const RIN = float(sys.diskIn ?? 3); // accretion-disk inner edge (ISCO = 3·r_s)
+      const ROUT = u.disk; // disk outer edge (live param)
+      const RESC = float(sys.bound); // photon escape radius
+      const STEP = float(sys.photonStep ?? 0.1); // adaptive-dt fraction
+
+      const pos = ro.toVar();
+      const dir = rd.toVar(); // unit ray direction, advanced as a velocity
+      const h2 = dot(cross(pos, dir), cross(pos, dir)).toVar(); // conserved L²
+      const prevY = pos.y.toVar();
+      const emis = vec3(0).toVar(); // accumulated disk emission (a ray can cross the plane twice)
+      const done = float(0).toVar(); // 1 ⇒ fell through the horizon (pure black)
+
+      Loop(sys.maxSteps, () => {
+        const r = length(pos).toVar();
+        If(r.lessThan(RS), () => { done.assign(1); Break(); }); // captured → shadow
+        If(r.greaterThan(RESC), () => { Break(); }); // escaped → sample lensed sky below
+        const dt = clamp(STEP.mul(r), 0.02, 0.6).toVar(); // fine near the hole, coarse far away
+
+        // velocity-Verlet: half-kick → drift → half-kick (a points inward, ∝ 1/r⁵)
+        const r5a = max(r.mul(r).mul(r).mul(r).mul(r), 1e-6);
+        const acc = pos.mul(RS.mul(-1.5).mul(h2).div(r5a));
+        const vh = dir.add(acc.mul(dt.mul(0.5))).toVar();
+        const pn = pos.add(vh.mul(dt)).toVar();
+        const rn = length(pn);
+        const r5b = max(rn.mul(rn).mul(rn).mul(rn).mul(rn), 1e-6);
+        const acc2 = pn.mul(RS.mul(-1.5).mul(h2).div(r5b));
+        dir.assign(vh.add(acc2.mul(dt.mul(0.5))));
+
+        // equatorial disk crossing: y sign-flip between pos and pn, then radius ∈ [RIN, ROUT]
+        If(prevY.mul(pn.y).lessThan(0), () => {
+          const f = prevY.div(prevY.sub(pn.y)); // linear interp to the y=0 plane
+          const cx = mix(pos.x, pn.x, f);
+          const cz = mix(pos.z, pn.z, f);
+          const rad = length(vec2(cx, cz)).toVar();
+          If(rad.greaterThan(RIN).and(rad.lessThan(ROUT)), () => {
+            const s = clamp(rad.sub(RIN).div(ROUT.sub(RIN)), 0, 1);
+            // hot blue-white inner → cool deep-red outer, hue nudged by colShift
+            const base = mix(vec3(1.0, 0.95, 0.85), vec3(1.0, 0.35, 0.1), pow(s, 0.7)).toVar();
+            const hue = u.colShift.mul(6.2832);
+            base.assign(base.mul(vec3(
+              cos(hue).mul(0.15).add(0.9),
+              cos(hue.add(2.1)).mul(0.15).add(0.9),
+              cos(hue.add(4.2)).mul(0.15).add(0.9),
+            )));
+            const inten = pow(RIN.div(rad), 0.75); // Shakura–Sunyaev-ish radial falloff
+            const ang = atan(cz, cx); // two-arg atan (no atan2 in TSL)
+            const turb = sin(ang.mul(7).add(uTime.mul(0.6)).add(rad.mul(2))).mul(0.18).add(0.82);
+            // relativistic Doppler beaming + gravitational redshift → the iconic asymmetry
+            const vdir = normalize(cross(vec3(0, 1, 0), normalize(vec3(cx, 0, cz)))); // prograde tangent
+            const beta = sqrt(RS.mul(0.5).div(max(rad.sub(RS.mul(1.5)), 1e-3))); // √(M/(r−3M)), M=r_s/2
+            const gam = float(1).div(sqrt(max(float(1).sub(beta.mul(beta)), 1e-4)));
+            const nv = dot(normalize(dir), vdir);
+            const dopp = float(1).div(gam.mul(float(1).sub(beta.mul(nv).mul(u.beaming))));
+            const boost = dopp.mul(dopp).mul(dopp).mul(sqrt(max(float(1).sub(RS.div(rad)), 0))); // D³·√(1−r_s/r)
+            emis.addAssign(base.mul(inten).mul(turb).mul(boost).mul(u.exposure));
+          });
+        });
+
+        prevY.assign(pn.y);
+        pos.assign(pn);
+      });
+
+      // escaped rays carry the LENSED direction → a procedural starfield smears into the Einstein ring
+      const skyDir = normalize(dir);
+      const q = floor(skyDir.mul(140));
+      const hsh = fract(sin(dot(q, vec3(12.9898, 78.233, 37.719))).mul(43758.5453));
+      const star = smoothstep(0.9975, 1.0, hsh).mul(vec3(0.9, 0.95, 1.0));
+      const sky = mix(BG_LO, BG_HI, skyDir.y.mul(0.5).add(0.5)).add(star);
+      col.assign(sky.add(emis)); // disk glows over the bent sky
+      col.assign(mix(col, vec3(0), done)); // horizon → pure black
+    } else {
     // clip the march to the fractal's bounding sphere (origin, radius bound)
     const bnd = float(sys.bound);
     const bdot = ro.dot(rd);
@@ -576,6 +659,7 @@ export function createRaymarch(sys: RaymarchSystem, backend: 'webgpu' | 'webgl2'
         });
       });
     });
+    } // end SDF path
 
     return vec4(clamp(col, 0, 1), 1);
   })();
