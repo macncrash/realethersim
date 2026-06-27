@@ -1813,4 +1813,59 @@ o[1] = p.b * x[0];`,
       }
     ]
   },
+  billiard: {
+    "title": "Dynamical Billiard",
+    "about": "A billiard is the simplest chaos experiment: a point particle flies in a straight line inside a bounded table and bounces off the walls by the mirror law. Nothing is random — yet the SHAPE of the wall decides everything. In a circle the motion is integrable: every orbit hugs a fixed inner circle (a caustic) and traces a tidy rosette forever. Round the ends into a stadium and it turns provably chaotic — one orbit fills the whole table and two that start a hair apart diverge exponentially. Release tens of thousands of particles and the trails paint the line between order and chaos.",
+    "howItWorks": "Each particle carries a position and velocity in the plane and drifts at constant speed. When a straight step would cross the wall, the exact crossing point is found (by bisection) and the velocity is reflected about the inward wall normal n via v ← v − 2(v·n)n — the specular mirror law, which conserves speed exactly, so the billiard is energy-preserving and never settles. The boundary is selectable: a circle (integrable — it also conserves angular momentum, pinning each orbit to a caustic of radius |r×v|/|v|), a Bunimovich stadium (two semicircular caps on a rectangle — provably ergodic and mixing), or a regular polygon (triangle/pentagon/hexagon). Particles are seeded uniformly inside with random launch directions at one fixed speed; colour is set by launch angle so families stay legible, and the long fading trails are the actual visualization — they fill a frozen annulus for the circle and the whole table for the chaotic shapes.",
+    "equations": [
+      {
+        "label": "free flight (constant velocity between walls)",
+        "latex": "\\mathbf{r}(t) = \\mathbf{r}_0 + \\mathbf{v}\\,t"
+      },
+      {
+        "label": "specular reflection at the wall (inward normal n)",
+        "latex": "\\mathbf{v}_{\\text{out}} = \\mathbf{v}_{\\text{in}} - 2(\\mathbf{v}_{\\text{in}}\\cdot\\mathbf{n})\\,\\mathbf{n}"
+      },
+      {
+        "label": "speed is conserved (elastic, energy-preserving)",
+        "latex": "\\lVert\\mathbf{v}_{\\text{out}}\\rVert = \\lVert\\mathbf{v}_{\\text{in}}\\rVert"
+      },
+      {
+        "label": "circle: each orbit keeps a fixed caustic radius (integrable)",
+        "latex": "r_{\\text{caustic}} = \\dfrac{\\lvert \\mathbf{r}\\times\\mathbf{v}\\rvert}{\\lVert\\mathbf{v}\\rVert}"
+      }
+    ],
+    "params": [
+      {
+        "key": "shape",
+        "symbol": "\\partial\\Omega",
+        "meaning": "boundary table shape — circle is integrable (frozen rosettes); stadium and polygons are chaotic (orbits fill the table)"
+      },
+      {
+        "key": "drag",
+        "symbol": "\\gamma",
+        "meaning": "optional per-step speed decay; 0 = the pure energy-conserving billiard (walls stay perfectly elastic)"
+      },
+      {
+        "key": "pointSize",
+        "symbol": "\\rho",
+        "meaning": "on-screen size of the moving particle heads"
+      }
+    ],
+    "code": "// free flight to the wall, then reflect about the inward normal n\n// (the exact crossing time is found by bisection so particles never leak)\nconst vdotn = vx*n.x + vy*n.y;\nvx -= 2*vdotn*n.x;   // v_out = v_in - 2 (v_in . n) n\nvy -= 2*vdotn*n.y;   // |v| unchanged - speed is conserved",
+    "links": [
+      {
+        "label": "Dynamical billiards (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Dynamical_billiards"
+      },
+      {
+        "label": "Bunimovich stadium (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Bunimovich_stadium"
+      },
+      {
+        "label": "Specular reflection (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Specular_reflection"
+      }
+    ]
+  },
 };
