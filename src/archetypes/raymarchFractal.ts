@@ -34,7 +34,8 @@ export type RaymarchKind =
   | 'orthocircle'
   | 'decocube'
   | 'endrassOctic'
-  | 'cassini';
+  | 'cassini'
+  | 'blackhole';
 
 export interface RaymarchSystem {
   id: string;
@@ -50,6 +51,10 @@ export interface RaymarchSystem {
   freq?: number; // spatial frequency for periodic implicit surfaces (world → lattice scale)
   stepScale?: number; // DE under-relaxation (default 0.7); lower for surfaces whose ∇F vanishes near F=0
   maxStep?: number; // hard cap on the march step (world units) — stops steep-gradient surfaces overshooting
+  // Black-hole geodesic marcher only (sdf:'blackhole'); ignored by the SDF path:
+  rs?: number; // Schwarzschild / event-horizon radius (geometric units, =1)
+  diskIn?: number; // accretion-disk inner edge (ISCO = 3·r_s); outer edge is the live 'disk' param
+  photonStep?: number; // adaptive-dt fraction in dt = clamp(photonStep·r, 0.02, 0.6)
 }
 
 const COL: ParamSpec = { key: 'colShift', label: 'colour', min: 0, max: 1, step: 0.01, default: 0.5 };
@@ -228,6 +233,24 @@ export const RAYMARCH_SYSTEMS: Record<string, RaymarchSystem> = {
   cassini: {
     id: 'cassini', label: "Cassini Surface", sdf: 'cassini', category: 'Surface',
     iters: 0, freq: 0.72, bound: 2.4, camDist: 5.4, maxSteps: 240, params: [ISO, COL, ANIM],
+  },
+
+  // ── Spacetime: a gravitationally-lensed black hole (not an SDF — its own photon-geodesic marcher) ──
+  blackhole: {
+    id: 'blackhole', label: 'Black Hole (Gargantua)', sdf: 'blackhole', category: 'Spacetime',
+    iters: 0, // not a fractal
+    rs: 1.0, // event-horizon radius (geometric units)
+    diskIn: 3.0, // ISCO = 6M = 3·r_s
+    photonStep: 0.1, // adaptive dt = clamp(0.1·r, 0.02, 0.6)
+    bound: 30.0, // photon escape radius
+    camDist: 14.0, // initial camera distance (validated converged at maxSteps 160)
+    maxSteps: 160, // photon-integration loop count (≥120 needed; 80 starves 34% of pixels)
+    params: [
+      { key: 'exposure', label: 'exposure', min: 0.1, max: 4, step: 0.05, default: 0.5 },
+      { key: 'beaming', label: 'beaming', min: 0, max: 1, step: 0.01, default: 1 },
+      { key: 'disk', label: 'disk size', min: 6, max: 16, step: 0.5, default: 7 },
+      { key: 'colShift', label: 'colour', min: 0, max: 1, step: 0.01, default: 0 }, // 0 = warm/golden
+    ],
   },
 };
 

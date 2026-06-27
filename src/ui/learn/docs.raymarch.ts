@@ -1184,4 +1184,85 @@ const F = (x,y,z) => { const a=x*x,b=y*y,c=z*z, s=a+b+c-1;
       }
     ]
   },
+  blackhole: {
+    "title": "Black Hole (Gargantua)",
+    "about": "A Schwarzschild black hole with a glowing accretion disk, rendered the way Interstellar's \"Gargantua\" and the Event Horizon Telescope image look: the disk behind the hole is bent up and over the event horizon by gravitational lensing, a razor-thin photon ring traces the edge of the central shadow, and one side of the disk blazes far brighter than the other from relativistic beaming. Unlike every other system here it is not a distance-estimated surface — each pixel fires a photon and the shader integrates its curved path through warped spacetime until it falls into the hole, strikes the disk, or escapes to the stars.",
+    "howItWorks": "For each pixel a photon is launched from the camera and stepped along a null geodesic. Working in geometric units (horizon radius r_s = 1, so the mass M = ½), the photon carries a conserved squared angular momentum L² = |r×v|², and gravity pulls its direction inward with acceleration a = −1.5·r_s·L²·p/|p|⁵ — the Cartesian form of the textbook light-bending equation d²u/dφ² = −u + (3/2)r_s u². A velocity-Verlet (leapfrog) integrator advances position and direction with an adaptive step dt = clamp(0.1·|p|, 0.02, 0.6) that automatically refines near the hole. Three outcomes end a ray: it crosses inside r_s (painted black — the shadow), it crosses the equatorial disk annulus r∈[3r_s, 10r_s] (emission is added and the ray keeps going, so a single photon can pick up the disk twice — once in front, once lensed over the top), or it escapes and samples the starfield in its final, bent direction (which is why the stars themselves warp into an Einstein ring). The disk's lopsided brightness is real physics: gas orbits at relativistic speed, so the approaching side is Doppler-beamed (brightness × D³) and the whole disk is gravitationally redshifted (× √(1−r_s/r)), making the inner approaching edge up to ~50× brighter than the receding side. The unstable photon sphere at r = 1.5 r_s is never tested for — it emerges from the dynamics, winding near-critical rays multiple times around the hole to produce the thin photon ring just outside the shadow.",
+    "equations": [
+      {
+        "label": "Null-geodesic light bending (orbit form)",
+        "latex": "\\frac{d^2u}{d\\varphi^2} = -u + \\tfrac{3}{2}\\,r_s\\,u^2, \\qquad u = 1/r"
+      },
+      {
+        "label": "Cartesian acceleration (what the shader integrates)",
+        "latex": "\\mathbf{a} = -\\frac{3}{2}\\,r_s\\,L^2\\,\\frac{\\mathbf{p}}{\\lVert\\mathbf{p}\\rVert^{5}}, \\qquad L^2 = \\lVert\\mathbf{p}\\times\\mathbf{v}\\rVert^2"
+      },
+      {
+        "label": "Event horizon & photon sphere",
+        "latex": "r_s = 2M, \\qquad r_{\\text{ph}} = \\tfrac{3}{2}r_s = 3M"
+      },
+      {
+        "label": "Shadow (critical impact parameter)",
+        "latex": "b_{\\text{crit}} = 3\\sqrt{3}\\,M = \\tfrac{3\\sqrt3}{2}\\,r_s \\approx 2.598\\,r_s"
+      },
+      {
+        "label": "Inner disk edge (ISCO)",
+        "latex": "r_{\\text{in}} = r_{\\text{ISCO}} = 6M = 3\\,r_s"
+      },
+      {
+        "label": "Doppler beaming + gravitational redshift",
+        "latex": "I_{\\text{obs}} = I_{\\text{em}}\\;D^{3}\\,\\sqrt{1-\\tfrac{r_s}{r}}, \\quad D = \\frac{1}{\\gamma\\,(1-\\boldsymbol{\\beta}\\!\\cdot\\!\\mathbf{n})}, \\quad \\beta = \\sqrt{\\tfrac{M}{r-3M}}"
+      }
+    ],
+    "params": [
+      {
+        "key": "exposure",
+        "symbol": "E",
+        "meaning": "overall brightness of the accretion disk (linear exposure multiplier)"
+      },
+      {
+        "key": "beaming",
+        "symbol": "\\mathcal{D}",
+        "meaning": "strength of relativistic Doppler beaming + redshift; 0 = symmetric disk, 1 = full physical asymmetry"
+      },
+      {
+        "key": "tilt",
+        "symbol": "\\theta",
+        "meaning": "camera tilt above/below the disk plane — edge-on shows the lensed-over-the-top arc most dramatically"
+      },
+      {
+        "key": "spin",
+        "symbol": "\\psi",
+        "meaning": "orbits the camera around the hole (azimuth)"
+      },
+      {
+        "key": "colShift",
+        "symbol": "\\phi",
+        "meaning": "hue offset of the disk's hot→cool temperature palette"
+      }
+    ],
+    "code": "// per pixel: integrate a photon along a bent null geodesic (geometric units r_s = 1, M = 0.5)\nlet pos = ro, dir = rd;                 // dir treated as velocity\nconst h2 = dot(cross(pos, dir), cross(pos, dir));   // conserved L², computed once\nlet prevY = pos.y, emis = vec3(0), done = 0;\nfor (let i = 0; i < maxSteps; i++) {\n  const r = length(pos);\n  if (r < rs)  { done = 1; break; }     // (a) horizon → black shadow\n  if (r > Resc) break;                  // (c) escape → background in the LENSED dir\n  const dt = clamp(0.10 * r, 0.02, 0.6);// adaptive: fine near the hole, coarse far away\n  // velocity-Verlet (leapfrog), a = -1.5 rs h2 p / r^5 (points inward)\n  const acc = pos * (-1.5 * rs * h2 / pow(r, 5));\n  const vh  = dir + acc * (0.5 * dt);\n  const pn  = pos + vh * dt;\n  const acc2 = pn * (-1.5 * rs * h2 / pow(length(pn), 5));\n  dir = vh + acc2 * (0.5 * dt);\n  // (b) equatorial disk crossing: sign-flip of y, then check radius ∈ [r_in, r_out]\n  if (prevY * pn.y < 0) {\n    const t = prevY / (prevY - pn.y);   // linear interp to the y=0 plane\n    const rad = length(vec2(mix(pos.x, pn.x, t), mix(pos.z, pn.z, t)));\n    if (rad > r_in && rad < r_out) {\n      const s = clamp((rad - r_in)/(r_out - r_in), 0, 1);\n      const base = mix(vec3(1,0.95,0.85), vec3(1,0.35,0.1), pow(s, 0.7)); // hot→cool ramp\n      const beta = sqrt(0.5*rs / (rad - 1.5*rs));      // Keplerian speed, M = rs/2\n      const gamma = 1 / sqrt(1 - beta*beta);\n      const D = 1 / (gamma * (1 - beta * dot(normalize(dir), normalize(cross(up, posHit)))));\n      const boost = D*D*D * sqrt(1 - rs/rad);          // beaming³ × grav redshift\n      emis += base * pow(r_in/rad, 0.75) * boost * exposure;  // ADD (multiple crossings)\n    }\n  }\n  prevY = pn.y; pos = pn;\n}\n// resolve: black inside horizon, else starfield sampled in the bent dir + accumulated disk glow\nconst sky = starfield(normalize(dir));\nlet col = mix(sky + emis, vec3(0), done);",
+    "links": [
+      {
+        "label": "Gravitational lens (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Gravitational_lens"
+      },
+      {
+        "label": "Schwarzschild geodesics",
+        "url": "https://en.wikipedia.org/wiki/Schwarzschild_geodesics"
+      },
+      {
+        "label": "Photon sphere",
+        "url": "https://en.wikipedia.org/wiki/Photon_sphere"
+      },
+      {
+        "label": "Gravitational lensing of a black hole accretion disk — J. James et al. (Interstellar / DNGR)",
+        "url": "https://arxiv.org/abs/1502.03808"
+      },
+      {
+        "label": "Riccardo Antonelli — How to draw a black hole (raymarching)",
+        "url": "https://rantonels.github.io/starless/"
+      }
+    ]
+  },
 };
