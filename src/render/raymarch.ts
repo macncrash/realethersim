@@ -677,8 +677,15 @@ export function createRaymarch(sys: RaymarchSystem, backend: 'webgpu' | 'webgl2'
       const SCALE = u.scale; // field frequency (capped in the registry for fp32 hash safety)
       const RB = float(sys.bound);
 
+      // occlude (opt-in per preset): front-to-back compositing so near density occludes far → crisp
+      // SOLID voxels. Left off (default) for plasma/nebula → pure additive emission, byte-identical.
+      const occlude = !!sys.occlude;
       const pos = ro.toVar();
+      // per-pixel step dither (occlusion only) → breaks the fixed-march terracing on hard voxel faces
+      // into fine noise. Plasma/nebula are smooth and stay un-dithered (byte-identical).
+      if (occlude) pos.addAssign(rd.mul(STEP.mul(fract(sin(ndc.x.mul(12.99).add(ndc.y.mul(78.23))).mul(43758.5)))));
       const emis = vec3(0).toVar();
+      const trans = occlude ? float(1).toVar() : null; // remaining transmittance along the ray
       // camDist often EXCEEDS bound for these compact volumes, so only break once we've entered then left
       const entered = float(0).toVar();
       const ca = cos(uTime.mul(0.15)).toVar(); // slow domain churn about Y so the volume evolves
@@ -695,6 +702,7 @@ export function createRaymarch(sys: RaymarchSystem, backend: 'webgpu' | 'webgl2'
             pos.x.mul(sa).add(pos.z.mul(ca)),
           ).mul(SCALE).toVar();
           const e = float(0).toVar();
+          const toneOff = occlude ? float(0).toVar() : null; // per-cell two-tone hue offset (voxel only)
           if (sys.sdf2 === 'plasmaOrb') {
             // hollow plasma shell at r≈1 (thin), textured by hi-freq trig × one warp octave; pow → contrast
             const base = clamp(float(1).sub(abs(length(q).sub(1.0)).div(0.42)), 0, 1).toVar();
@@ -703,6 +711,22 @@ export function createRaymarch(sys: RaymarchSystem, backend: 'webgpu' | 'webgl2'
               .mul(cos(q.z.mul(9))).mul(0.5).add(0.5).toVar();
             const fil = warp1(q.mul(2.2)).toVar(); // marbled filaments
             e.assign(pow(base, 1.5).mul(tex.mul(0.45).add(0.25)).mul(fil.mul(1.6).pow(1.5)));
+          } else if (sys.sdf2 === 'voxelCloud') {
+            // "I Eat Pixels": blocky fire/ice cubes — quantize q to a cubic lattice, density at the cell
+            // CENTRE (flat per voxel), two-tone by a per-cell hash, rim-light faces. Occlusion makes them solid.
+            const N = float(sys.cells ?? 3.0);
+            const cell = floor(q.mul(N)).toVar();
+            const cc2 = cell.add(0.5).div(N).toVar();
+            const dens = max(fbm3(cc2.mul(2.0)).sub(0.5), 0).mul(float(1).div(float(1).sub(0.5))).toVar();
+            toneOff.assign(hash31(cell).sub(0.5).mul(2.6)); // ±1.3 rad palette swing → fire vs ice
+            const lf = fract(q.mul(N)).toVar();
+            const edgeDist = min(
+              min(lf.x, float(1).sub(lf.x)),
+              min(min(lf.y, float(1).sub(lf.y)), min(lf.z, float(1).sub(lf.z))),
+            ).toVar();
+            const edge = clamp(float(1).sub(edgeDist.div(0.1)), 0, 1).mul(u.edge).toVar();
+            const filled = clamp(dens.mul(1e4), 0, 1).toVar();
+            e.assign(clamp(dens.add(edge.mul(filled)), 0, 1));
           } else {
             // nebula: fbm cloud (full recursive warp) thresholded to wisps, with a radial falloff
             const cloud = warpFull(q.mul(0.9).add(vec3(uTime.mul(0.05), 0, 0))).toVar();
@@ -710,15 +734,25 @@ export function createRaymarch(sys: RaymarchSystem, backend: 'webgpu' | 'webgl2'
             e.assign(max(cloud.sub(0.45), 0).mul(2.0).mul(fall));
           }
           const ec = clamp(e, 0, 1).toVar();
-          // cosine palette keyed by density + live colShift (matches the SDF orbit-trap palette)
-          const a = ec.mul(2.0).add(u.colShift.mul(6.2832)).add(0.3).toVar();
+          // cosine palette keyed by density + live colShift (+ per-cell two-tone when occluding)
+          let aExpr = ec.mul(2.0).add(u.colShift.mul(6.2832)).add(0.3);
+          if (occlude) aExpr = aExpr.add(toneOff);
+          const a = aExpr.toVar();
           const pal = vec3(cos(a), cos(a.add(2.1)), cos(a.add(4.2))).mul(0.5).add(0.5);
-          emis.addAssign(pal.mul(ec).mul(exp(ec.mul(K.negate()))).mul(STEP).mul(u.exposure));
+          if (occlude) {
+            // front-to-back emission–absorption: opacity this step (Beer–Lambert), emit·transmittance, attenuate
+            const aStep = float(1).sub(exp(ec.mul(K).mul(STEP).negate())).toVar();
+            emis.addAssign(pal.mul(aStep).mul(trans).mul(u.exposure));
+            trans.assign(trans.mul(float(1).sub(aStep)));
+          } else {
+            emis.addAssign(pal.mul(ec).mul(exp(ec.mul(K.negate()))).mul(STEP).mul(u.exposure));
+          }
         });
         pos.addAssign(rd.mul(STEP));
+        if (occlude) If(trans.lessThan(0.02), () => { Break(); }); // ray opaque — stop early
       });
-      // tanh tone-map so accumulated emission asymptotes to <1 instead of hard-clipping
-      col.assign(col.add(vec3(tanh(emis.x), tanh(emis.y), tanh(emis.z))));
+      if (occlude) col.assign(col.add(emis)); // already composited (bounded by 1−transmittance)
+      else col.assign(col.add(vec3(tanh(emis.x), tanh(emis.y), tanh(emis.z)))); // tanh tone-map (additive)
     } else {
     // clip the march to the fractal's bounding sphere (origin, radius bound)
     const bnd = float(sys.bound);
