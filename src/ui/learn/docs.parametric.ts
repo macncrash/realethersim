@@ -1488,4 +1488,137 @@ point(r*st*Math.cos(phi), r*Math.cos(theta), r*st*Math.sin(phi));`,
       }
     ]
   },
+  harmonograph: {
+    "title": "Harmonograph",
+    "about": "A harmonograph is a Victorian drawing machine: a pen and the paper beneath it each hang from swinging pendulums, and as the pendulums trace out slowly-decaying sine waves their combined motion inks an intricate, self-overlapping figure. With the pendulums tuned to near-whole-number frequency ratios the result is a perfectly symmetric mandala — a ring of petals around the rim and a dense radial starburst blazing through the centre, the classic look an almost-undamped harmonograph leaves behind. This is that figure rebuilt as one continuous glowing curve.",
+    "howItWorks": "Each axis is a sum of sinusoids. To force clean N-fold symmetry we give all three component frequencies the same remainder when divided by N (they are all ≡ 1 mod N): then advancing time by one N-th of the period rotates the whole figure by exactly 2π/N onto itself. One term is fast and retrograde, which throws long chords back across the centre to build the starburst. A gentle 'breathing' damping envelope, repeating once per symmetry sector, pulls each lobe inward without breaking the symmetry or the closure — so the curve fills the disc yet still returns exactly to where it began. The closed path is then swept into a solid glowing tube, laid in the X-Y plane to face the camera with a slight vertical ripple for depth.",
+    "equations": [
+      {
+        "label": "x component",
+        "latex": "x(t) = e(t)\\,\\big[A_0\\cos t + A_1\\cos(\\omega_1 t + \\varphi) + A_2\\cos(\\omega_2 t)\\big]"
+      },
+      {
+        "label": "y component",
+        "latex": "y(t) = e(t)\\,\\big[A_0\\sin t + A_1\\sin(\\omega_1 t + \\varphi) + A_2\\sin(\\omega_2 t)\\big]"
+      },
+      {
+        "label": "frequencies (all ≡ 1 mod N)",
+        "latex": "\\omega_1 = 1 + Nb,\\qquad \\omega_2 = 1 - N(b+1)"
+      },
+      {
+        "label": "breathing envelope",
+        "latex": "e(t) = \\exp\\!\\big[-d\\,(1-\\cos Nt)\\big]"
+      },
+      {
+        "label": "vertical lift",
+        "latex": "z(t) = \\ell\\,\\sin(Nt)"
+      },
+      {
+        "label": "exact N-fold symmetry",
+        "latex": "z\\!\\left(t + \\tfrac{2\\pi}{N}\\right) = e^{\\,i\\,2\\pi/N}\\,z(t)"
+      }
+    ],
+    "params": [
+      {
+        "key": "symmetry",
+        "symbol": "N",
+        "meaning": "fold count of the mandala — the figure carries exact N-fold dihedral symmetry (the number of petals around the rim)"
+      },
+      {
+        "key": "ratio",
+        "symbol": "b",
+        "meaning": "integer frequency ratio setting the inner fast term ω₁ = 1+Nb; larger b packs more spokes into the central starburst"
+      },
+      {
+        "key": "damp",
+        "symbol": "d",
+        "meaning": "depth of the breathing envelope — pulls each lobe toward the centre (0 = an open epicyclic rose, higher = a denser inward starburst)"
+      },
+      {
+        "key": "phase",
+        "symbol": "\\varphi",
+        "meaning": "phase offset of the inner term, rotating its petals relative to the outer rose to reshape the pattern"
+      },
+      {
+        "key": "lift",
+        "symbol": "\\ell",
+        "meaning": "vertical (z) displacement that lifts the flat mandala into a gently rippled 3D sheet for depth"
+      },
+      {
+        "key": "tube",
+        "symbol": "\\rho",
+        "meaning": "radius of the glowing tube swept along the closed curve"
+      }
+    ],
+    "code": "const N = Math.round(p.symmetry), b = Math.round(p.ratio);\nconst w1 = 1 + N*b, w2 = 1 - N*(b+1); // both ≡ 1 (mod N) ⇒ exact N-fold symmetry\nconst A0 = 1, A1 = 0.55, A2 = 0.32;\nconst C = (t) => {\n  const env = Math.exp(-p.damp * (1 - Math.cos(N*t))); // breathing damp, period 2π/N\n  const x = env*(A0*Math.cos(t) + A1*Math.cos(w1*t + p.phase) + A2*Math.cos(w2*t));\n  const y = env*(A0*Math.sin(t) + A1*Math.sin(w1*t + p.phase) + A2*Math.sin(w2*t));\n  return [x, y, p.lift*Math.sin(N*t)]; // X-Y plane + small z-lift\n};\n// C(t) is closed over t∈[0,2π]; sweep it into a glowing tube",
+    "links": [
+      {
+        "label": "Harmonograph (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Harmonograph"
+      },
+      {
+        "label": "Lissajous curve (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Lissajous_curve"
+      },
+      {
+        "label": "Rose / rhodonea curve (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Rose_(mathematics)"
+      }
+    ]
+  },
+  sphericalLissajous: {
+    "title": "Spherical Lissajous",
+    "about": "A Lissajous figure escapes the plane onto the surface of a sphere. Where the classic oscilloscope figure draws sin(at) against sin(bt) in two dimensions, here two integer winding frequencies drive a single point around a sphere: one frequency makes its latitude oscillate up and down, the other loops it around in longitude. The point never leaves the unit sphere, and because both frequencies are whole numbers it eventually returns exactly to where it began — weaving one continuous closed thread into a dense wireframe orb of overlapping loops. Unlike a loxodrome (a simple pole-to-pole spiral), the latitude here reverses direction many times, so the loops cross and interlace into a woven lattice with clean rotational symmetry about the vertical axis.",
+    "howItWorks": "A single parameter t runs once around [0, 2π]. The latitude angle advances as a·t and the longitude as b·t, and the point is placed on the unit sphere by C(t) = (sin(a t)·cos(b t), cos(a t), sin(a t)·sin(b t)) with y as the up axis. Because cos(a t) gives the height, the trace sweeps up and down through 'a' full latitude oscillations while looping 'b' times around — covering the sphere in a woven mesh rather than a single spiral. The vector identity sin²+cos² = 1 guarantees |C| = 1 exactly, so it rides the unit sphere with no drift (verified to 3e-16). For integer a and b the curve closes seamlessly at t = 2π. This centreline is swept into a solid tube along its analytic tangent dC/dt, whose magnitude never falls below a (the −a·sin(a t) term keeps it from vanishing), so the tube frame stays well-conditioned everywhere. Coprime a, b (gcd = 1) give a single non-repeating thread; sharing a common factor would retrace a sparser sub-pattern.",
+    "equations": [
+      {
+        "label": "centreline on the unit sphere (y up)",
+        "latex": "C(t) = \\big(\\sin(a t)\\cos(b t),\\; \\cos(a t),\\; \\sin(a t)\\sin(b t)\\big)"
+      },
+      {
+        "label": "lies exactly on the unit sphere",
+        "latex": "\\lVert C(t)\\rVert^2 = \\sin^2(a t) + \\cos^2(a t) = 1"
+      },
+      {
+        "label": "tangent (swept into the tube); magnitude bounded below by a",
+        "latex": "C'(t) = \\big(a\\cos a t\\cos b t - b\\sin a t\\sin b t,\\; -a\\sin a t,\\; a\\cos a t\\sin b t + b\\sin a t\\cos b t\\big)"
+      },
+      {
+        "label": "closes for integer winding numbers",
+        "latex": "C(2\\pi) = C(0) \\quad\\text{when } a,b \\in \\mathbb{Z}"
+      }
+    ],
+    "params": [
+      {
+        "key": "wind",
+        "symbol": "a",
+        "meaning": "latitude (theta) winding frequency — how many times the trace oscillates between the poles in one cycle; larger a = more latitude bands"
+      },
+      {
+        "key": "loop",
+        "symbol": "b",
+        "meaning": "longitude (phi) looping frequency — how many times it wraps around the vertical axis; coprime with a gives a single non-repeating woven thread"
+      },
+      {
+        "key": "tube",
+        "symbol": "r",
+        "meaning": "radius of the swept tube (visual thickness of the woven strand)"
+      }
+    ],
+    "code": "// single continuous thread woven over the unit sphere (y up)\nconst a = Math.round(wind);   // latitude winding\nconst b = Math.round(loop);   // longitude looping\nC  = (t) => {\n  const sa = Math.sin(a*t);\n  return [sa*Math.cos(b*t), Math.cos(a*t), sa*Math.sin(b*t)]; // |C| = 1\n};\ndC = (t) => {\n  const sa = Math.sin(a*t), ca = Math.cos(a*t);\n  const cb = Math.cos(b*t), sb = Math.sin(b*t);\n  return [a*ca*cb - b*sa*sb, -a*sa, a*ca*sb + b*sa*cb]; // |dC| >= a\n};\n// coprime a,b (gcd=1) ⇒ one closed loop covering the sphere; sweepTube fills the strand",
+    "links": [
+      {
+        "label": "Lissajous curve (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Lissajous_curve"
+      },
+      {
+        "label": "Spherical coordinate system (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Spherical_coordinate_system"
+      },
+      {
+        "label": "Loxodrome / rhumb line (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Rhumb_line"
+      }
+    ]
+  },
 };

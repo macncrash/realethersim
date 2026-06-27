@@ -245,6 +245,43 @@ export const PARAMETRIC_SYSTEMS: Record<string, ParamSurface> = {
       );
     },
   },
+  harmonograph: {
+    id: 'harmonograph', label: 'Harmonograph', defaultParticleCount: 160_000, scale: 0.8, pointSize: 0.007,
+    params: [
+      { key: 'symmetry', label: 'symmetry N', min: 3, max: 12, step: 1, default: 6 },
+      { key: 'ratio', label: 'freq ratio b', min: 1, max: 8, step: 1, default: 4 },
+      { key: 'damp', label: 'damping', min: 0, max: 1, step: 0.01, default: 0.45 },
+      { key: 'phase', label: 'phase', min: 0, max: Math.PI, step: 0.01, default: 0 },
+      { key: 'lift', label: '3D lift', min: 0.02, max: 0.3, step: 0.01, default: 0.08 },
+      { key: 'tube', label: 'thickness', min: 0.006, max: 0.05, step: 0.002, default: 0.018 },
+    ],
+    // A harmonograph mandala as one closed curve. All three phasor frequencies are ≡ 1 (mod N), so
+    // C(t+2π/N) = e^{i·2π/N}·C(t) — an exact N-fold rosette. A 2π/N-periodic "breathing" envelope
+    // exp(−d(1−cos Nt)) pulls each lobe inward to draw the central starburst without breaking symmetry
+    // or closure; the retrograde fast term (ω₂=1−N(b+1)) throws long chords through the centre. Tube-swept.
+    position: (i, n, p, out, o) => {
+      const N = Math.max(2, Math.round(p.symmetry));
+      const b = Math.max(1, Math.round(p.ratio));
+      const w1 = 1 + N * b; // ≡ 1 (mod N)
+      const w2 = 1 - N * (b + 1); // ≡ 1 (mod N), retrograde
+      const A0 = 1, A1 = 0.55, A2 = 0.32;
+      const ph = p.phase, d = p.damp, lift = p.lift;
+      sweepTube(i, n, p.tube, out, o, (t) => {
+        const env = Math.exp(-d * (1 - Math.cos(N * t)));
+        const x = env * (A0 * Math.cos(t) + A1 * Math.cos(w1 * t + ph) + A2 * Math.cos(w2 * t));
+        const y = env * (A0 * Math.sin(t) + A1 * Math.sin(w1 * t + ph) + A2 * Math.sin(w2 * t));
+        return [x, y, lift * Math.sin(N * t)]; // X-Y plane faces the camera; small z-lift for depth
+      }, (t) => {
+        const env = Math.exp(-d * (1 - Math.cos(N * t)));
+        const denv = env * (-d * N * Math.sin(N * t));
+        const sx = A0 * Math.cos(t) + A1 * Math.cos(w1 * t + ph) + A2 * Math.cos(w2 * t);
+        const sy = A0 * Math.sin(t) + A1 * Math.sin(w1 * t + ph) + A2 * Math.sin(w2 * t);
+        const dsx = -(A0 * Math.sin(t) + A1 * w1 * Math.sin(w1 * t + ph) + A2 * w2 * Math.sin(w2 * t));
+        const dsy = A0 * Math.cos(t) + A1 * w1 * Math.cos(w1 * t + ph) + A2 * w2 * Math.cos(w2 * t);
+        return [denv * sx + env * dsx, denv * sy + env * dsy, lift * N * Math.cos(N * t)];
+      });
+    },
+  },
   dini: {
     id: 'dini', label: "Dini's Surface", defaultParticleCount: 160_000, scale: 0.42, pointSize: 0.008,
     params: [
@@ -860,6 +897,34 @@ export const PARAMETRIC_SYSTEMS: Record<string, ParamSurface> = {
           -sl * ca - cl * p.turns * sa,
           cl,
           -sl * sa + cl * p.turns * ca,
+        ];
+      });
+    },
+  },
+  sphericalLissajous: {
+    id: 'sphericalLissajous', label: 'Spherical Lissajous', defaultParticleCount: 160_000, scale: 1.5, pointSize: 0.008,
+    params: [
+      { key: 'wind', label: 'wind a (latitude)', min: 1, max: 19, step: 1, default: 7 },
+      { key: 'loop', label: 'loop b (longitude)', min: 1, max: 19, step: 1, default: 6 },
+      { key: 'tube', label: 'thickness', min: 0.01, max: 0.08, step: 0.005, default: 0.035 },
+    ],
+    // A Lissajous figure woven over the unit sphere: latitude winds a times, longitude loops b times, so
+    // one closed thread covers the sphere in a wireframe-orb lattice. C=(sin at·cos bt, cos at, sin at·sin bt)
+    // ⇒ |C|=1 exactly and |dC|≥a (the −a·sin at term never lets the tangent vanish). Coprime a,b ⇒ a single
+    // non-repeating loop with a-fold symmetry about the up axis. Distinct from the pole-to-pole sphericalSpiral.
+    position: (i, n, p, out, o) => {
+      const a = Math.max(1, Math.round(p.wind)); // latitude (θ) winding frequency
+      const b = Math.max(1, Math.round(p.loop)); // longitude (φ) looping frequency
+      sweepTube(i, n, p.tube, out, o, (t) => {
+        const sa = Math.sin(a * t);
+        return [sa * Math.cos(b * t), Math.cos(a * t), sa * Math.sin(b * t)]; // on the unit sphere, y up
+      }, (t) => {
+        const sa = Math.sin(a * t), ca = Math.cos(a * t);
+        const cb = Math.cos(b * t), sb = Math.sin(b * t);
+        return [
+          a * ca * cb - b * sa * sb,
+          -a * sa,
+          a * ca * sb + b * sa * cb,
         ];
       });
     },
