@@ -1868,4 +1868,119 @@ o[1] = p.b * x[0];`,
       }
     ]
   },
+  crystal: {
+    "title": "Crystallization",
+    "about": "A molecular-dynamics sandbox: point atoms attract and repel through the Lennard-Jones potential, the simplest model of a real substance. Cool it and the gas spontaneously orders into a close-packed hexagonal lattice — a crystal; heat it and the lattice melts back into a liquid then a gas. Unlike emergent particle toys, this minimises a genuine energy whose floor is the crystal.",
+    "howItWorks": "Each atom carries a position and velocity. Every step the pairwise Lennard-Jones force — a steep short-range repulsion plus a gentler medium-range attraction — is summed over near neighbours (found in O(n) by a spatial-hash cell list, with a soft-core clamp so the r→0 singularity can't explode), and positions advance by symplectic velocity-Verlet. A Berendsen thermostat gently rescales the velocities toward the target temperature, so the temperature slider drives the phase: low = solid crystal, medium = liquid, high = gas. Atoms reflect off a box; colour runs cool (slow, crystalline) to warm (fast, molten).",
+    "equations": [
+      {
+        "label": "Lennard-Jones pair potential",
+        "latex": "U(r) = 4\\varepsilon\\left[\\left(\\tfrac{\\sigma}{r}\\right)^{12} - \\left(\\tfrac{\\sigma}{r}\\right)^{6}\\right]"
+      },
+      {
+        "label": "pair force (−dU/dr, projected)",
+        "latex": "F(r) = \\dfrac{24\\varepsilon}{r}\\left[2\\left(\\tfrac{\\sigma}{r}\\right)^{12} - \\left(\\tfrac{\\sigma}{r}\\right)^{6}\\right]"
+      },
+      {
+        "label": "equilibrium spacing (lattice constant)",
+        "latex": "r_{\\min} = 2^{1/6}\\,\\sigma"
+      },
+      {
+        "label": "Berendsen thermostat rescale",
+        "latex": "\\lambda = \\sqrt{1 + \\tfrac{\\Delta t}{\\tau}\\left(\\tfrac{T_0}{T} - 1\\right)}"
+      }
+    ],
+    "params": [
+      {
+        "key": "temperature",
+        "symbol": "T_0",
+        "meaning": "thermostat target: 0 freezes to a crystal, high melts to a gas"
+      },
+      {
+        "key": "epsilon",
+        "symbol": "\\varepsilon",
+        "meaning": "bond well depth — cohesion / stiffness of the crystal"
+      },
+      {
+        "key": "spacing",
+        "symbol": "\\sigma",
+        "meaning": "atomic diameter — scales the lattice constant"
+      },
+      {
+        "key": "gravity",
+        "symbol": "g",
+        "meaning": "optional downward pull (sedimentation / settling)"
+      }
+    ],
+    "code": "// Lennard-Jones force over cell-list neighbours, soft-core clamped\nconst sr2 = sigma2 / max(r2, rmin2);      // (σ/r)², never below 0.85σ\nconst sr6 = sr2**3, sr12 = sr6*sr6;\nconst fOverR = 24*eps*(2*sr12 - sr6)/r2;  // >0 = repel at small r\nax += -fOverR*dx; ay += -fOverR*dy;\n// velocity-Verlet + Berendsen thermostat → anneal / melt",
+    "links": [
+      {
+        "label": "Lennard-Jones potential (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Lennard-Jones_potential"
+      },
+      {
+        "label": "Molecular dynamics (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Molecular_dynamics"
+      },
+      {
+        "label": "Crystallization (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Crystallization"
+      }
+    ]
+  },
+  hmc: {
+    "title": "Hamiltonian Monte Carlo",
+    "about": "Hamiltonian Monte Carlo, the workhorse sampler behind modern Bayesian statistics, made visible. To draw samples from a probability distribution π(q), HMC treats −log π as a potential energy, gives each sample a random momentum, and lets it roll along the frictionless physics of a Hamiltonian — coasting across high-probability regions far more efficiently than a random walk. Thousands of independent samplers explore the same target at once, and their cloud converges to π itself.",
+    "howItWorks": "Each particle is a phase-space point (position q, momentum p) with energy H = U(q) + ½|p|², where U = −log π. A symplectic LEAPFROG integrator advances it along a constant-energy contour for L steps; then the momentum is resampled from a Gaussian and a METROPOLIS test accepts or rejects the move (comparing H before and after, reverting q on reject) — which exactly corrects the integrator's small energy drift, guaranteeing the cloud's density equals π. A target selector swaps the potential between a Gaussian, a banana (Rosenbrock), a bimodal mixture, and a ring; the guide overlay traces π's contours.",
+    "equations": [
+      {
+        "label": "augmented Hamiltonian (U = −log π)",
+        "latex": "H(q,p) = U(q) + \\tfrac12\\,\\lVert p\\rVert^2"
+      },
+      {
+        "label": "Hamilton's equations",
+        "latex": "\\dot q = \\dfrac{\\partial H}{\\partial p} = p, \\qquad \\dot p = -\\dfrac{\\partial H}{\\partial q} = -\\nabla U(q)"
+      },
+      {
+        "label": "leapfrog (symplectic) step",
+        "latex": "p_{1/2} = p - \\tfrac{\\varepsilon}{2}\\nabla U(q),\\quad q' = q + \\varepsilon p_{1/2},\\quad p' = p_{1/2} - \\tfrac{\\varepsilon}{2}\\nabla U(q')"
+      },
+      {
+        "label": "Metropolis acceptance after L steps",
+        "latex": "a = \\min\\!\\big(1,; e^{\\,H_0 - H_1}\\big)"
+      }
+    ],
+    "params": [
+      {
+        "key": "distribution",
+        "symbol": "\\pi",
+        "meaning": "target density to sample: Gaussian / banana / bimodal / donut"
+      },
+      {
+        "key": "stepSize",
+        "symbol": "\\varepsilon",
+        "meaning": "leapfrog step length — too large lowers the acceptance rate"
+      },
+      {
+        "key": "leapSteps",
+        "symbol": "L",
+        "meaning": "leapfrog steps per proposal before the Metropolis test + momentum refresh"
+      }
+    ],
+    "code": "// one leapfrog step of H = U + ½|p|², U = −log π\np.x -= 0.5*eps*gradU(q).x;  p.y -= 0.5*eps*gradU(q).y;\nq.x += eps*p.x;             q.y += eps*p.y;\np.x -= 0.5*eps*gradU(q).x;  p.y -= 0.5*eps*gradU(q).y;\n// every L steps: resample p ~ N(0,1); accept w.p. min(1, exp(H0−H1)), else revert q",
+    "links": [
+      {
+        "label": "Hamiltonian Monte Carlo (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Hamiltonian_Monte_Carlo"
+      },
+      {
+        "label": "Metropolis–Hastings (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Metropolis%E2%80%93Hastings_algorithm"
+      },
+      {
+        "label": "Rosenbrock function (Wikipedia)",
+        "url": "https://en.wikipedia.org/wiki/Rosenbrock_function"
+      }
+    ]
+  },
 };

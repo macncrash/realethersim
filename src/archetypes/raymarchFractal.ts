@@ -36,7 +36,8 @@ export type RaymarchKind =
   | 'endrassOctic'
   | 'cassini'
   | 'blackhole'
-  | 'volumetric';
+  | 'volumetric'
+  | 'conformal';
 
 export interface RaymarchSystem {
   id: string;
@@ -61,6 +62,7 @@ export interface RaymarchSystem {
   sdf2?: 'plasmaOrb' | 'nebula' | 'voxelCloud'; // which density field the volumetric branch dispatches
   cells?: number; // voxelCloud only: cubic-lattice resolution (cells per q-unit), compile-time const
   occlude?: boolean; // volumetric only: front-to-back compositing (crisp solid voxels) vs additive emission
+  sdf3?: 'mobius' | 'inverse' | 'square' | 'cexp' | 'joukowski'; // conformal only: which complex map f(z)
 }
 
 const COL: ParamSpec = { key: 'colShift', label: 'colour', min: 0, max: 1, step: 0.01, default: 0.5 };
@@ -289,6 +291,64 @@ export const RAYMARCH_SYSTEMS: Record<string, RaymarchSystem> = {
       { key: 'exposure', label: 'glow', min: 0.5, max: 6, step: 0.05, default: 1.8 },
       { key: 'edge', label: 'edges', min: 0, max: 1.5, step: 0.05, default: 0.5 },
       { key: 'colShift', label: 'colour', min: 0, max: 1, step: 0.01, default: 0.05 }, // ≈ warm/fire base
+    ],
+  },
+
+  // ── Conformal: 2D complex maps w=f(z) coloured by a checkerboard of w (non-SDF, no marching) ──
+  mobiusFlow: {
+    id: 'mobiusFlow', label: 'Möbius Flow', sdf: 'conformal', sdf3: 'mobius', category: 'Conformal',
+    iters: 0, bound: 1, camDist: 1, maxSteps: 1,
+    params: [
+      { key: 'px', label: 'fixed-pt₁ x', min: -1.5, max: 1.5, step: 0.01, default: -0.6 },
+      { key: 'py', label: 'fixed-pt₁ y', min: -1.5, max: 1.5, step: 0.01, default: 0.2 },
+      { key: 'qx', label: 'fixed-pt₂ x', min: -1.5, max: 1.5, step: 0.01, default: 0.7 },
+      { key: 'qy', label: 'fixed-pt₂ y', min: -1.5, max: 1.5, step: 0.01, default: -0.3 },
+      { key: 'lam', label: 'multiplier |λ|', min: 0.4, max: 2.5, step: 0.01, default: 1.15 },
+      { key: 'lphase', label: 'λ twist', min: 0, max: 1, step: 0.01, default: 0.18 },
+      { key: 'scale', label: 'checker', min: 1, max: 16, step: 0.1, default: 6 },
+      { key: 'zoom', label: 'zoom', min: 0.3, max: 4, step: 0.05, default: 1.8 },
+      { key: 'animate', label: 'spin', min: 0, max: 1, step: 0.01, default: 0.3 },
+      COL,
+    ],
+  },
+  inversion: {
+    id: 'inversion', label: 'Inversion 1/z', sdf: 'conformal', sdf3: 'inverse', category: 'Conformal',
+    iters: 0, bound: 1, camDist: 1, maxSteps: 1,
+    params: [
+      { key: 'scale', label: 'checker', min: 1, max: 16, step: 0.1, default: 5 },
+      { key: 'zoom', label: 'zoom', min: 0.3, max: 4, step: 0.05, default: 1.6 },
+      { key: 'animate', label: 'spin', min: 0, max: 1, step: 0.01, default: 0.3 },
+      COL,
+    ],
+  },
+  zSquared: {
+    id: 'zSquared', label: 'Square z²', sdf: 'conformal', sdf3: 'square', category: 'Conformal',
+    iters: 0, bound: 1, camDist: 1, maxSteps: 1,
+    params: [
+      { key: 'scale', label: 'checker', min: 1, max: 16, step: 0.1, default: 5 },
+      { key: 'zoom', label: 'zoom', min: 0.3, max: 4, step: 0.05, default: 1.6 },
+      { key: 'animate', label: 'spin', min: 0, max: 1, step: 0.01, default: 0.3 },
+      COL,
+    ],
+  },
+  complexExp: {
+    id: 'complexExp', label: 'Exponential eᶻ', sdf: 'conformal', sdf3: 'cexp', category: 'Conformal',
+    iters: 0, bound: 1, camDist: 1, maxSteps: 1,
+    params: [
+      { key: 'scale', label: 'checker', min: 1, max: 16, step: 0.1, default: 4 },
+      { key: 'zoom', label: 'zoom', min: 0.3, max: 6, step: 0.05, default: 3.0 },
+      { key: 'animate', label: 'spin', min: 0, max: 1, step: 0.01, default: 0.3 },
+      COL,
+    ],
+  },
+  joukowskiMap: {
+    id: 'joukowskiMap', label: 'Joukowski ½(z+1/z)', sdf: 'conformal', sdf3: 'joukowski', category: 'Conformal',
+    iters: 0, bound: 1, camDist: 1, maxSteps: 1,
+    params: [
+      { key: 'scale', label: 'checker', min: 1, max: 16, step: 0.1, default: 5 },
+      { key: 'zoom', label: 'zoom', min: 0.3, max: 4, step: 0.05, default: 1.8 },
+      { key: 'animate', label: 'spin', min: 0, max: 1, step: 0.01, default: 0.3 },
+      COL,
     ],
   },
 };
