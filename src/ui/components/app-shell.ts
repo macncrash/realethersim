@@ -13,6 +13,7 @@ import './command-palette';
 import './code-viewer';
 import './demo-details';
 import './demo-hud';
+import './info-overlay';
 
 // Renders into light DOM (createRenderRoot -> this) so the global stylesheet and Tweakpane's
 // injected styles apply, and so the canvas lives in the normal document for the renderer.
@@ -88,12 +89,29 @@ export class EtherApp extends LitElement {
           <ether-hierarchy-tree></ether-hierarchy-tree>
           <ether-telemetry-panel></ether-telemetry-panel>
           <ether-snapshot-controls></ether-snapshot-controls>
+          <div class="section" style="display:flex;justify-content:flex-end;gap:7px;align-items:center">
+            <button
+              title="Browse all systems"
+              @click=${() => window.dispatchEvent(new CustomEvent('ethersim:browse'))}
+              style="font:inherit;font-size:11px;letter-spacing:.04em;color:#9fd;background:#10303c;border:1px solid #244;border-radius:6px;padding:4px 10px;cursor:pointer"
+            >
+              ▦&nbsp;browse
+            </button>
+            <button
+              title="What's new, license, attributions & version history"
+              @click=${() => window.dispatchEvent(new CustomEvent('ethersim:about'))}
+              style="font:inherit;font-size:11px;letter-spacing:.04em;color:#9fd;background:#10303c;border:1px solid #244;border-radius:6px;padding:4px 10px;cursor:pointer"
+            >
+              ⓘ&nbsp;about
+            </button>
+          </div>
         </aside>
         <ether-learn-panel style=${hide}></ether-learn-panel>
         <ether-demo-details></ether-demo-details>
         <ether-demo-hud></ether-demo-hud>
         <ether-command-palette></ether-command-palette>
         <ether-code-viewer></ether-code-viewer>
+        <ether-info-overlay></ether-info-overlay>
       </div>
     `;
   }

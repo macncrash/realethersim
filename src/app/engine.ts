@@ -11,6 +11,11 @@ export interface Engine {
   exportImage(): Promise<void>;
   // The same branded, metadata-embedded PNG as exportImage() but returned as a Blob (for sharing).
   captureImageBlob(): Promise<Blob>;
+  // A clean, downscaled thumbnail of the current view (no overlay, no metadata) as a WebP data URL.
+  // DEV-ONLY: attached to the engine only under import.meta.env.DEV (the offline thumbnail-capture
+  // pass), so the readback/encode body tree-shakes out of the production bundle. Optional at the type
+  // level for that reason — guard with `engine.captureThumbnail?.(…)`.
+  captureThumbnail?(maxW?: number): Promise<string>;
   togglePause(): boolean; // returns the new paused state
   // Pan the view (camera + orbit target) without rotating; dx/dy are screen directions in [-1,1].
   panView(dx: number, dy: number): void;

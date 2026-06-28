@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>ETHERSIM — a tour of complex systems</title>
-    <meta name="description" content="A scrolling tour of ETHERSIM: strange attractors, fractals, emergent life, and gravity — 136 dynamical systems in the browser, open source, WebGPU." />
+    <meta name="description" content="A scrolling tour of ETHERSIM: strange attractors, fractals, emergent life, and gravity — 160 dynamical systems in the browser, open source, WebGPU." />
     <style>
       :root {
         --bg: #05070d;
@@ -65,6 +65,30 @@
       .install-alt a { color: #7ae8dc; text-decoration: none; }
       .install-alt a:hover { text-decoration: underline; }
       @media (prefers-reduced-motion: no-preference) { html { scroll-snap-type: y proximity; } }
+      /* "What's new" band — same data as the in-app popup (rendered by demo.ts from the changelog). */
+      section.news { position: relative; z-index: 2; min-height: auto; display: block; max-width: 940px;
+        margin: 0 auto; padding: 70px 22px 10px; scroll-snap-align: none; text-align: left; }
+      .news h2 { font-size: clamp(24px, 5vw, 40px); margin: 0 0 6px; letter-spacing: 0.02em; }
+      .news .news-sub { color: var(--dim); margin: 0 0 28px; font-size: 14px; }
+      .news-rel { border-top: 1px solid #1a2238; padding: 20px 0; }
+      .news-rel:first-child { border-top: none; padding-top: 0; }
+      .news-relhead { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; }
+      .news-ver { color: var(--accent); font-weight: 700; font: 700 14px/1 ui-monospace, Menlo, monospace; }
+      .news-title { font-size: 16px; font-weight: 600; }
+      .news-date { color: #5f6b85; font-size: 12px; }
+      .news-summary { color: var(--dim); font-size: 13.5px; margin: 6px 0 14px; max-width: 72ch; }
+      .news-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 11px; }
+      a.news-card { text-decoration: none; color: var(--text); border: 1px solid rgba(120,150,190,0.18);
+        border-radius: 10px; overflow: hidden; background: rgba(8,12,20,0.5); transition: border-color .15s, transform .15s; }
+      a.news-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+      .nc-thumb { display: block; width: 100%; aspect-ratio: 8 / 5; object-fit: cover;
+        background: linear-gradient(135deg, #0f2230, #15324a 55%, #0d1c2b); }
+      .nc-name { display: block; padding: 7px 9px 1px; font-size: 12.5px; line-height: 1.25; }
+      .nc-cat { display: block; padding: 0 9px 8px; font-size: 9px; letter-spacing: 0.05em;
+        text-transform: uppercase; color: #6fb6a4; }
+      .news-more { display: inline-block; margin: 22px 0 6px; color: var(--accent); text-decoration: none;
+        font-size: 14px; letter-spacing: 0.04em; }
+      .news-more:hover { text-decoration: underline; }
     </style>
   </head>
   <body>
@@ -77,7 +101,7 @@
         <div>
           <h1>ETHERSIM</h1>
           <div class="sub">A tour of complex systems — chaos, fractals, life, and gravity,<br />simulated live in your browser.</div>
-          <div class="pills"><span id="sysCount">136</span> SYSTEMS · 10 FAMILIES · WEBGPU · OPEN SOURCE</div>
+          <div class="pills"><span id="sysCount">160</span> SYSTEMS · 17 FAMILIES · WEBGPU · OPEN SOURCE</div>
           <a class="cta hero-cta" href="./index.html">launch ETHERSIM →</a>
           <div class="install">
             <div class="install-label">or run it locally — one line (macOS / Linux):</div>
@@ -135,7 +159,7 @@
 
       <section class="outro" data-sim="nbody">
         <div>
-          <h2>Explore all <span id="sysCountOutro">136</span> systems</h2>
+          <h2>Explore all <span id="sysCountOutro">160</span> systems</h2>
           <p>Strange attractors · iterated maps · fractals · Particle Life · Boids · slime mold · vortices · Lenia · reaction-diffusion · N-body.<br />
              Every one runs on the GPU, with built-in notes, math, and code.</p>
           <a class="cta" id="appLink" href="./index.html">launch ETHERSIM →</a>
@@ -146,6 +170,12 @@
         </div>
       </section>
     </main>
+    <section class="news" id="news">
+      <h2>What's new</h2>
+      <p class="news-sub">Recent additions to the catalog — click any system to open it in ETHERSIM.</p>
+      <div id="newsBody"></div>
+      <a class="news-more" href="./index.html">Browse all <span id="sysCountNews">160</span> systems in the app →</a>
+    </section>
     <footer style="max-width:760px;margin:0 auto;padding:40px 24px 64px;color:#5f6b85;font-size:12px;line-height:1.7;text-align:center;border-top:1px solid #1a2238">
       ETHERSIM is open-source and self-hosted. We keep minimal, privacy-respecting analytics —
       page visits, approximate country, referrer and browser type — entirely on our own server:

@@ -3,6 +3,7 @@ import { registerArchetypes } from '../archetypes';
 import { getFactory, listFactories } from '../core/registry';
 import { defaultParams, type Archetype, type ResolvedParams } from '../core/archetype';
 import { resolveParams } from '../core/params';
+import { RELEASES } from '../meta/changelog';
 
 // Standalone scrollytelling tour. Reuses the real archetype simulations (CPU path) rendered with a
 // lightweight Three.js WebGL points renderer (max compatibility for sharing). A sticky full-screen
@@ -14,9 +15,76 @@ registerArchetypes();
 // can never drift again (the hard-coded HTML fallback is just for crawlers / no-JS).
 {
   const count = String(listFactories().length);
-  for (const id of ['sysCount', 'sysCountOutro']) {
+  for (const id of ['sysCount', 'sysCountOutro', 'sysCountNews']) {
     const el = document.getElementById(id);
     if (el) el.textContent = count;
+  }
+}
+
+// "What's new" band — the SAME data as the in-app popup (src/meta/changelog.ts), so visitors who only
+// hit the website still see what's been added. Each new-system card deep-links into the app via
+// ?sim=<id> (the app's share-link handler loads it on launch). Built with createElement (no innerHTML)
+// so the strict script-src/style CSP holds.
+{
+  const body = document.getElementById('newsBody');
+  if (body) {
+    const recent = RELEASES.filter((r) => r.newSystems.length > 0).slice(0, 6);
+    for (const rel of recent) {
+      const wrap = document.createElement('div');
+      wrap.className = 'news-rel';
+
+      const head = document.createElement('div');
+      head.className = 'news-relhead';
+      const ver = document.createElement('span');
+      ver.className = 'news-ver';
+      ver.textContent = `v${rel.version}`;
+      const title = document.createElement('span');
+      title.className = 'news-title';
+      title.textContent = rel.title;
+      const date = document.createElement('span');
+      date.className = 'news-date';
+      date.textContent = rel.date;
+      head.append(ver, title, date);
+
+      const summary = document.createElement('p');
+      summary.className = 'news-summary';
+      summary.textContent = rel.summary;
+
+      const cards = document.createElement('div');
+      cards.className = 'news-cards';
+      for (const id of rel.newSystems) {
+        let label = id;
+        let category = '';
+        try {
+          const f = getFactory(id);
+          label = f.label;
+          category = f.category;
+        } catch {
+          continue; // id no longer registered — skip
+        }
+        const a = document.createElement('a');
+        a.className = 'news-card';
+        a.href = `./index.html?sim=${encodeURIComponent(id)}`;
+        a.title = `Open ${label} in ETHERSIM`;
+        const img = document.createElement('img');
+        img.className = 'nc-thumb';
+        img.src = `thumbs/${id}.webp`;
+        img.loading = 'lazy';
+        img.alt = '';
+        img.addEventListener('error', () => (img.style.visibility = 'hidden'));
+        const name = document.createElement('span');
+        name.className = 'nc-name';
+        name.textContent = label;
+        const cat = document.createElement('span');
+        cat.className = 'nc-cat';
+        cat.textContent = category;
+        a.append(img, name, cat);
+        cards.append(a);
+      }
+
+      wrap.append(head, summary, cards);
+      body.append(wrap);
+    }
   }
 }
 
