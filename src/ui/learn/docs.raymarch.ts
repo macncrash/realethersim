@@ -1781,4 +1781,98 @@ const F = (x,y,z) => { const a=x*x,b=y*y,c=z*z, s=a+b+c-1;
       }
     ]
   },
+  kaleidoTunnel: {
+    title: 'Kaleidoscope Tunnel',
+    about:
+      'A flight down an endless mirrored corridor. Just like a toy kaleidoscope folds a few coloured beads into a perfectly symmetric rosette, this sphere-traced shader folds 3D space into a wedge of mirrors so every chamber repeats around a central axis — and tiles that chamber infinitely down its length, so the camera appears to fall forever through twisting rings of flat-shaded facets. The view is pointed straight down the throat, where the rings shrink to a vanishing point.',
+    howItWorks:
+      'It is a distance-field raymarcher, but the distance field is built from symmetry. Before measuring distance to the geometry, each sample point is folded: its angle around the axis is wrapped into one wedge of size 2π/N and mirrored, which is exactly the kaleidoscope operation (N copies of one wedge, reflected). The depth coordinate z is shifted by time (the fly-through) and then taken modulo a cell size, so one short stretch of tunnel repeats endlessly. A depth-proportional rotation adds a helical twist so the rings spiral. Inside each folded cell the surface is a hollow hexagonal tube (an exact hexagon distance function, shelled to a thin wall) sliced into ring bars. Rather than the usual smooth orbit-trap colouring, each ring hashes to a flat facet colour and the two mirror halves of every wedge take alternating tones — giving the crisp, low-poly stained-glass look instead of a gradient.',
+    equations: [
+      {
+        label: 'kaleidoscopic angle fold (N mirrors)',
+        latex: '\\theta \\mapsto \\Big|\\,(\\theta \\bmod \\tfrac{2\\pi}{N}) - \\tfrac{\\pi}{N}\\,\\Big|'
+      },
+      {
+        label: 'tunnel tiling along depth',
+        latex: "z' = \\big((z + v\\,t)\\bmod c\\big) - \\tfrac{c}{2}"
+      },
+      {
+        label: 'helical twist (depth-proportional)',
+        latex: '(x,y)\\mapsto R(\\tau z)\\,(x,y),\\quad \\tau = \\text{twist}'
+      },
+      {
+        label: 'hollow hexagonal tube',
+        latex: 'd = \\big|\\,\\mathrm{hex}(x,y)\\,\\big| - w'
+      },
+      {
+        label: 'sphere-trace march',
+        latex: 't_{i+1} = t_i + d(\\mathbf{p}(t_i))'
+      }
+    ],
+    params: [
+      {
+        key: 'symmetry',
+        symbol: 'N',
+        meaning: 'number of mirror wedges folded around the axis — the fold count of the kaleidoscopic rosette'
+      },
+      {
+        key: 'twist',
+        symbol: '\\tau',
+        meaning: 'depth-proportional rotation that twists the tunnel rings into a helix (0 = straight bars)'
+      },
+      {
+        key: 'speed',
+        symbol: 'v',
+        meaning: 'fly-through speed — how fast the tunnel scrolls toward the camera'
+      },
+      {
+        key: 'cellScale',
+        symbol: 'c',
+        meaning: 'length of one repeating cell along the tunnel; larger = longer chambers, sparser rings'
+      },
+      {
+        key: 'colShift',
+        symbol: '\\Delta h',
+        meaning: 'hue offset of the flat-facet palette'
+      }
+    ],
+    code: "const wedge = (2*Math.PI) / N;\nconst zAdv = p.z + uTime*speed;             // scroll the tunnel\nconst zt = mod(zAdv, cell) - cell*0.5;       // tile depth into cells\nconst tw = twist * p.z;                       // helical twist\nlet [rx,ry] = rot(p.x, p.y, tw);\nconst a = Math.abs(mod(atan2(ry,rx), wedge) - wedge*0.5); // mirror fold\nconst hex = Math.abs(hexSDF(r*cos(a), r*sin(a))) - 0.18;  // hollow hex tube\nconst zc  = Math.abs(zt) - cell*0.30;        // slice into ring bars\nconst d = length(max(hex,0), max(zc,0)) + min(max(hex,zc),0);\n// facet colour: per-ring hash + alternating mirror-half tone (flat, not gradient)",
+    links: [
+      {
+        label: 'Kaleidoscope (Wikipedia)',
+        url: 'https://en.wikipedia.org/wiki/Kaleidoscope'
+      },
+      {
+        label: 'Raymarching distance fields (Íñigo Quílez)',
+        url: 'https://iquilezles.org/articles/distfunctions/'
+      },
+      {
+        label: 'Folding space / kaleidoscopic IFS',
+        url: 'https://en.wikipedia.org/wiki/Iterated_function_system'
+      }
+    ]
+  },
+  octicLattice: {
+    title: 'Octic Node Lattice',
+    about:
+      "A procedural algebraic surface: the zero set of a high-degree polynomial in x, y and z. A quartic 'double well' on each axis carves out a grid of cells; a nodal-coupling term breaks the cubic symmetry so the cells link into an organic crystalline lattice. The polynomial actually has infinite sheets, so it's cropped to a sphere — the framed chunk you see is the lattice.",
+    howItWorks:
+      "It's sphere-traced like our other implicit surfaces: for each pixel a ray steps forward by a fraction of the distance to the surface F(x,y,z)=0. The field is F = Qx·Qy·Qz − 0.028·(x²−y²)(y²−z²)(z²−x²) − 0.012·xyz, where each axis well is the quartic Qₐ = a⁴ − a² = a²(a²−1) (zeros at a = 0, ±1). The product of the three wells is near zero on a 3D grid of planes (the cell walls); the coupling term and the xyz term twist and fuse those walls into rounded nodes. Because the gradient ∇F swings over many orders of magnitude near the nodes, the marcher's step is strongly under-relaxed and hard-capped so it doesn't overshoot the thin pinch points. The 'isovalue' slider shifts the level set (F = iso), fattening or thinning the lattice.",
+    equations: [
+      { label: 'implicit surface', latex: 'F(x,y,z) = Q_xQ_yQ_z - 0.028\\,(x^2-y^2)(y^2-z^2)(z^2-x^2) - 0.012\\,xyz = 0' },
+      { label: 'quartic axis well', latex: 'Q_a = a^4 - a^2 = a^2\\,(a^2-1)\\quad(\\text{zeros at } a=0,\\pm1)' },
+      { label: 'sphere-trace step', latex: 't_{i+1} = t_i + \\sigma\\,\\frac{|F|}{\\lVert\\nabla F\\rVert}' },
+    ],
+    params: [
+      { key: 'iso', symbol: 'c', meaning: 'isovalue — shifts the level set F = c, fattening or thinning the lattice cells' },
+      { key: 'colShift', symbol: '\\Delta h', meaning: 'hue offset of the surface palette (≈ warm gold by default)' },
+      { key: 'animate', symbol: '\\omega', meaning: 'gentle rotation + morph rate of the lattice' },
+    ],
+    code: "// implicit field F(x,y,z); the ray-marcher finds F = iso\nconst qx = x*x*x*x - x*x;   // quartic double well Q_a = a⁴ − a²\nconst qy = y*y*y*y - y*y;\nconst qz = z*z*z*z - z*z;\nconst coupling = (x*x - y*y)*(y*y - z*z)*(z*z - x*x);\nF = qx*qy*qz - 0.028*coupling - 0.012*x*y*z;   // = iso ; cropped to the bounding sphere",
+    links: [
+      { label: 'Algebraic surface (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Algebraic_surface' },
+      { label: 'Isosurface (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Isosurface' },
+      { label: 'Ray marching / distance fields (Íñigo Quílez)', url: 'https://iquilezles.org/articles/distfunctions/' },
+    ],
+  },
 };

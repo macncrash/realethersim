@@ -84,6 +84,8 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
     if (focus.t >= 1) focus.active = false;
   }
 
+  let forceMainDriver = false; // DEV thumbnail capture: drive on the main thread so synchronous stepFrame
+  //                              advances the sim + accumulates trails (the worker advances on wall-clock).
   async function makeDriver(): Promise<SimDriver> {
     const id = $archetypeId.get();
     // Sphere-traced fractals never run as a point sim: hand back an inert driver so the worker is
@@ -91,7 +93,7 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
     if (isRaymarch(id)) return new NullDriver(id, getFactory(id).label);
     const g = $global.get();
     const p = $params.get();
-    return useWorker
+    return useWorker && !forceMainDriver
       ? WorkerDriver.create(id, p, g.dt, g.particleCount, SEED, g.trailLength)
       : new MainThreadDriver(id, p, g.dt, g.particleCount, SEED);
   }
@@ -167,6 +169,7 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
 
   // --- experimental GPU-compute mode (attractors only), isolated from the CPU pipeline ---
   let gpuSim: GpuSim | null = null;
+  let gpuPending: Promise<void> | null = null; // in-flight setupGpu() (DEV thumbnail capture awaits it)
   function gpuRequested(): boolean {
     return $global.get().gpuCompute && hasGpu($archetypeId.get());
   }
@@ -210,7 +213,8 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
       scene.add(raymarch.mesh);
       // frame the fractal: target origin, pull the camera back to a sensible distance
       controls.target.set(0, 0, 0);
-      camera.position.set(0.55, 0.42, 1).normalize().multiplyScalar(raymarch.cameraDistance);
+      const [dx, dy, dz] = sys.camDir ?? [0.55, 0.42, 1]; // per-system override (e.g. axial tunnel view)
+      camera.position.set(dx, dy, dz).normalize().multiplyScalar(raymarch.cameraDistance);
       controls.update();
     } catch (err) {
       console.error('[ethersim] raymarch init failed', err);
@@ -235,8 +239,9 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
     cloud.points.visible = !useGpu;
     trailCloud.setVisible(!useGpu && $global.get().trailLength > 0);
     if (useGpu) {
-      if (!gpuSim) void setupGpu();
+      if (!gpuSim) gpuPending = setupGpu(); // tracked so the DEV capture can await GPU readiness
     } else {
+      gpuPending = null;
       teardownGpu();
     }
     $telemetry.setKey('backend', `${backend} · ${useGpu ? 'GPU compute' : useWorker ? 'worker+SAB' : 'main-thread'}`);
@@ -365,12 +370,12 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
 
   applyMode(); // establish CPU (default) or GPU path now that `paused` exists
 
-  renderer.setAnimationLoop(() => {
-    timer.update();
-    const dt = Math.min(timer.getDelta(), 0.05); // clamp residual large deltas
-
+  // One simulation step (no screen render) — advances the raymarch shader clock / GPU compute / CPU
+  // integrator exactly as the animation loop does. Factored out so the offline thumbnail-capture pass
+  // can drive systems forward WITHOUT requestAnimationFrame (which a backgrounded tab throttles).
+  function stepFrame(dt: number, elapsed: number): void {
     if (raymarch) {
-      if (!paused) raymarch.update(timer.getElapsed()); // drive shader animation (frozen while paused)
+      if (!paused) raymarch.update(elapsed); // drive shader animation (frozen while paused)
     } else if (gpuSim) {
       if (!paused) {
         for (let s = 0; s < gpuSim.substeps; s++) {
@@ -383,6 +388,13 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
       cloud.posAttr.needsUpdate = true;
       if (trailCloud.group.visible) trailCloud.update(driver.trailHead());
     }
+  }
+
+  renderer.setAnimationLoop(() => {
+    timer.update();
+    const dt = Math.min(timer.getDelta(), 0.05); // clamp residual large deltas
+
+    stepFrame(dt, timer.getElapsed());
     updateFocus(dt);
     controls.update();
     renderer.render(scene, camera);
@@ -579,5 +591,134 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
   };
 
   $engine.set(engine);
+
+  // DEV-ONLY thumbnail tooling — the entire block (impl + capture loop) is gated by import.meta.env.DEV
+  // so the readback/encode body tree-shakes out of the production bundle.
+  if (import.meta.env.DEV) {
+    // Clean (overlay-free) downscaled WebP of the current view. Renders the scene into an offscreen
+    // sRGB target and reads it back — the HTML control UI is never in the render target, so the
+    // thumbnail is pure 3D. Centre-cropped to 8:5 for a consistent gallery aspect.
+    const captureThumbnail = async (maxW = 480): Promise<string> => {
+      const sizeV = new THREE.Vector2();
+      renderer.getDrawingBufferSize(sizeV);
+      const w = Math.max(1, sizeV.x | 0);
+      const h = Math.max(1, sizeV.y | 0);
+      const rt = new THREE.RenderTarget(w, h);
+      rt.texture.colorSpace = THREE.SRGBColorSpace;
+      const prev = renderer.getRenderTarget();
+      let buf: Uint8Array;
+      try {
+        renderer.setRenderTarget(rt);
+        await renderer.renderAsync(scene, camera);
+        buf = (await renderer.readRenderTargetPixelsAsync(rt, 0, 0, w, h)) as Uint8Array;
+      } finally {
+        renderer.setRenderTarget(prev); // always restore + free, even if render/readback threw
+        rt.dispose();
+      }
+
+      const full = document.createElement('canvas');
+      full.width = w;
+      full.height = h;
+      const fctx = full.getContext('2d');
+      if (!fctx) throw new Error('2D canvas context unavailable');
+      const img = fctx.createImageData(w, h);
+      const stride = buf.length === w * h * 4 ? w * 4 : Math.ceil((w * 4) / 256) * 256; // WebGPU row padding
+      for (let r = 0; r < h; r++) {
+        const src = r * stride; // WebGPU readback is already top-down here — do NOT flip (verified vs the live canvas)
+        img.data.set(buf.subarray(src, src + w * 4), r * w * 4);
+      }
+      fctx.putImageData(img, 0, 0);
+
+      const aspect = 1.6; // 8:5 gallery card
+      let sw = w;
+      let sh = Math.round(w / aspect);
+      if (sh > h) {
+        sh = h;
+        sw = Math.round(h * aspect);
+      }
+      const sx = Math.round((w - sw) / 2);
+      const sy = Math.round((h - sh) / 2);
+      const tw = Math.min(maxW, sw);
+      const th = Math.round(tw / aspect);
+      const thumb = document.createElement('canvas');
+      thumb.width = tw;
+      thumb.height = th;
+      const tctx = thumb.getContext('2d');
+      if (!tctx) throw new Error('2D canvas context unavailable');
+      tctx.imageSmoothingEnabled = true;
+      tctx.imageSmoothingQuality = 'high';
+      tctx.drawImage(full, sx, sy, sw, sh, 0, 0, tw, th);
+      return thumb.toDataURL('image/webp', 0.82);
+    };
+    engine.captureThumbnail = captureThumbnail; // expose for any dev consumer
+
+    // ?capture=thumbs: cycle every system, advance it a fixed number of simulation steps, grab a clean
+    // WebP, and POST it to the dev-server middleware that writes public/thumbs/<id>.webp. RAF-INDEPENDENT
+    // (drives stepFrame directly + awaits the microtask rebuild AND the async GPU setup), so it completes
+    // even when the tab is backgrounded (requestAnimationFrame is throttled) and works on GPU-compute systems.
+    const captureAllThumbnails = async (): Promise<void> => {
+      const { listFactories } = await import('../core/registry');
+      const { selectArchetype } = await import('../ui/store');
+      renderer.setAnimationLoop(null); // stop the live loop: it double-steps + its controls.update() fights our camera
+      forceMainDriver = true; // so synchronous stepFrame advances trail systems (worker advances on wall-clock)
+      const ids = listFactories().map((f) => f.id);
+      // Wait for the queued (microtask) rebuild swap AND the async GPU setup to finish, so stepFrame
+      // drives the right path (raymarch / GPU compute / CPU) against a fully-built system.
+      const settle = async (): Promise<void> => {
+        await Promise.resolve();
+        await Promise.resolve();
+        await chain; // doRebuild done (driver/raymarch swapped; applyMode kicked off setupGpu)
+        if (gpuPending) await gpuPending; // GPU sim actually ready (computeAsync(init) resolved)
+        await Promise.resolve();
+      };
+      console.log(`[thumbs] capturing ${ids.length} systems…`);
+      let ok = 0;
+      let fail = 0;
+      for (let i = 0; i < ids.length; i++) {
+        const id = ids[i];
+        selectArchetype(id);
+        await settle();
+        // Deterministic framing: don't let a thumbnail inherit the previous system's camera (the
+        // per-system presets in doRebuild only fire for a few systems). Default 3/4 view otherwise.
+        controls.target.set(0, 0, 0);
+        // raymarch systems already got their correct camera (camDir·camDist) from setupRaymarch during
+        // the rebuild — don't override it. Point clouds get a deterministic default 3/4 (karman top-down).
+        if (!isRaymarch(id)) {
+          if (id === 'karman') camera.position.set(0, 3.2, 0.85);
+          else camera.position.set(2.4, 1.5, 4.4);
+        }
+        controls.update();
+        const dt = Math.min($global.get().dt || 1 / 60, 0.05);
+        // enough steps to develop the system AND fill its trail ring buffer (trails need ~trailLength steps)
+        const DEVELOP = Math.max(200, ($global.get().trailLength || 0) + 80);
+        let elapsed = 0; // reset per system → deterministic shader time for raymarch captures
+        for (let f = 0; f < DEVELOP; f++) {
+          elapsed += dt;
+          stepFrame(dt, elapsed);
+          if ((f & 31) === 31) await Promise.resolve(); // yield: let the GPU queue breathe (not RAF-bound)
+        }
+        try {
+          const dataUrl = await captureThumbnail(480);
+          const res = await fetch('/__thumb', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id, dataUrl }),
+          });
+          if (!res.ok) throw new Error(`write failed ${res.status}`);
+          ok++;
+          console.log(`[thumbs] ${i + 1}/${ids.length} ${id} ✓`);
+        } catch (e) {
+          fail++;
+          console.error(`[thumbs] ${i + 1}/${ids.length} ${id} ✗`, e);
+        }
+      }
+      console.log(`[thumbs] DONE ok=${ok} fail=${fail}`);
+    };
+
+    if (new URLSearchParams(location.search).get('capture') === 'thumbs') {
+      void captureAllThumbnails();
+    }
+  }
+
   return engine;
 }

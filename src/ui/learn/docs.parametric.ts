@@ -1621,4 +1621,61 @@ point(r*st*Math.cos(phi), r*Math.cos(theta), r*st*Math.sin(phi));`,
       }
     ]
   },
+  decaySpiral: {
+    title: 'Decaying Spiral',
+    about:
+      'A single curve that starts as a wide, lazy coil sitting at the origin and slowly unwinds into a tight thread as it travels outward — the loops shrinking the further they get, like a spring being stretched while it spins. The whole figure rides a straight diagonal baseline, so the early big loops cluster in one corner and the curve tapers off toward the far corner. It is the path of a point circling a moving centre while its orbit radius decays.',
+    howItWorks:
+      'A base point marches up the diagonal line y = x as the parameter T grows, and onto it we add a small circular wobble of radius 1/T. Because that radius falls off as 1/T, the wobble is large and obvious when T is small (the fat coil near the origin) and almost invisible when T is large (the tight thread). The winding count k sets how many times the wobble circles per unit of T. To give the early, visually busy loops plenty of points, T is sampled logarithmically — equal steps in the curve parameter map to a geometric progression in T. The closed path is swept into a glowing tube, laid in the camera-facing X–Y plane with a faint z-ripple for depth, and recentred on the bounding-box midpoint.',
+    equations: [
+      {
+        label: 'logarithmic time map',
+        latex: 'T(t) = T_{\\min}\\,\\exp\\!\\Big(\\tfrac{t}{2\\pi}\\,\\ln\\tfrac{T_{\\max}}{T_{\\min}}\\Big),\\quad t\\in[0,2\\pi]'
+      },
+      {
+        label: 'x component',
+        latex: 'x = T + \\dfrac{\\cos(kT)}{T}'
+      },
+      {
+        label: 'y component',
+        latex: 'y = T + \\dfrac{\\sin(kT)}{T}'
+      },
+      {
+        label: 'decaying orbit radius',
+        latex: 'a(T) = \\dfrac{1}{T}\\ \\longrightarrow\\ 0\\quad\\text{as }T\\text{ grows}'
+      },
+      {
+        label: 'vertical ripple',
+        latex: 'z = \\ell\\,\\sin\\!\\big(\\tfrac{1}{2}kT\\big)'
+      }
+    ],
+    params: [
+      {
+        key: 'freq',
+        symbol: 'k',
+        meaning: 'winding rate — how many times the curve loops around its moving centre per unit of T (more = a finer, busier coil)'
+      },
+      {
+        key: 'lift',
+        symbol: '\\ell',
+        meaning: 'amplitude of the vertical (z) ripple that lifts the flat spiral into a gently undulating 3D ribbon'
+      },
+      {
+        key: 'tube',
+        symbol: '\\rho',
+        meaning: 'radius of the glowing tube swept along the curve'
+      }
+    ],
+    code: "const TMIN = 0.2, TMAX = 20, k = p.freq, lift = p.lift;\nconst LT = Math.log(TMAX / TMIN);\nconst C = (t) => {\n  const T = TMIN * Math.exp((t / (2*Math.PI)) * LT); // log-time sampling\n  const amp = 1 / T;                                  // orbit radius decays as 1/T\n  return [T + Math.cos(k*T)*amp, T + Math.sin(k*T)*amp, lift*Math.sin(0.5*k*T)];\n};\n// C(t) over t∈[0,2π]; swept into a glowing tube (centred on its bbox midpoint)",
+    links: [
+      {
+        label: 'Logarithmic spiral (Wikipedia)',
+        url: 'https://en.wikipedia.org/wiki/Logarithmic_spiral'
+      },
+      {
+        label: 'Parametric equation (Wikipedia)',
+        url: 'https://en.wikipedia.org/wiki/Parametric_equation'
+      }
+    ]
+  },
 };

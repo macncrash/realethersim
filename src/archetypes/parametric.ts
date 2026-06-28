@@ -949,6 +949,36 @@ export const PARAMETRIC_SYSTEMS: Record<string, ParamSurface> = {
       out[o + 2] = p.c * Math.sin(v);
     },
   },
+  decaySpiral: {
+    id: 'decaySpiral', label: 'Decaying Spiral', defaultParticleCount: 160_000, scale: 0.12, pointSize: 0.006,
+    params: [
+      { key: 'freq', label: 'winding k', min: 4, max: 30, step: 1, default: 16 },
+      { key: 'lift', label: '3D lift', min: 0, max: 0.4, step: 0.01, default: 0.06 },
+      { key: 'tube', label: 'thickness', min: 0.01, max: 0.08, step: 0.005, default: 0.03 },
+    ],
+    // γ(t) = (t + cos(kt)/t, t + sin(kt)/t), t∈[0.2,20]: a 1/t-decaying circular oscillation riding the
+    // diagonal baseline y=x — a wide coil near the origin that unwinds into a tight thread along y=x.
+    // t is remapped LOGARITHMICALLY so the large early loops get dense samples. Laid in the X-Y plane
+    // (faces the camera) with a small z-lift; centred by subtracting the bbox midpoint (≈7.6, 8.4).
+    position: (i, n, p, out, o) => {
+      const TMIN = 0.2, TMAX = 20, CX = 7.6, CY = 8.4, k = p.freq, lift = p.lift;
+      const LT = Math.log(TMAX / TMIN);
+      sweepTube(i, n, p.tube, out, o, (t) => {
+        const T = TMIN * Math.exp((t / TAU) * LT);
+        const amp = 1 / T;
+        return [T + Math.cos(k * T) * amp - CX, T + Math.sin(k * T) * amp - CY, lift * Math.sin(0.5 * k * T)];
+      }, (t) => {
+        const T = TMIN * Math.exp((t / TAU) * LT);
+        const amp = 1 / T, amp2 = 1 / (T * T);
+        // dC/dT (sweepTube normalizes, so the dT/dt log factor drops out)
+        return [
+          1 - k * Math.sin(k * T) * amp - Math.cos(k * T) * amp2,
+          1 + k * Math.cos(k * T) * amp - Math.sin(k * T) * amp2,
+          lift * 0.5 * k * Math.cos(0.5 * k * T),
+        ];
+      });
+    },
+  },
   conicalSpiral: {
     id: 'conicalSpiral', label: 'Conical Spiral', defaultParticleCount: 160_000, scale: 1.3, pointSize: 0.008,
     params: [

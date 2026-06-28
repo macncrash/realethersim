@@ -35,9 +35,11 @@ export type RaymarchKind =
   | 'decocube'
   | 'endrassOctic'
   | 'cassini'
+  | 'octicLattice'
   | 'blackhole'
   | 'volumetric'
-  | 'conformal';
+  | 'conformal'
+  | 'kaleidoTunnel';
 
 export interface RaymarchSystem {
   id: string;
@@ -49,6 +51,7 @@ export interface RaymarchSystem {
   iters: number; // fractal iterations baked into the shader loop (0 for surfaces)
   bound: number; // bounding-sphere radius the march is clipped to
   camDist: number; // initial camera distance when the system is selected
+  camDir?: [number, number, number]; // initial camera direction (normalized in bootstrap); default 3/4 view
   maxSteps: number; // sphere-trace step cap
   freq?: number; // spatial frequency for periodic implicit surfaces (world → lattice scale)
   stepScale?: number; // DE under-relaxation (default 0.7); lower for surfaces whose ∇F vanishes near F=0
@@ -242,6 +245,16 @@ export const RAYMARCH_SYSTEMS: Record<string, RaymarchSystem> = {
     id: 'cassini', label: "Cassini Surface", sdf: 'cassini', category: 'Surface',
     iters: 0, freq: 0.72, bound: 2.4, camDist: 5.4, maxSteps: 240, params: [ISO, COL, ANIM],
   },
+  octicLattice: {
+    id: 'octicLattice', label: 'Octic Node Lattice', sdf: 'octicLattice', category: 'Surface',
+    // very high degree (product of three quartics) ⇒ ∇F swings hard near the nodes: strong under-relax + cap.
+    iters: 0, freq: 0.7, bound: 2.6, camDist: 6, maxSteps: 300, stepScale: 0.3, maxStep: 0.03,
+    params: [
+      ISO,
+      COL, // 0.5 ≈ warm gold/amber (matches the reference)
+      { key: 'animate', label: 'morph', min: 0, max: 1, step: 0.01, default: 0.18 }, // gentle spin, stable lattice
+    ],
+  },
 
   // ── Spacetime: a gravitationally-lensed black hole (not an SDF — its own photon-geodesic marcher) ──
   blackhole: {
@@ -348,6 +361,19 @@ export const RAYMARCH_SYSTEMS: Record<string, RaymarchSystem> = {
       { key: 'scale', label: 'checker', min: 1, max: 16, step: 0.1, default: 5 },
       { key: 'zoom', label: 'zoom', min: 0.3, max: 4, step: 0.05, default: 1.8 },
       { key: 'animate', label: 'spin', min: 0, max: 1, step: 0.01, default: 0.3 },
+      COL,
+    ],
+  },
+
+  // ── Kaleidoscope: an SDF tunnel folded into N mirror wedges, z-tiled into a fly-through ──
+  kaleidoTunnel: {
+    id: 'kaleidoTunnel', label: 'Kaleidoscope Tunnel', sdf: 'kaleidoTunnel', category: 'Kaleidoscope',
+    iters: 0, bound: 18.0, camDist: 0.5, camDir: [0.12, 0.08, 1], maxSteps: 180, // near-axial: look down the throat
+    params: [
+      { key: 'symmetry', label: 'symmetry', min: 2, max: 16, step: 1, default: 6 },
+      { key: 'twist', label: 'twist', min: -1.2, max: 1.2, step: 0.01, default: 0.25 },
+      { key: 'speed', label: 'fly speed', min: 0, max: 6, step: 0.05, default: 2.0 },
+      { key: 'cellScale', label: 'cell size', min: 1.0, max: 4.0, step: 0.05, default: 2.0 },
       COL,
     ],
   },

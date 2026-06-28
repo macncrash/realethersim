@@ -371,6 +371,19 @@ const surfaceField = (kind: string, c: Node): Node => {
       .sub(s2.mul(12).add(1));
     return t1.sub(inner.mul(inner)); // 64·∏planes − inner²
   }
+  if (kind === 'octicLattice') {
+    // "Octic node lattice": a quartic double-well per axis Qₐ = a⁴ − a² = a²(a²−1) (zeros at 0, ±1),
+    // multiplied across the three axes, with a nodal-coupling term (x²−y²)(y²−z²)(z²−x²) that breaks the
+    // cubic symmetry into a crystalline cell lattice, plus a small xyz term. F = QxQyQz − 0.028·coupling
+    // − 0.012·xyz. Very high degree ⇒ ∇F swings hard near the nodes, so the DE step is strongly
+    // under-relaxed + hard-capped (like endrassOctic/togliatti).
+    const x2 = x.mul(x), y2 = y.mul(y), z2 = z.mul(z);
+    const qx = x2.mul(x2).sub(x2); // x⁴ − x²
+    const qy = y2.mul(y2).sub(y2);
+    const qz = z2.mul(z2).sub(z2);
+    const coupling = x2.sub(y2).mul(y2.sub(z2)).mul(z2.sub(x2)); // (x²−y²)(y²−z²)(z²−x²)
+    return qx.mul(qy).mul(qz).sub(coupling.mul(0.028)).sub(x.mul(y).mul(z).mul(0.012));
+  }
   if (kind === 'cassini') {
     // Cassini oval of revolution. Long axis remapped to world-up (formula x → world y) so the
     // peanut stands upright. a=1, b=1.1 ⇒ connected dumbbell; a⁴−b⁴ = −0.4641.
@@ -386,7 +399,7 @@ const SURFACE_KINDS = [
   'heart', 'tanglecube', 'goursat', 'barth',
   'kummer', 'clebsch', 'cayley', 'fischerKoch', 'schwarzCLP',
   'togliatti', 'whitneyUmbrella', 'tooth', 'lidinoid', 'dingDong',
-  'dupinCyclide', 'orthocircle', 'decocube', 'endrassOctic', 'cassini',
+  'dupinCyclide', 'orthocircle', 'decocube', 'endrassOctic', 'cassini', 'octicLattice',
 ];
 
 function makeMap(sys: RaymarchSystem, u: Record<string, Node>, uTime: Node): Node {
@@ -490,6 +503,46 @@ function makeMap(sys: RaymarchSystem, u: Record<string, Node>, uTime: Node): Nod
       });
       const de = z.length().div(max(abs(dr), 1e-9));
       return vec2(max(de, 0), trap.mul(0.25));
+    });
+  }
+
+  if (kind === 'kaleidoTunnel') {
+    // SDF: fold xy into N mirror wedges (kaleidoscope), tile z into a fly-through tunnel, place a hollow
+    // hex-tube per cell; pack a flat-facet id into the trap output for the colorNode's faceted palette.
+    return Fn(([p]: [Node]) => {
+      const N = max(u.symmetry, float(2)); // fold count (guard ≥2)
+      const cell = u.cellScale;
+      const wedge = float(6.2831853).div(N).toVar();
+      const zAdv = p.z.add(uTime.mul(u.speed)).toVar(); // tunnel scrolls toward the camera
+      const zt = mod(zAdv, cell).sub(cell.mul(0.5)).toVar();
+      const cellId = floor(zAdv.div(cell)).toVar();
+      const tw = u.twist.mul(p.z); // depth-proportional helix twist
+      const cw = cos(tw), sw = sin(tw);
+      const rx0 = p.x.mul(cw).sub(p.y.mul(sw));
+      const ry0 = p.x.mul(sw).add(p.y.mul(cw));
+      const r = length(vec2(rx0, ry0)).toVar();
+      const a0 = atan(ry0, rx0); // 2-arg atan; atan(0,0)=0 → finite on the r=0 axis
+      const a = abs(mod(a0, wedge).sub(wedge.mul(0.5))).toVar(); // mirror-folded angle
+      const rx = r.mul(cos(a)).toVar();
+      const ry = r.mul(sin(a)).toVar();
+      // IQ hexagon SDF (apothem 1), hollowed to a tube
+      const kx = float(-0.8660254), ky = float(0.5), kz = float(0.57735);
+      const ax = abs(rx).toVar(); const ay = abs(ry).toVar();
+      const dd = min(kx.mul(ax).add(ky.mul(ay)), 0).mul(2).toVar();
+      ax.subAssign(dd.mul(kx)); ay.subAssign(dd.mul(ky));
+      ax.subAssign(clamp(ax, kz.mul(-1.0), kz));
+      ay.subAssign(1.0);
+      const hexSDF = sqrt(ax.mul(ax).add(ay.mul(ay))).mul(select(ay.lessThan(0), float(-1), float(1)));
+      const hex = abs(hexSDF).sub(0.18).toVar(); // hollow tube, thickness 0.18
+      const zc = abs(zt).sub(cell.mul(0.30)).toVar(); // z-slab → discrete ring bars
+      const dOut = length(vec2(max(hex, 0), max(zc, 0)));
+      const dIn = min(max(hex, zc), 0);
+      const d = dOut.add(dIn).toVar();
+      // facet id → trap: per-ring hash (∈[0,0.49)) + 0.5 for the mirror half → two-tone faceting
+      const segHash = fract(sin(cellId.mul(12.9898)).mul(43758.5453)).mul(0.49).toVar();
+      const half = select(a.greaterThan(wedge.mul(0.25)), float(0.5), float(0));
+      const trap = segHash.add(half).toVar(); // ∈[0,0.99); decoded raw in colorNode (NOT sqrt'd)
+      return vec2(max(d, 0), trap);
     });
   }
 
@@ -832,13 +885,28 @@ export function createRaymarch(sys: RaymarchSystem, backend: 'webgpu' | 'webgl2'
           const ao = calcAO(hp, n).toVar();
           const amb = n.y.mul(0.25).add(0.4).toVar();
           const fres = pow(max(float(1).sub(n.dot(rd.negate()).max(0)), 0), 3).toVar();
-          // orbit-trap → cosine palette
-          const tt = trap.sqrt().mul(2.4).add(u.colShift.mul(6.2832)).toVar();
-          const base = vec3(
-            cos(tt).mul(0.5).add(0.5),
-            cos(tt.add(2.1)).mul(0.5).add(0.5),
-            cos(tt.add(4.2)).mul(0.5).add(0.5),
-          ).toVar();
+          // colour: kaleidoscope = flat faceted palette; everything else = the orbit-trap cosine palette
+          let base: Node;
+          if (sys.sdf === 'kaleidoTunnel') {
+            const isHalf = trap.greaterThan(0.5);
+            const dim = select(isHalf, float(0.72), float(1.0)); // mirror half dimmed → two-tone facets
+            const segBase = trap.sub(select(isHalf, float(0.5), float(0))); // per-ring hash ∈ [0,0.49)
+            const hue = mod(segBase.div(0.49).mul(6).add(u.colShift.mul(6)), 6).toVar();
+            const ph = floor(hue).div(6).mul(6.2831853).toVar(); // quantised hue wheel → flat per facet
+            base = vec3(
+              cos(ph).mul(0.4).add(0.55),
+              cos(ph.add(2.094)).mul(0.4).add(0.55),
+              cos(ph.add(4.188)).mul(0.4).add(0.55),
+            ).mul(dim).toVar();
+          } else {
+            // orbit-trap → cosine palette
+            const tt = trap.sqrt().mul(2.4).add(u.colShift.mul(6.2832)).toVar();
+            base = vec3(
+              cos(tt).mul(0.5).add(0.5),
+              cos(tt.add(2.1)).mul(0.5).add(0.5),
+              cos(tt.add(4.2)).mul(0.5).add(0.5),
+            ).toVar();
+          }
           const lit = base
             .mul(amb.mul(ao))
             .add(base.mul(diff.mul(sh)))

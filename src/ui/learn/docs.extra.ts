@@ -1983,4 +1983,226 @@ o[1] = p.b * x[0];`,
       }
     ]
   },
+  chladniWave: {
+    title: 'Faraday / Chladni Plate',
+    about:
+      'Sprinkle sand on a metal plate, draw a violin bow across its edge, and the grains skitter away from the parts that are vibrating and pile up along the still lines — leaving a stark, symmetric figure. These are Chladni patterns, the visible shape of a standing wave on a plate. Here the plate is a square membrane pinned at its rim; by default it rings in one clean eigenmode, showing a regular lattice of vibrating hills (antinodes) separated by motionless nodal lines. Turn up the Faraday drive and the plate is instead shaken from below — a parametric forcing that pumps energy into many modes at once and tips the surface into churning, ever-shifting cymatics.',
+    howItWorks:
+      'The height u of each grid cell obeys the damped wave equation, integrated in time by a leapfrog scheme that keeps a copy of the previous step so the second time-derivative is centred and energy-preserving. The spatial term is the discrete Laplacian (a 5-point stencil: the four neighbours minus four times the centre). A fixed (Dirichlet) rim, u = 0 on every edge, forces clean plate eigenmodes. The stiffness k is the Mathieu term: a constant baseline plus a sinusoidal Faraday drive ε·sin(ωt) — when ε = 0 the seeded eigenmode simply rings forever; when ε > 0 the periodic stiffness parametrically amplifies subharmonic modes (the Mathieu instability) and the pattern goes chaotic. A small cubic term βu³ saturates the growth so the driven amplitude stays bounded, and the dimensionless wave speed (a Courant number) is capped so the explicit scheme can never blow up. The surface is drawn as a displaced point grid — height y = u·relief — coloured by |u| so nodal lines (u ≈ 0) read dark and antinodes glow bright.',
+    equations: [
+      {
+        label: 'driven plate wave equation',
+        latex: '\\ddot{u} = c^{2}\\nabla^{2}u - k(t)\\,u - \\beta u^{3} - \\gamma\\dot{u}'
+      },
+      {
+        label: 'Mathieu (Faraday) stiffness',
+        latex: 'k(t) = k_0 + \\varepsilon\\,\\sin(\\omega t)'
+      },
+      {
+        label: 'discrete Laplacian (5-point)',
+        latex: '\\nabla^{2}u_{ij} \\approx u_{i\\pm1,j} + u_{i,j\\pm1} - 4u_{ij}'
+      },
+      {
+        label: 'leapfrog time step',
+        latex: 'u^{\\,n+1} = 2u^{\\,n} - u^{\\,n-1} + \\ddot{u}\\,\\Delta t^{2} - \\gamma\\,(u^{\\,n}-u^{\\,n-1})'
+      },
+      {
+        label: 'fixed rim (Dirichlet)',
+        latex: 'u = 0 \\quad\\text{on the boundary}'
+      },
+      {
+        label: 'seeded eigenmode (mode m)',
+        latex: 'u_0 \\propto \\sin\\!\\tfrac{(m{+}1)\\pi x}{W}\\,\\sin\\!\\tfrac{m\\pi y}{W}'
+      }
+    ],
+    params: [
+      {
+        key: 'mode',
+        symbol: 'm',
+        meaning: 'which clean Chladni figure to ring — seeds the (m+1, m) plate eigenmode (rebuilds the field)'
+      },
+      {
+        key: 'waveSpeed',
+        symbol: 'c',
+        meaning: 'dimensionless wave-Courant number c·Δt; sets the oscillation rate, capped so the explicit scheme stays stable'
+      },
+      {
+        key: 'damping',
+        symbol: '\\gamma',
+        meaning: 'velocity damping — 0 lets the plate ring forever (a clean static figure); higher slowly bleeds energy away'
+      },
+      {
+        key: 'driveFreq',
+        symbol: '\\omega',
+        meaning: 'frequency of the Faraday (Mathieu) forcing that shakes the plate'
+      },
+      {
+        key: 'driveAmp',
+        symbol: '\\varepsilon',
+        meaning: 'Faraday drive depth — 0 = a single clean eigenmode; raising it parametrically pumps many modes into chaotic cymatics'
+      },
+      {
+        key: 'relief',
+        symbol: 'r',
+        meaning: 'vertical exaggeration of the height map u·r — how tall the antinode hills stand'
+      }
+    ],
+    code: "const C2 = waveSpeed*waveSpeed;                  // (c·dt)², dimensionless\nconst k = K0 + driveAmp*Math.sin(driveFreq*t);  // Mathieu parametric stiffness\nfor (each interior cell c) {\n  const lap = u[L]+u[R]+u[U]+u[D] - 4*u[c];     // 5-point Laplacian\n  const acc = C2*lap - k*u[c] - BETA*u[c]**3;   // wave + stiffness + cubic\n  let next = 2*u[c] - uPrev[c] + acc - gamma*(u[c]-uPrev[c]); // leapfrog\n  if (next > 4) next = 4; else if (next < -4) next = -4;      // self-healing clamp\n  uNext[c] = next;\n}\n// rim u=0 (Dirichlet); rotate the three buffers; y = u·relief, colour by |u|",
+    links: [
+      {
+        label: 'Chladni figures (Wikipedia)',
+        url: 'https://en.wikipedia.org/wiki/Ernst_Chladni#Chladni_figures'
+      },
+      {
+        label: 'Faraday wave (Wikipedia)',
+        url: 'https://en.wikipedia.org/wiki/Faraday_wave'
+      },
+      {
+        label: 'Mathieu equation (Wikipedia)',
+        url: 'https://en.wikipedia.org/wiki/Mathieu_function'
+      }
+    ]
+  },
+  vortexFunnel: {
+    title: 'Vortex Funnel',
+    about:
+      'The shape water makes as it drains: a wide, gently rippled surface that dips inward and steepens into a slender throat — a whirlpool, or bathtub vortex. Points ride that free surface, the dense bright band at the lip glowing orange while the spiralling throat runs white down to its narrow waist. A slow differential swirl winds the arms (the centre turns faster than the rim, as real vortices do) and travelling ripples animate the surface.',
+    howItWorks:
+      'Each point is pinned to a fixed radius on a surface of revolution and only its angle and height evolve, so the figure stays crisp and its colour — keyed to radius — never smears. The height profile is a Lorentzian dimple z = −depth·c²/(r²+c²): near the centre it is parabolic (like the solid-body rotating core of a Rankine vortex), and far out it falls off like 1/r² (the irrotational free surface of an ideal drain). The swirl is differential, Ω(r) ∝ 1/r, so inner rings overtake outer ones and the seeded spiral arms wind up over time. A small radius-growing travelling wave rides on top for the look of moving water. Colour is assigned once by radius (white throat → saturated amber lip → dark-red rim); because every point keeps its radius, that radial gradient holds even as the funnel turns.',
+    equations: [
+      {
+        label: 'free-surface funnel (Lorentzian dimple)',
+        latex: 'z(r) = -\\,d\\,\\dfrac{c^{2}}{r^{2} + c^{2}}'
+      },
+      {
+        label: 'ideal drain limits (core ↔ skirt)',
+        latex: 'z \\approx -d\\Big(1 - \\tfrac{r^{2}}{c^{2}}\\Big)\\ (r\\!\\ll\\! c),\\qquad z \\approx -d\\,\\tfrac{c^{2}}{r^{2}}\\ (r\\!\\gg\\! c)'
+      },
+      {
+        label: 'differential swirl',
+        latex: '\\theta(r,t) = \\theta_0 + \\Omega(r)\\,t,\\qquad \\Omega(r) \\propto \\dfrac{1}{r}'
+      },
+      {
+        label: 'travelling surface ripple',
+        latex: '\\Delta z = a\\,\\dfrac{r}{R}\\,\\cos(k r - \\omega t)'
+      },
+      {
+        label: 'position',
+        latex: '(x,y,z) = \\big(r\\cos\\theta,\\ z(r) + \\Delta z,\\ r\\sin\\theta\\big)'
+      }
+    ],
+    params: [
+      {
+        key: 'depth',
+        symbol: 'd',
+        meaning: 'how deep the funnel plunges — the height drop from rim to throat'
+      },
+      {
+        key: 'throat',
+        symbol: 'c',
+        meaning: 'Lorentzian core radius — small = a tight, pinched throat; large = a broad shallow bowl'
+      },
+      {
+        key: 'swirl',
+        symbol: '\\Omega_0',
+        meaning: 'differential rotation rate (0 = a still funnel you orbit); inner rings spin faster ∝ 1/r'
+      },
+      {
+        key: 'ripple',
+        symbol: 'a',
+        meaning: 'amplitude of the travelling surface waves rippling outward across the rim'
+      },
+      {
+        key: 'turns',
+        symbol: 'N',
+        meaning: 'how many times the seeded arms wind from throat to rim (spiral tightness)'
+      }
+    ],
+    code: "const c2 = throat*throat;\nfor (each point at fixed radius r) {\n  const u = r / RMAX;\n  const om = swirl / (u + 0.18);            // differential: inner faster (Ω ∝ 1/r)\n  const th = theta0 + om * t;\n  const funnel = -depth * (c2 / (r*r + c2)); // Lorentzian dimple → narrow throat\n  const wave = ripple * u * Math.cos(6*r - 2.2*t); // travelling ripples\n  pos = [r*Math.cos(th), funnel + wave, r*Math.sin(th)];\n}\n// colour fixed by radius u: white throat → amber lip → dark rim (uploaded once)",
+    links: [
+      {
+        label: 'Whirlpool / vortex (Wikipedia)',
+        url: 'https://en.wikipedia.org/wiki/Whirlpool'
+      },
+      {
+        label: 'Rankine vortex (Wikipedia)',
+        url: 'https://en.wikipedia.org/wiki/Rankine_vortex'
+      },
+      {
+        label: 'Free surface of a rotating fluid (Wikipedia)',
+        url: 'https://en.wikipedia.org/wiki/Bucket_argument'
+      }
+    ]
+  },
+  drumhead: {
+    title: 'Circular Chladni Plate',
+    about:
+      "A vibrating circular drumhead. Where a square plate gives the blocky Chladni grids, a clamped circular membrane rings in its own family of standing waves — the Bessel eigenmodes — whose still lines (where sand would gather) are m straight diameters crossed by n concentric circles. Pick the mode with the two sliders and the membrane settles into that pure tone, breathing up and down in place.",
+    howItWorks:
+      "The standing waves of a membrane fixed at its rim are uₘₙ(r,θ) = Jₘ(λₘₙ·r)·cos(mθ), where Jₘ is the order-m Bessel function and λₘₙ is its n-th positive zero — chosen precisely so the rim r=1 is a node (Jₘ(λₘₙ)=0). The angular factor cos(mθ) vanishes on m evenly-spaced diameters; the radial factor Jₘ(λₘₙ·r) vanishes on n interior circles (the earlier zeros of Jₘ), unevenly spaced and bunched toward the rim — the signature of a real drum, not the even rings of a naive sine. Points are laid on an area-uniform polar grid, displaced in height by u·cos(ωt) so the whole mode oscillates, and coloured once by |u| (gold antinode lobes, dark nodal lines). Bessel is evaluated only when you change the mode; each frame is a cheap cosine scale, so it can never blow up.",
+    equations: [
+      { label: 'circular membrane eigenmode', latex: 'u_{mn}(r,\\theta,t) = J_m(\\lambda_{mn}\\,r)\\,\\cos(m\\theta)\\,\\cos(\\omega t)' },
+      { label: 'fixed rim (node) sets λ', latex: 'J_m(\\lambda_{mn}) = 0\\quad(\\lambda_{mn}=\\text{the }n\\text{-th zero of }J_m)' },
+      { label: 'nodal set', latex: 'm\\text{ diameters } (\\cos m\\theta=0)\\ +\\ n\\text{ circles } (J_m(\\lambda_{mn}r)=0)' },
+      { label: 'Bessel function', latex: 'J_m(x)=\\sum_{k=0}^{\\infty}\\frac{(-1)^k}{k!\\,(k+m)!}\\Big(\\frac{x}{2}\\Big)^{2k+m}' },
+    ],
+    params: [
+      { key: 'circles', symbol: 'n', meaning: 'number of concentric nodal circles (radial nodes) — selects the n-th zero of Jₘ' },
+      { key: 'diameters', symbol: 'm', meaning: 'number of nodal diameters (angular nodes) — the order of the Bessel function Jₘ' },
+      { key: 'relief', symbol: 'r', meaning: 'vertical exaggeration of the mode shape u·relief' },
+      { key: 'speed', symbol: '\\omega', meaning: 'how fast the mode oscillates up and down in time' },
+    ],
+    code: "// eigenmode (computed once per mode change; per frame is just a cos(ωt) scale)\nconst lambda = besselJzero(m, nCircles + 1); // (nCircles+1)-th zero of J_m ⇒ rim is a node\nfor (each point on an area-uniform polar disk at (r, θ)) {\n  const u = besselJn(m, lambda * r) * Math.cos(m * θ); // r ∈ [0,1]\n  // height y = u * cos(ω t) * relief ; colour once by |u| (gold lobes, dark nodes)\n}",
+    links: [
+      { label: 'Vibrations of a circular membrane (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Vibrations_of_a_circular_membrane' },
+      { label: 'Chladni figures (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Ernst_Chladni#Chladni_figures' },
+      { label: 'Bessel function (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Bessel_function' },
+    ],
+  },
+  orbitWeave: {
+    title: 'Orbit Weave',
+    about:
+      "Collective trajectories. A swarm of test particles, each on its own orbit in a single central well, traced with long luminous trails. Because every orbit is a closed ellipse threaded through the centre, the trails pile up into a glowing sphere with a radiant core and faint radial streaks — structure emerging from many simple paths at once.",
+    howItWorks:
+      "A particle in a central HARMONIC force F = −k·x (Hooke's law, pulling toward the origin) has an exact closed solution: an ellipse centred on the origin, x(t) = a·cos(ωt)·Û + b·sin(ωt)·V̂. Each particle is given a random orbit plane (Û,V̂ — orthonormal), a random reach a (biased toward an outer shell), a random phase, and a slightly different rate so the ensemble shimmers rather than freezes. The 'orbit width' slider sets the semi-minor axis b = ecc·a: near zero the ellipses collapse to near-radial slivers that plunge through the centre and shoot back out to radius a, so their trails read as radial streaks; toward one they fatten into circles. It's closed-form, so it is unconditionally bounded (|x| ≤ a) and never blows up; colour is fixed per particle.",
+    equations: [
+      { label: 'central harmonic force', latex: '\\ddot{\\mathbf{x}} = -\\omega^{2}\\,\\mathbf{x}' },
+      { label: 'closed-form orbit (an ellipse)', latex: '\\mathbf{x}(t) = a\\cos(\\omega t)\\,\\hat{\\mathbf U} + b\\sin(\\omega t)\\,\\hat{\\mathbf V}' },
+      { label: 'orbit width', latex: 'b = \\text{ecc}\\cdot a,\\qquad \\hat{\\mathbf U}\\perp\\hat{\\mathbf V},\\ |\\hat{\\mathbf U}|=|\\hat{\\mathbf V}|=1' },
+    ],
+    params: [
+      { key: 'ecc', symbol: 'b/a', meaning: 'orbit width — near 0 = radial slivers (streaks through the centre), 1 = circular orbits' },
+      { key: 'speed', symbol: '\\omega', meaning: 'how fast the particles glide along their orbits' },
+      { key: 'shell', symbol: 'R', meaning: 'overall radius the orbits reach (rebuilds the ensemble)' },
+    ],
+    code: "// each particle: a fixed ellipse in a random plane (Û ⟂ V̂), traced with long trails\nconst ang = omega_i * t + phase_i;\nconst c = a_i * Math.cos(ang);\nconst s = a_i * ecc * Math.sin(ang); // ecc → 0 ⇒ near-radial sliver through the origin\npos = c*U + s*V; // closed ellipse, |pos| ≤ a_i (always bounded)",
+    links: [
+      { label: 'Harmonic oscillator (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Harmonic_oscillator' },
+      { label: 'Central force (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Central_force' },
+      { label: 'Orbit (dynamics) (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Orbit' },
+    ],
+  },
+  fractalFlame: {
+    title: 'Fractal Flame',
+    about:
+      "Fractal flames (Scott Draves, 1992) are the glowing, organic cousins of the Barnsley fern. Same idea — the 'chaos game' of an iterated function system — but each map adds a NONLINEAR twist (a 'variation' like swirl, sinusoidal, or horseshoe) after its affine step. Those twists bend the self-similar copies into flowing, feathered, flame-like structures. Scrub the seed to wander a whole family of them; set the symmetry for mandalas.",
+    howItWorks:
+      "A single point hops forever: each step it picks a weighted-random function and applies it, and its current location is plotted. Run hundreds of thousands of points at once and the additive density traces out the attractor (bright where the orbit lingers — the glow). Each function here is an affine contraction toward one vertex of a regular N-gon, followed by a nonlinear variation Vⱼ — keeping the maps contractive guarantees the figure stays bounded, while placing them around a ring keeps it spread and gives clean N-fold symmetry (every vertex carries a rotated copy of the same generator). Colour is fixed per point as a narrow hue band around a seed-chosen base (a wide band would additively wash to white), so dense cores read pale and sparse filaments keep the tint.",
+    equations: [
+      { label: 'chaos game (one step)', latex: '\\mathbf{x} \\leftarrow F_{i}(\\mathbf{x}),\\quad i\\sim\\text{weighted random}' },
+      { label: 'flame function = affine + variation', latex: 'F_i(\\mathbf{x}) = V_{j}\\big(A_i\\,\\mathbf{x} + \\mathbf{t}_i\\big)' },
+      { label: 'some variations Vⱼ', latex: 'V_{\\sin}=(\\sin x,\\ \\sin y),\\quad V_{\\text{swirl}}=(x\\sin r^2 - y\\cos r^2,\\ x\\cos r^2 + y\\sin r^2)' },
+      { label: 'N-fold symmetry', latex: '\\mathbf{t}_i \\text{ at angle } \\tfrac{2\\pi k}{N},\\ A_i \\text{ rotated to match}' },
+    ],
+    params: [
+      { key: 'flame', symbol: 's', meaning: 'seed — picks the affine maps + variations; scrub it to explore a whole family of flames' },
+      { key: 'symmetry', symbol: 'N', meaning: 'rotational fold count — the flame is invariant under a 2π/N turn (mandala symmetry)' },
+    ],
+    code: "// chaos game with nonlinear variations (N-gon-vertex generators ⇒ bounded + N-fold symmetric)\nfor (each particle) {\n  const m = pickWeighted(funcs);            // a flame function\n  const px = m.a*x + m.b*y + m.e;           // affine\n  const py = m.c*x + m.d*y + m.f;\n  [x, y] = variation(m.v, px, py);          // nonlinear twist (swirl, sinusoidal, …)\n}\n// plot all particles with additive blending → density is the glow; colour fixed by index",
+    links: [
+      { label: 'Fractal flame (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Fractal_flame' },
+      { label: 'The Fractal Flame Algorithm (Draves & Reckase, PDF)', url: 'https://flam3.com/flame_draves.pdf' },
+      { label: 'Iterated function system (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Iterated_function_system' },
+    ],
+  },
 };
