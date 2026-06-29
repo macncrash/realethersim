@@ -2271,6 +2271,7 @@ o[1] = p.b * x[0];`,
       { key: 'rate', symbol: '\\alpha', meaning: 'reconnection rate — strength of the inflow/outflow (how fast field rushes in and jets blast out)' },
       { key: 'jetBoost', symbol: '\\beta/\\alpha', meaning: 'outflow-to-inflow asymmetry — how much faster the jets are ejected than the field flows in' },
       { key: 'inflowSpan', symbol: 'h', meaning: 'thickness of the blue inflow band around the x-axis' },
+      { key: 'guideTwist', symbol: 'B_z', meaning: 'guide-field twist — spins the outflow jets into helices (0 = straight jets)' },
     ],
     code: "// X-point saddle flow: every particle is a tracer of v = (-alpha*x, +beta*y)\nconst beta = alpha * jetBoost;          // outflow faster than inflow\nfor (each particle) {\n  x += -alpha * x * dt;                  // inflow squeezes toward the null along x\n  y +=  beta  * y * dt;                  // jets accelerate outward along y\n  // deterministic respawn keeps each tracer in its wedge -> crisp X, bounded, perpetual\n  if (leftItsZone(x, y, role)) { x = home.x; y = home.y; }\n}\n// colour ONCE by role: blue inflow wedges, gold jet beams, white null core",
     links: [

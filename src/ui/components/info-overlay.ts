@@ -246,7 +246,8 @@ export class InfoOverlay extends LitElement {
   // ---- About ----
   private aboutView(): TemplateResult {
     return html`
-      <div class="io-scroll io-about">
+      <div class="io-scroll">
+        <div class="io-about">
         <p class="io-about-lede">
           <strong>ETHERSIM</strong> is an open-source, real-time explorer for dynamical systems — strange attractors,
           iterated maps, fractals, reaction–diffusion fields, ray-marched surfaces and more — rendered on the GPU with
@@ -300,6 +301,7 @@ export class InfoOverlay extends LitElement {
           )}
         </div>
         <div class="io-about-foot">Made for curiosity · ETHERSIM is not affiliated with any of the projects above.</div>
+        </div>
       </div>
     `;
   }

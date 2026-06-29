@@ -24,6 +24,7 @@ const JET_REACH = 1.9; // jets respawn here — shorter than the inflow so the b
 const CORE_REACH = 0.42; // white core particles respawn tight around the null
 
 const RSCALE = 0.58; // map the ±2.8 domain into the ~±1.6 render extent the orbit camera frames
+const ZSPAN = 1.55; // half-thickness of the out-of-plane current-sheet slab (the X-point is really an X-LINE)
 
 const ROLE_INFLOW = 0;
 const ROLE_JET = 1;
@@ -33,6 +34,7 @@ const PARAM_SPEC: ParamSpec[] = [
   { key: 'rate', label: 'reconnection rate', min: 0.3, max: 2.0, step: 0.02, default: 0.9 }, // α: inflow strength
   { key: 'jetBoost', label: 'jet boost', min: 1.0, max: 4.0, step: 0.05, default: 2.5 }, // β/α: outflow:inflow asymmetry
   { key: 'inflowSpan', label: 'inflow span', min: 0.4, max: 2.5, step: 0.05, default: 1.0 }, // y-thickness of the inflow band
+  { key: 'guideTwist', label: 'guide-field twist', min: 0, max: 6, step: 0.1, default: 0 }, // opt-in helical jets (B_z guide field)
 ];
 
 class ReconnectionArchetype implements Archetype {
@@ -43,6 +45,7 @@ class ReconnectionArchetype implements Archetype {
   private readonly state: Float64Array; // x, y
   private readonly role: Uint8Array; // inflow / jet / core
   private readonly home: Float64Array; // baked spawn (sx, sy) — deterministic respawn target
+  private readonly hz: Float64Array; // baked out-of-plane coord (the X-LINE / current-sheet axis), static
   private readonly positions: Float32Array;
   private readonly colors: Float32Array;
 
@@ -52,6 +55,7 @@ class ReconnectionArchetype implements Archetype {
     this.state = new Float64Array(n * DIM);
     this.role = new Uint8Array(n);
     this.home = new Float64Array(n * DIM);
+    this.hz = new Float64Array(n);
     this.positions = new Float32Array(n * 3);
     this.colors = new Float32Array(n * 3);
 
@@ -97,6 +101,9 @@ class ReconnectionArchetype implements Archetype {
       this.role[i] = role;
       this.home[o] = hx; this.home[o + 1] = hy;
       this.state[o] = ix; this.state[o + 1] = iy;
+      // out-of-plane extrusion: spread each particle across the current-sheet slab. The X-point becomes
+      // an X-LINE; the white null becomes a glowing line down the slab. Static (saddle is z-invariant).
+      this.hz[i] = (rng() * 2 - 1) * (role === ROLE_JET ? ZSPAN * 0.85 : ZSPAN);
 
       // colour ONCE by role (uploaded at build) — slight per-particle brightness jitter for texture
       const b = 0.8 + 0.2 * rng();
@@ -131,19 +138,34 @@ class ReconnectionArchetype implements Archetype {
       if (respawn) { x = home[o]; y = home[o + 1]; }
       st[o] = x; st[o + 1] = y;
     }
-    this.syncPositions();
+    this.syncPositions(p);
   }
 
-  private syncPositions(): void {
+  private syncPositions(p?: ResolvedParams): void {
     const n = this.particleCount;
     const st = this.state;
     const pos = this.positions;
+    const role = this.role;
+    const hz = this.hz;
+    const twist = p?.guideTwist ?? 0; // 0 = pure honest extrusion (face-on byte-identical to the 2D X)
     for (let i = 0; i < n; i++) {
       const o = i * DIM;
       const po = i * 3;
-      pos[po] = st[o] * RSCALE; // inflow horizontal (x), jets vertical (y) — face-on in the X-Y plane
-      pos[po + 1] = st[o + 1] * RSCALE;
-      pos[po + 2] = 0;
+      const x = st[o], y = st[o + 1], z = hz[i];
+      if (twist > 0 && role[i] === ROLE_JET) {
+        // guide-field B_z spins the accelerating jet into a helix; phase ∝ ln|y| (linear in time since
+        // dy/dt=βy) → steady corkscrew, tight at the base, unwinding at the tip.
+        const ay = y < 0 ? -y : y;
+        const th = twist * Math.log(Math.max(ay, 1e-3) / 0.04);
+        const c = Math.cos(th), s = Math.sin(th);
+        pos[po] = (x * c) * RSCALE;
+        pos[po + 1] = y * RSCALE;
+        pos[po + 2] = (z + x * s) * RSCALE;
+      } else {
+        pos[po] = x * RSCALE; // inflow horizontal (x), jets vertical (y)
+        pos[po + 1] = y * RSCALE;
+        pos[po + 2] = z * RSCALE; // the extrusion: X-point → X-line / current-sheet slab
+      }
     }
   }
 

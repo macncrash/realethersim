@@ -305,16 +305,24 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
       camera.position.set(2.3, 1.5, 2.8);
       controls.update();
     }
-    // The Spiral of Theodorus is a flat X-Y mandala — view it face-on so the rosette symmetry reads.
+    // The Spiral of Theodorus: a slight downward tilt so the radial dome reads, while the rosette symmetry
+    // still reads near-face-on.
     if ($archetypeId.get() === 'theodorus') {
       controls.target.set(0, 0, 0);
-      camera.position.set(0, 0, 4.0);
+      camera.position.set(0, 1.15, 3.85);
       controls.update();
     }
-    // Magnetic reconnection is a flat X-Y flow — face-on so the inflow/jet X reads.
+    // DLA grows a dendrite in the horizontal X-Z plane — view it from above so it isn't seen edge-on.
+    if ($archetypeId.get() === 'dla') {
+      controls.target.set(0, 0, 0);
+      camera.position.set(0, 3.5, 1.15);
+      controls.update();
+    }
+    // Magnetic reconnection: a slight 3/4 tilt so the extruded current-sheet slab / X-line reads, while
+    // the neon X still reads near-front-on.
     if ($archetypeId.get() === 'reconnection') {
       controls.target.set(0, 0, 0);
-      camera.position.set(0, 0, 4.2);
+      camera.position.set(1.4, 0.8, 3.9);
       controls.update();
     }
     scheduleLle();
@@ -724,8 +732,9 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
           if (id === 'karman') camera.position.set(0, 3.2, 0.85);
           else if (id === 'pseudospectrum') { controls.target.set(0, 0.45, 0); camera.position.set(0, 2.5, 3.0); }
           else if (id === 'cosmicWeb') { controls.target.set(0, 0, 0); camera.position.set(2.3, 1.5, 2.8); }
-          else if (id === 'theodorus') { controls.target.set(0, 0, 0); camera.position.set(0, 0, 4.0); }
-          else if (id === 'reconnection') { controls.target.set(0, 0, 0); camera.position.set(0, 0, 4.2); }
+          else if (id === 'theodorus') { controls.target.set(0, 0, 0); camera.position.set(0, 1.15, 3.85); }
+          else if (id === 'reconnection') { controls.target.set(0, 0, 0); camera.position.set(1.4, 0.8, 3.9); }
+          else if (id === 'dla') { controls.target.set(0, 0, 0); camera.position.set(0, 3.5, 1.15); }
           else camera.position.set(2.4, 1.5, 4.4);
         }
         controls.update();

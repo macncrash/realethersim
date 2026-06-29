@@ -18,7 +18,6 @@ import { mulberry32, type Rng } from '../state/rng';
 // works on the CPU path even though colours upload only once (coloured by radius: core → tips).
 const EXTENT = 3;
 const TAU = Math.PI * 2;
-const LAUNCH = 0.46; // walkers respawn within this fraction of W around centre (near the frontier)
 const HIDDEN_Y = -30; // empty cells parked below the camera (off-screen, |y| stays render-bounded)
 const NEI = [
   [-1, -1], [0, -1], [1, -1], [-1, 0], [1, 0], [-1, 1], [0, 1], [1, 1],
@@ -45,6 +44,7 @@ class DlaArchetype implements Archetype {
   private readonly positions: Float32Array;
   private readonly colors: Float32Array;
   private readonly rng: Rng;
+  private clusterR = 1; // current cluster radius (cells) — walkers launch just outside it so growth is fast
 
   constructor(config: ArchetypeConfig) {
     const w = Math.max(64, Math.round(Math.sqrt(config.particleCount)));
@@ -60,35 +60,51 @@ class DlaArchetype implements Archetype {
     this.grid[(w >> 1) * w + (w >> 1)] = 1; // seed at centre
     for (let i = 0; i < this.M; i++) this.respawn(i);
 
+    // PRE-GROW: a single-seed cluster reads as empty on load (slow start). Run the aggregation up-front
+    // until the dendrite fills most of the frame, so it's immediately visible; live growth continues.
+    const stick0 = config.params.stickiness ?? 1;
+    const targetR = w * 0.38; // grow until the dendrite spans most of the frame (branchy, not a solid blob)
+    for (let s = 0; s < 14000 && this.clusterR < targetR; s++) this.growOnce(stick0);
+
     // Static colours by radius from centre (core warm → tips cool); revealed as cells become stuck.
+    // Colour ONLY the (pre-grown) stuck cells — bright warm-to-gold by radius. Empty cells stay BLACK so
+    // they're invisible from ANY camera angle (parking them off-screen by y-offset isn't robust under
+    // orbit — a steep view catches the parked plane as a bright patch).
     const cx = w / 2;
     const maxR = w * 0.5;
     for (let y = 0; y < w; y++) {
       for (let x = 0; x < w; x++) {
+        const idx = y * w + x;
+        if (this.grid[idx] <= 0) continue; // empty → leave black
         const r = Math.min(1, Math.hypot(x - cx, y - cx) / maxR);
-        hslToRgb(0.08 + 0.62 * r, 0.85, 0.6, this.colors, (y * w + x) * 3);
+        // bright warm-to-gold ramp (single-layer dendrite ⇒ brightness, not density, is the visibility lever)
+        hslToRgb(0.04 + 0.14 * r, 0.95, 0.85, this.colors, idx * 3);
       }
     }
     this.syncPositions();
   }
 
   private respawn(i: number): void {
-    // Launch within a disk around centre (near the growing cluster) so growth is both fast and
-    // sparse — the condition for branching DLA dendrites rather than a solid blob.
-    const a = this.rng() * TAU;
-    const rad = Math.sqrt(this.rng()) * LAUNCH * this.W;
+    // Launch on an annulus JUST OUTSIDE the current frontier, so a walker reaches the cluster in a few
+    // steps rather than wandering the whole grid — this is what makes the dendrite grow fast enough to
+    // be visible. Capped so it never spawns past the render extent.
     const w = this.W;
+    const a = this.rng() * TAU;
+    const rad = Math.min(w * 0.47, this.clusterR + 4 + this.rng() * 5);
     this.walk[i * 2] = (((w / 2 + Math.cos(a) * rad) % w) + w) % w;
     this.walk[i * 2 + 1] = (((w / 2 + Math.sin(a) * rad) % w) + w) % w;
   }
 
-  step(_dt: number, p: ResolvedParams): void {
+  // One aggregation pass over all walkers; returns the number of cells that newly stuck this pass.
+  private growOnce(stick: number): number {
     const w = this.W;
     const g = this.grid;
     const walk = this.walk;
     const rng = this.rng;
-    const stick = p.stickiness ?? 1;
-
+    const c = w >> 1;
+    const killR = this.clusterR + 14; // relaunch walkers that stray past this so they stay productive
+    const killR2 = killR * killR;
+    let newly = 0;
     for (let i = 0; i < this.M; i++) {
       let wx = walk[i * 2] | 0;
       let wy = walk[i * 2 + 1] | 0;
@@ -108,15 +124,26 @@ class DlaArchetype implements Archetype {
       }
       if (adj && rng() < stick) {
         g[ci] = 1;
+        newly++;
+        const dx = wx - (w >> 1), dy = wy - (w >> 1);
+        const rr = Math.sqrt(dx * dx + dy * dy);
+        if (rr > this.clusterR) this.clusterR = rr; // grow the frontier so launches track outward
         this.respawn(i);
         continue;
       }
       const dir = (rng() * 4) | 0; // 4-neighbour walk (matches the GPU kernel)
       wx = (wx + STEP[dir][0] + w) % w;
       wy = (wy + STEP[dir][1] + w) % w;
+      const sx = wx - c, sy = wy - c;
+      if (sx * sx + sy * sy > killR2) { this.respawn(i); continue; } // strayed too far → relaunch at the frontier
       walk[i * 2] = wx;
       walk[i * 2 + 1] = wy;
     }
+    return newly;
+  }
+
+  step(_dt: number, p: ResolvedParams): void {
+    this.growOnce(p.stickiness ?? 1);
     this.syncPositions();
   }
 
@@ -164,8 +191,8 @@ export const dlaFactory: ArchetypeFactory = {
   category: 'Fractal',
   kind: 'flow',
   params: PARAM_SPEC,
-  defaultParticleCount: 16_384,
-  particleCountOptions: [16_384, 40_000, 65_536],
+  defaultParticleCount: 6_400, // W≈80 — small enough that the dendrite fills the frame + reads chunky
+  particleCountOptions: [6_400, 16_384, 40_000],
   defaultDt: 0.016,
   create: (config) => new DlaArchetype(config),
 };
