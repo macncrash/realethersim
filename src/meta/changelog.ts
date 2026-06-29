@@ -18,6 +18,17 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    "version": "0.1.47",
+    "date": "2026-06-29",
+    "title": "Contour Field — a new Linework category",
+    "summary": "Morphing contour-line art (after Zach Lieberman): nested isolines of a folded, symmetric wave field, drawn as crisp white level-sets on black. Opens a new Linework category for generative line drawing.",
+    "newSystems": ["contourField"],
+    "notes": [
+      "Contour Field (Linework): per-pixel level sets of an interference field — mirror-folded for crisp 4-fold symmetry, domain-warped for an organic quasi-3D drift, fwidth-anti-aliased lines. Live contours / warp / line-weight / zoom / morph",
+      "New 'Linework' category (generative line-art / contour drawing)"
+    ]
+  },
+  {
     "version": "0.1.46",
     "date": "2026-06-29",
     "title": "Three new systems: Newton fractal, root cloud, cymatics",

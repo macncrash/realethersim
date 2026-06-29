@@ -11,7 +11,7 @@ const SEEN_KEY = 'ethersim:lastSeenVersion';
 
 // Category display order (mirrors the archetype-switcher tabs) for the Browse grid's filter chips.
 const CATEGORY_ORDER = [
-  'Attractor', 'Map', 'Fractal', 'Surface', 'Spacetime', 'Volume', 'Conformal', 'Kaleidoscope',
+  'Attractor', 'Map', 'Fractal', 'Surface', 'Spacetime', 'Volume', 'Conformal', 'Kaleidoscope', 'Linework',
   'Parametric', 'Life', 'Fluid', 'Field', 'Oscillator', 'Billiard', 'Matter', 'Sampler', 'Orbital', 'Spectral', 'N-Body', 'Cosmology', 'Plasma',
 ];
 
