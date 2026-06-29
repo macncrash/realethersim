@@ -18,6 +18,17 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    "version": "0.1.44",
+    "date": "2026-06-28",
+    "title": "Symmetric icons gain depth",
+    "summary": "The six symmetric-icon maps now sit on a radial 3D relief — depth that preserves their exact N-fold symmetry — completing the Map category's dimensionality. Plus an internal render-path cleanup.",
+    "newSystems": [],
+    "notes": [
+      "Symmetric Icons (sanddollar, trinity, pentagram, hexagon, heptagon, clamshell): a radial relief z=f(R) adds 3D depth while keeping the N-fold rosette symmetry exact (CPU + GPU twins)",
+      "Modernized the offline thumbnail/snapshot capture to renderer.render()/compute() (the deprecated renderAsync/computeAsync are gone — silences the console warning)"
+    ]
+  },
+  {
     "version": "0.1.43",
     "date": "2026-06-28",
     "title": "Maps gain depth + Decaying Spiral reborn",
