@@ -1898,4 +1898,28 @@ const F = (x,y,z) => { const a=x*x,b=y*y,c=z*z, s=a+b+c-1;
       { label: "Newton's method (Wikipedia)", url: 'https://en.wikipedia.org/wiki/Newton%27s_method' },
     ],
   },
+  contourField: {
+    "title": "Contour Field",
+    "about": "A drawing made of contour lines — the level sets (isolines) of a smooth scalar field, like the curves on a topographic map that join points of equal height. The field here is an interference of a few waves, folded into mirror symmetry and slowly morphing, so the nested loops drift, merge, and split through saddle points — the hypnotic line-art of artists like Zach Lieberman. Pure white lines on black; no 3D, just the poetry of level sets.",
+    "howItWorks": "For each pixel a point z is read from the screen, given a mild barrel-bulge, folded into one quadrant (|x|,|y|) so the picture is mirror-symmetric across both axes, and warped by a couple of slow sine displacements (the organic, quasi-3D drift). A scalar field f is built as a sum of plane waves at several angles plus a radial term and an L∞ (max) term — that mixture is what gives the varied contour shapes: concentric ovals around peaks, rectangles from the L∞ term, triangles where diagonal waves fold. Lines are drawn where f·density is near an integer (a level set): a triangle wave of fract(f) is thresholded, anti-aliased with the screen-space derivative fwidth so the lines stay crisp and don't alias where contours crowd together. Everything's phases drift with time, so the field continuously morphs.",
+    "equations": [
+      { "label": "contour lines = level sets of a scalar field", "latex": "\\{(x,y) : f(x,y) = c\\}, \\quad c \\in \\tfrac{1}{\\rho}\\,\\mathbb{Z}" },
+      { "label": "the field: folded interference of waves", "latex": "f(\\mathbf{q}) = \\sum_i \\sin(\\mathbf{k}_i\\!\\cdot\\!\\mathbf{q} + \\varphi_i t) + \\sin(\\lvert\\mathbf{q}\\rvert) + \\sin(\\max(q_x,q_y)), \\;\\; \\mathbf{q}=(|x|,|y|)" },
+      { "label": "anti-aliased line (screen-space width)", "latex": "\\text{line} = \\operatorname{smoothstep}\\!\\big(1-w-a,\\ 1-w,\\ |\\,2\\operatorname{fract}(\\rho f)-1|\\big), \\;\\; a=\\operatorname{fwidth}(\\rho f)" },
+    ],
+    "params": [
+      { "key": "density", "symbol": "\\rho", "meaning": "contour density — how many nested level-set lines (closer spacing)" },
+      { "key": "warp", "symbol": "w", "meaning": "domain-warp amount — the organic bulge/drift that gives the quasi-3D feel" },
+      { "key": "thickness", "symbol": "\\tau", "meaning": "line weight" },
+      { "key": "zoom", "symbol": "Z", "meaning": "view scale on the field" },
+      { "key": "animate", "symbol": "\\omega", "meaning": "morph rate — how fast the field's phases drift" },
+      { "key": "colShift", "symbol": "\\phi", "meaning": "faint line tint (≈ white by default)" },
+    ],
+    code: "// per pixel: contour lines of a folded sum-of-waves field\nlet p = vec2(ndc.x, ndc.y) * zoom;\np *= 1 + 0.18*dot(p,p);                 // barrel bulge\nconst q = abs(p) + warp*sin(...);        // fold (mirror symmetry) + warp\nconst f = sin(k1·q+t) + ... + sin(|q|) + sin(max(q.x,q.y));\nconst tri = abs(fract(f*density) - 0.5) * 2;      // 1 at level sets\nconst aa  = fwidth(f*density);                      // screen-space AA\nconst line = smoothstep(1-thickness-aa, 1-thickness, tri);\ncol = white * line;",
+    links: [
+      { label: 'Contour line / level set (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Contour_line' },
+      { label: 'Zach Lieberman (artist)', url: 'https://zach.li/' },
+      { label: 'Marching squares / isolines', url: 'https://en.wikipedia.org/wiki/Marching_squares' },
+    ],
+  },
 };

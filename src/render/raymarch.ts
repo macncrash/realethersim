@@ -45,6 +45,7 @@ const {
   smoothstep,
   exp,
   tanh,
+  fwidth,
 } = tsl as any;
 
 export interface RaymarchPass {
@@ -793,6 +794,32 @@ export function createRaymarch(sys: RaymarchSystem, backend: 'webgpu' | 'webgl2'
       const glow = pow(mu, 1.25).toVar(); // dark basin interiors → the bright fractal seams pop (flowing ribbons)
       const white = pow(mu, 4).mul(0.7); // white-hot at the sharpest boundaries
       col.assign(base.mul(glow.mul(0.92).add(0.06)).add(white));
+    } else if (sys.sdf === 'contour') {
+      // ── Linework: morphing contour lines (isolines) of a folded sum-of-waves scalar field (after
+      //    Zach Lieberman). White level-set lines on black; mirror-folded → symmetric; warped → the
+      //    organic quasi-3D "rotating" morph. fwidth gives clean per-pixel anti-aliasing of the lines.
+      const t = uTime.mul(0.2).mul(u.animate);
+      const p0 = vec2(ndc.x, ndc.y).mul(u.zoom).toVar();
+      const pb = p0.mul(float(1).add(p0.dot(p0).mul(0.18))).toVar(); // mild barrel (even → symmetric): centre cells swell
+      const q0 = vec2(abs(pb.x), abs(pb.y)).toVar(); // FOLD first → crisp 4-fold mirror symmetry
+      const wx = sin(q0.y.mul(1.7).add(t)).add(sin(q0.y.mul(0.9).sub(t.mul(1.3)))).mul(u.warp.mul(0.5));
+      const wy = sin(q0.x.mul(1.9).sub(t.mul(0.8))).add(sin(q0.x.mul(1.1).add(t.mul(1.1)))).mul(u.warp.mul(0.5));
+      const q = vec2(q0.x.add(wx), q0.y.add(wy)).toVar(); // warp the folded coords (symmetry preserved)
+      // interference of plane waves (varied angles) + a radial term + an L∞ term → varied contour shapes
+      const f = sin(q.x.mul(3.1).add(q.y.mul(0.7)).add(t))
+        .add(sin(q.x.mul(0.6).sub(q.y.mul(2.7)).sub(t.mul(1.3))))
+        .add(sin(q.x.mul(2.2).add(q.y.mul(2.1)).add(t.mul(0.7))))
+        .add(sin(q.x.mul(1.3).sub(q.y.mul(3.3)).add(t.mul(1.1))))
+        .add(sin(length(q).mul(4.0).sub(t.mul(1.6)))) // radial → concentric ovals
+        .add(sin(max(q.x, q.y).mul(3.4).add(t.mul(0.5)))) // L∞ → square/rectangle contours
+        .toVar();
+      const ff = f.mul(u.density).toVar();
+      const tri = abs(fract(ff).sub(0.5)).mul(2).toVar(); // triangle wave: 1 at level sets, 0 between
+      const aa = fwidth(ff).mul(1.6).add(2e-3);
+      const line = smoothstep(float(1).sub(u.thickness).sub(aa), float(1).sub(u.thickness), tri).toVar();
+      const a0 = u.colShift.mul(6.2832); // faint tint (default ≈ white-on-black)
+      const tint = vec3(cos(a0).mul(0.12).add(0.88), cos(a0.add(2.1)).mul(0.12).add(0.9), cos(a0.add(4.2)).mul(0.12).add(0.95));
+      col.assign(tint.mul(line));
     } else if (sys.sdf === 'volumetric') {
       // ── Non-SDF marcher: accumulate volumetric EMISSION through a domain-warped density field. ──
       // Fixed-step ray, no bending. Density e drives o += exp(−e·k)·palette·e·Δs·E (the twigl look).

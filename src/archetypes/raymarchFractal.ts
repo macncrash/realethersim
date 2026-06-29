@@ -40,6 +40,7 @@ export type RaymarchKind =
   | 'volumetric'
   | 'conformal'
   | 'newton'
+  | 'contour'
   | 'kaleidoTunnel';
 
 export interface RaymarchSystem {
@@ -375,6 +376,20 @@ export const RAYMARCH_SYSTEMS: Record<string, RaymarchSystem> = {
       { key: 'relax', label: 'over-relax a', min: 0.5, max: 2, step: 0.01, default: 1 },
       { key: 'zoom', label: 'zoom', min: 0.3, max: 4, step: 0.05, default: 1.5 },
       { key: 'animate', label: 'morph', min: 0, max: 1, step: 0.01, default: 0.3 },
+      COL,
+    ],
+  },
+
+  // ── Linework: morphing contour lines (isolines) of a folded sum-of-waves field (after Zach Lieberman) ──
+  contourField: {
+    id: 'contourField', label: 'Contour Field', sdf: 'contour', category: 'Linework',
+    iters: 1, bound: 1, camDist: 1, maxSteps: 1,
+    params: [
+      { key: 'density', label: 'contours', min: 1, max: 10, step: 0.1, default: 3.2 },
+      { key: 'warp', label: 'warp', min: 0, max: 1.2, step: 0.02, default: 0.5 },
+      { key: 'thickness', label: 'line weight', min: 0.02, max: 0.45, step: 0.01, default: 0.16 },
+      { key: 'zoom', label: 'zoom', min: 0.4, max: 4, step: 0.05, default: 1.6 },
+      { key: 'animate', label: 'morph', min: 0, max: 1, step: 0.01, default: 0.5 },
       COL,
     ],
   },
