@@ -1026,31 +1026,33 @@ export const PARAMETRIC_SYSTEMS: Record<string, ParamSurface> = {
     },
   },
   decaySpiral: {
-    id: 'decaySpiral', label: 'Decaying Spiral', defaultParticleCount: 160_000, scale: 0.12, pointSize: 0.006,
+    id: 'decaySpiral', label: 'Decaying Spiral', defaultParticleCount: 160_000, scale: 1.25, pointSize: 0.008,
     params: [
-      { key: 'freq', label: 'winding k', min: 4, max: 30, step: 1, default: 16 },
-      { key: 'lift', label: '3D lift', min: 0, max: 0.6, step: 0.01, default: 0.22 },
+      { key: 'turns', label: 'turns', min: 3, max: 20, step: 1, default: 9 },
+      { key: 'decay', label: 'radius decay', min: 0.5, max: 4, step: 0.05, default: 2.2 },
+      { key: 'climb', label: 'height', min: 0.5, max: 3, step: 0.05, default: 1.6 },
       { key: 'tube', label: 'thickness', min: 0.01, max: 0.08, step: 0.005, default: 0.03 },
     ],
-    // γ(t) = (t + cos(kt)/t, t + sin(kt)/t), t∈[0.2,20]: a 1/t-decaying circular oscillation riding the
-    // diagonal baseline y=x — a wide coil near the origin that unwinds into a tight thread along y=x.
-    // A z-ripple synced to the winding lifts the ribbon out of the plane into a 3D corrugated coil
-    // (default lift raised so it reads dimensional at rest). t is remapped LOGARITHMICALLY for dense loops.
+    // A genuine 3D decaying spiral: a logarithmic funnel-coil. The point winds a fixed number of `turns`
+    // around a vertical axis while its radius decays EXPONENTIALLY (ρ = R₀·e^(−decay·u)) and it climbs in
+    // y — wide loose loops at the base tightening to a thread at the apex. Swept into a glowing tube.
     position: (i, n, p, out, o) => {
-      const TMIN = 0.2, TMAX = 20, CX = 7.6, CY = 8.4, k = p.freq, lift = p.lift;
-      const LT = Math.log(TMAX / TMIN);
+      const R0 = 1.15, turns = p.turns, decay = p.decay, climb = p.climb;
+      const W = turns * TAU; // total winding angle
       sweepTube(i, n, p.tube, out, o, (t) => {
-        const T = TMIN * Math.exp((t / TAU) * LT);
-        const amp = 1 / T;
-        return [T + Math.cos(k * T) * amp - CX, T + Math.sin(k * T) * amp - CY, lift * Math.sin(k * T) * (1 + amp)];
+        const u = t / TAU; // ∈ [0,1] along the coil
+        const rho = R0 * Math.exp(-decay * u);
+        const phi = W * u;
+        return [rho * Math.cos(phi), climb * (u - 0.5), rho * Math.sin(phi)];
       }, (t) => {
-        const T = TMIN * Math.exp((t / TAU) * LT);
-        const amp = 1 / T, amp2 = 1 / (T * T);
-        // dC/dT (sweepTube normalizes, so the dT/dt log factor drops out)
+        const u = t / TAU;
+        const rho = R0 * Math.exp(-decay * u);
+        const phi = W * u;
+        // dC/du (sweepTube normalises): ρ' = −decay·ρ, φ' = W, y' = climb
         return [
-          1 - k * Math.sin(k * T) * amp - Math.cos(k * T) * amp2,
-          1 + k * Math.cos(k * T) * amp - Math.sin(k * T) * amp2,
-          lift * (k * Math.cos(k * T) * (1 + amp) - Math.sin(k * T) * amp2),
+          -decay * rho * Math.cos(phi) - rho * W * Math.sin(phi),
+          climb,
+          -decay * rho * Math.sin(phi) + rho * W * Math.cos(phi),
         ];
       });
     },

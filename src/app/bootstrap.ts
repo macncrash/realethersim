@@ -703,10 +703,11 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
         camera.aspect = cw / ch;
         camera.updateProjectionMatrix();
       }
-      const only = new URLSearchParams(location.search).get('only'); // ?capture=thumbs&only=<id> → just one
+      const only = new URLSearchParams(location.search).get('only'); // ?capture=thumbs&only=<id>[,<id>…] → subset
+      const onlySet = only ? new Set(only.split(',')) : null;
       const ids = listFactories()
         .map((f) => f.id)
-        .filter((id) => !only || id === only);
+        .filter((id) => !onlySet || onlySet.has(id));
       // Wait for the queued (microtask) rebuild swap AND the async GPU setup to finish, so stepFrame
       // drives the right path (raymarch / GPU compute / CPU) against a fully-built system.
       const settle = async (): Promise<void> => {

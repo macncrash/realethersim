@@ -31,7 +31,17 @@ export interface MapSystem {
   center: [number, number, number];
   pointSize: number;
   dt: number; // accumulator pacing only
+  depth?: number; // 2D maps only: opt-in 3D relief amplitude — drapes the attractor over a height field
 }
+
+const DEPTH_FREQ = 1.7; // spatial frequency of the 3D relief the depth-maps drape over (render space)
+// Canonical-2D maps that MUST stay flat: strange-attractor phase portraits whose fractal banding /
+// stochastic-web structure is only meaningful in the plane, and the symmetric icons (read by N-fold
+// symmetry face-on). Every OTHER 2D map is an attractor-image that gains a tasteful 3D relief drape.
+const FLAT_MAPS = new Set([
+  'tinkerbell', 'ikeda', 'henon', 'lozi', 'standard', 'zaslavsky',
+  'icon-sanddollar', 'icon-trinity', 'icon-pentagram', 'icon-hexagon', 'icon-heptagon', 'icon-clamshell',
+]);
 
 function autoParams(defaults: Record<string, number>): ParamSpec[] {
   return Object.entries(defaults).map(([key, v]) => {
@@ -52,6 +62,7 @@ interface MapSpec {
   bounds: { x: [number, number]; y: [number, number]; z?: [number, number] };
   spread?: number;
   pointSize?: number;
+  depth?: number; // 2D maps: opt-in 3D relief (attractor-image maps get it; canonical phase portraits don't)
 }
 
 function makeMap(o: MapSpec): MapSystem {
@@ -71,6 +82,7 @@ function makeMap(o: MapSpec): MapSystem {
     center: [mid(o.bounds.x), mid(o.bounds.y), o.bounds.z ? mid(o.bounds.z) : 0],
     pointSize: o.pointSize ?? 0.01,
     dt: 0.004,
+    depth: dim > 2 ? undefined : (o.depth ?? (FLAT_MAPS.has(o.id) ? 0 : 0.5)),
   };
 }
 
@@ -193,6 +205,7 @@ class IteratedMapArchetype implements Archetype {
     const { state, positions, dim, system } = this;
     const [cx, cy, cz] = system.center;
     const s = system.scale;
+    const depth = system.depth ?? 0;
     const n = this.particleCount;
     for (let i = 0; i < n; i++) {
       const so = i * dim;
@@ -201,9 +214,13 @@ class IteratedMapArchetype implements Archetype {
       if (!Number.isFinite(state[so]) || !Number.isFinite(state[so + 1])) {
         for (let k = 0; k < dim; k++) state[so + k] = system.init[k];
       }
-      positions[po] = (state[so] - cx) * s;
-      positions[po + 1] = (state[so + 1] - cy) * s;
-      positions[po + 2] = dim > 2 ? (state[so + 2] - cz) * s : 0;
+      const X = (state[so] - cx) * s;
+      const Y = (state[so + 1] - cy) * s;
+      positions[po] = X;
+      positions[po + 1] = Y;
+      // dim-3 maps use their own z; flat 2D maps optionally drape over a height field so orbiting reveals
+      // depth (the face-on X-Y image is unchanged). Canonical phase portraits leave depth unset → stay flat.
+      positions[po + 2] = dim > 2 ? (state[so + 2] - cz) * s : (depth ? depth * Math.sin(DEPTH_FREQ * X) * Math.sin(DEPTH_FREQ * Y) : 0);
     }
   }
 

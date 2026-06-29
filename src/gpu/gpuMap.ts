@@ -18,6 +18,14 @@ interface GpuMapSystem {
   pointSize: number;
 }
 
+const DEPTH_FREQ = 1.7; // 3D relief frequency — MUST match iteratedMap.ts DEPTH_FREQ (CPU/GPU twins)
+const DEPTH_AMP = 0.5; // relief amplitude for attractor-image maps
+// Maps that stay FLAT (no relief) — must match iteratedMap.ts FLAT_MAPS + pickover (already true-3D).
+const GPU_FLAT = new Set([
+  'tinkerbell', 'ikeda', 'henon', 'lozi', 'standard', 'zaslavsky', 'pickover',
+  'icon-sanddollar', 'icon-trinity', 'icon-pentagram', 'icon-hexagon', 'icon-heptagon', 'icon-clamshell',
+]);
+
 export const GPU_MAPS: Record<string, GpuMapSystem> = {
   clifford: {
     paramKeys: ['a', 'b', 'c', 'd'], defaults: { a: -1.4, b: 1.7, c: 1, d: 0.7 },
@@ -261,7 +269,7 @@ export const GPU_MAPS: Record<string, GpuMapSystem> = {
   },
 };
 
-function buildGpuMap(sys: GpuMapSystem, count: number): GpuSim {
+function buildGpuMap(sys: GpuMapSystem, count: number, depth: number): GpuSim {
   const pos: GpuNode = attributeArray(count, 'vec3');
   const u: Record<string, GpuNode> = {};
   for (const k of sys.paramKeys) u[k] = uniform(sys.defaults[k]);
@@ -289,7 +297,12 @@ function buildGpuMap(sys: GpuMapSystem, count: number): GpuSim {
   material.depthWrite = false;
   material.blending = THREE.AdditiveBlending;
   material.opacity = 0.85;
-  material.positionNode = attr.sub(vec3(c[0], c[1], c[2])).mul(sys.scale);
+  const rp = attr.sub(vec3(c[0], c[1], c[2])).mul(sys.scale).toVar();
+  // attractor-image maps drape over a 3D relief (z = depth·sin(F·x)·sin(F·y)); mirrors the CPU twin
+  // exactly so the face-on X-Y image is identical. Flat maps (depth=0) keep z from iterate().
+  material.positionNode = depth > 0
+    ? vec3(rp.x, rp.y, rp.x.mul(DEPTH_FREQ).sin().mul(rp.y.mul(DEPTH_FREQ).sin()).mul(float(depth)))
+    : rp;
   material.colorNode = mix(color(0x4ad6c8), color(0xff8a4a), attr.x.mul(0.3).add(0.5).clamp(0, 1));
 
   const geometry = new THREE.BufferGeometry();
@@ -317,5 +330,6 @@ function buildGpuMap(sys: GpuMapSystem, count: number): GpuSim {
 
 export function makeGpuMap(id: string): GpuFactory {
   const sys = GPU_MAPS[id];
-  return (count) => buildGpuMap(sys, count);
+  const depth = GPU_FLAT.has(id) ? 0 : DEPTH_AMP; // attractor-image maps get relief; canonical/3D stay flat
+  return (count) => buildGpuMap(sys, count, depth);
 }
