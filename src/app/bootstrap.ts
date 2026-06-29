@@ -325,6 +325,20 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
       camera.position.set(1.4, 0.8, 3.9);
       controls.update();
     }
+    // Cymatics is a flat vibrating plate — view it near top-down (the classic cymatics photograph), a
+    // slight tilt so the relief shimmers.
+    if ($archetypeId.get() === 'cymatics') {
+      controls.target.set(0, 0, 0);
+      camera.position.set(0, 4.2, 1.4); // mostly top-down so the figure reads, tilted enough that the relief shimmers
+      controls.update();
+    }
+    // The polynomial root cloud lives in the complex plane (Re→x, Im→y) — view it face-on so the iconic
+    // unit-circle "feather" reads; orbiting reveals the density relief.
+    if ($archetypeId.get() === 'polynomialRoots') {
+      controls.target.set(0, 0, 0);
+      camera.position.set(0, 0, 3.6);
+      controls.update();
+    }
     scheduleLle();
   }
 
@@ -736,6 +750,8 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
           else if (id === 'theodorus') { controls.target.set(0, 0, 0); camera.position.set(0, 1.15, 3.85); }
           else if (id === 'reconnection') { controls.target.set(0, 0, 0); camera.position.set(1.4, 0.8, 3.9); }
           else if (id === 'dla') { controls.target.set(0, 0, 0); camera.position.set(0, 3.5, 1.15); }
+          else if (id === 'cymatics') { controls.target.set(0, 0, 0); camera.position.set(0, 4.2, 1.4); }
+          else if (id === 'polynomialRoots') { controls.target.set(0, 0, 0); camera.position.set(0, 0, 3.6); }
           else camera.position.set(2.4, 1.5, 4.4);
         }
         controls.update();
