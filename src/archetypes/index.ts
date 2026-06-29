@@ -27,6 +27,9 @@ import { vortexFunnelFactory } from './vortexFunnel';
 import { drumheadFactory } from './drumhead';
 import { orbitWeaveFactory } from './orbitWeave';
 import { fractalFlameFactory } from './fractalFlame';
+import { pseudospectrumFactory } from './pseudospectrum';
+import { cosmicWebFactory } from './cosmicWeb';
+import { reconnectionFactory } from './reconnection';
 import { makeParametricFactory, PARAMETRIC_SYSTEMS } from './parametric';
 import { makeRaymarchFactory, RAYMARCH_SYSTEMS } from './raymarchFractal';
 
@@ -73,6 +76,9 @@ export function registerArchetypes(): void {
   register(drumheadFactory);
   register(orbitWeaveFactory);
   register(fractalFlameFactory);
+  register(pseudospectrumFactory);
+  register(cosmicWebFactory);
+  register(reconnectionFactory);
   for (const system of Object.values(PARAMETRIC_SYSTEMS)) {
     register(makeParametricFactory(system));
   }

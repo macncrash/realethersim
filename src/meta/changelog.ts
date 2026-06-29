@@ -18,6 +18,54 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    "version": "0.1.41",
+    "date": "2026-06-28",
+    "title": "Magnetic Reconnection",
+    "summary": "A new Plasma category opens with the magnetic-reconnection X-point — blue field lines rush in, gold plasma jets blast out, and a blazing white null marks where they snap and splice.",
+    "newSystems": [
+      "reconnection"
+    ],
+    "notes": [
+      "New Plasma category: reconnection — the X-point saddle flow v = (−αx, +βy) (streamfunction ψ = αxy); every particle a closed-form tracer, baked blue-inflow / gold-jet / white-null populations, jetBoost sets the outflow:inflow asymmetry"
+    ]
+  },
+  {
+    "version": "0.1.40",
+    "date": "2026-06-28",
+    "title": "Spiral of Theodorus",
+    "summary": "Theodorus of Cyrene's 2,400-year-old √n staircase of right triangles, drift-deformed and mirrored into a glowing rotationally-symmetric flower of nested zigzag petals.",
+    "newSystems": [
+      "theodorus"
+    ],
+    "notes": [
+      "theodorus (Parametric): the √n spiral of right triangles (vertex n at radius √n, angle Σ atan(1/√k)), drift-twisted + replicated M-fold into a flower; tube-swept per arm, coloured along the spectrum"
+    ]
+  },
+  {
+    "version": "0.1.39",
+    "date": "2026-06-28",
+    "title": "Cosmic Web",
+    "summary": "A new Cosmology category opens with the largest structure that exists — watch a near-uniform universe fold into voids, filaments, and blazing cluster nodes via the Zel'dovich approximation.",
+    "newSystems": [
+      "cosmicWeb"
+    ],
+    "notes": [
+      "New Cosmology category: cosmicWeb — Zel'dovich-approximation large-scale structure; particles ride frozen trajectories x = q + D·ψ(q) from one seeded Gaussian field, tinted by overdensity δ = −∇·ψ (void → filament → node)"
+    ]
+  },
+  {
+    "version": "0.1.38",
+    "date": "2026-06-28",
+    "title": "Pseudospectrum",
+    "summary": "A new Spectral category opens with the resolvent-norm landscape of a non-normal matrix — eigenvalue cones rising from broad continents of near-instability that the eigenvalues alone never reveal.",
+    "newSystems": [
+      "pseudospectrum"
+    ],
+    "notes": [
+      "New Spectral category: pseudospectrum — the height field 1/σ_min(zI−A) over the complex plane, exact closed form for a 2×2 non-normal A; |g| controls non-normality, drift wanders the eigenvalues"
+    ]
+  },
+  {
     "version": "0.1.37",
     "date": "2026-06-27",
     "title": "Octic Node Lattice",

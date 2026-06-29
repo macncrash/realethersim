@@ -1678,4 +1678,31 @@ point(r*st*Math.cos(phi), r*Math.cos(theta), r*st*Math.sin(phi));`,
       }
     ]
   },
+  theodorus: {
+    title: 'Spiral of Theodorus',
+    about:
+      "Around 400 BC, Theodorus of Cyrene (a teacher of Plato) built a spiral from nothing but right triangles. Start with a unit right triangle — legs 1 and 1, hypotenuse √2. On that hypotenuse erect another triangle with a new unit leg; its hypotenuse is √3. Keep going and the outer corners land at radii √1, √2, √3, … — the square-root spiral, every irrational √n laid out by ruler and compass. Here it is DRIFT-DEFORMED: a small constant twist is added to each step and the single staircase is mirrored into several rotated copies, so the humble triangle spiral blooms into a rotationally-symmetric flower of nested zigzag petals.",
+    howItWorks:
+      "The n-th vertex sits at radius rₙ = √n and angle θₙ = Σ atan(1/√k) — each unit leg, seen from the centre at radius √k, subtends an angle atan(1/√k), and those angles accumulate as you climb the staircase. Joining consecutive vertices gives the zigzag arm (the unit legs are the teeth; the hypotenuses are the radial spokes). The 'drift' adds a constant δ to every step's angle, θₙ = Σ(atan(1/√k) + δ): a negative δ unwinds the natural ~2√N winding so each arm reads as a distinct curved petal rather than a dense coil, and once atan(1/√k) drops below δ the outer arm curls back, hooking the petal tips. The arm is replicated into M copies, each rotated by 2π/M, to make the flower's M-fold symmetry; every copy is swept into its own glowing tube (no chord links a tip back to the centre). Radius is normalised by √N so the framing stays put as you add triangles, and the figure is laid flat in the camera-facing X–Y plane. Colour runs along the arms, so each petal carries its own slice of the spectrum.",
+    equations: [
+      { label: 'vertex radius (√n spiral)', latex: 'r_n = \\sqrt{n}' },
+      { label: 'cumulative turning angle', latex: '\\theta_n = \\sum_{k=1}^{n} \\arctan\\!\\frac{1}{\\sqrt{k}}' },
+      { label: 'drift-deformed angle', latex: '\\theta_n = \\sum_{k=1}^{n} \\Big(\\arctan\\tfrac{1}{\\sqrt{k}} + \\delta\\Big)' },
+      { label: 'vertex, M-fold copy j', latex: 'V_n^{(j)} = \\sqrt{n}\\,\\big(\\cos(\\theta_n + \\tfrac{2\\pi j}{M}),\\ \\sin(\\theta_n + \\tfrac{2\\pi j}{M})\\big)' },
+      { label: 'asymptotic angle (Hlawka)', latex: '\\theta_n \\approx 2\\sqrt{n} - 2.157782\\ldots' },
+    ],
+    params: [
+      { key: 'triangles', symbol: 'N', meaning: 'how many right triangles each arm is built from — more = a longer, finer staircase (lower N shows the teeth)' },
+      { key: 'symmetry', symbol: 'M', meaning: 'number of rotated copies = the flower’s petal/fold count' },
+      { key: 'drift', symbol: '\\delta', meaning: 'constant angular twist added per step; negative unwinds the spiral into open petals, positive coils it tighter' },
+      { key: 'tube', symbol: '\\rho', meaning: 'radius of the glowing tube swept along each arm' },
+      { key: 'lift', symbol: '\\ell', meaning: 'amplitude of a small z-ripple lifting the flat flower into a gently undulating 3D ribbon' },
+    ],
+    code: "// √n spiral of right triangles, drift-twisted + mirrored into an M-fold flower\nlet acc = 0; const th = [0];\nfor (let v = 1; v < N; v++) { acc += Math.atan(1/Math.sqrt(v)) + drift; th[v] = acc; }\nconst vert = (v, arm) => {                 // arm = 0…M-1 (rotated copy)\n  const r = Math.sqrt(v+1) / Math.sqrt(N); // radius √v, normalised\n  const a = th[v] + arm * (2*Math.PI/M);   // cumulative angle + copy rotation\n  return [r*Math.cos(a), r*Math.sin(a), lift*Math.sin(v*0.6)];\n};\n// join consecutive vertices of each arm into a swept glowing tube (X-Y plane)",
+    links: [
+      { label: 'Spiral of Theodorus (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Spiral_of_Theodorus' },
+      { label: 'Theodorus of Cyrene (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Theodorus_of_Cyrene' },
+      { label: 'Hlawka — the Theodorus constant', url: 'https://en.wikipedia.org/wiki/Spiral_of_Theodorus#Growth_rate' },
+    ]
+  },
 };
