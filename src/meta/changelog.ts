@@ -18,6 +18,21 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    "version": "0.1.42",
+    "date": "2026-06-28",
+    "title": "3D depth + fixes",
+    "summary": "Several flat systems gain real 3D dimensionality when you orbit, DLA is fixed so its dendrite is actually visible, and the About panel scrollbar sits flush at the edge.",
+    "newSystems": [],
+    "notes": [
+      "Magnetic Reconnection: extruded into a 3D current-sheet slab — the X-point null becomes a glowing X-line (opt-in guide-field helix on the jets)",
+      "Fractal Flame: the chaos game lifted to a true 3D attractor (face-on flame preserved)",
+      "Spiral of Theodorus: a shallow radial dome adds depth while the rosette still reads face-on",
+      "Decaying Spiral: a 3D corrugation lifts the coil out of the plane",
+      "DLA fix: the dendrite is pre-grown (frontier-launch + kill-radius) and framed from above, so it's immediately visible instead of an edge-on smudge; runs on the CPU path",
+      "About panel: the vertical scrollbar now sits flush at the modal edge (no gap)"
+    ]
+  },
+  {
     "version": "0.1.41",
     "date": "2026-06-28",
     "title": "Magnetic Reconnection",

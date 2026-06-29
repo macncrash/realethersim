@@ -529,9 +529,14 @@ export const PARAMETRIC_SYSTEMS: Record<string, ParamSurface> = {
       const rot = arm * (TAU / M);
       const vert = (vv: number): [number, number, number] => {
         const v = vv < 0 ? 0 : vv > N - 1 ? N - 1 : vv;
-        const r = Math.sqrt(v + 1) * invR;
+        const r = Math.sqrt(v + 1) * invR; // normalised radius ∈ [1/√N, 1]
         const a = th[v] + rot;
-        return [r * Math.cos(a), r * Math.sin(a), lift * Math.sin(v * 0.6)];
+        // Radial dome (rise toward the hub, flat at the rim) — pure-z, so x,y and the M-fold angular
+        // symmetry are untouched: the rosette still reads face-on, orbiting reveals a shallow bowl.
+        const domeH = lift * 3.0;
+        const ripple = lift * Math.sin(v * 0.6) * (0.5 + 0.5 * r); // keep the triangle-staircase texture everywhere
+        const z = domeH * (1 - r * r) + ripple - domeH * 0.5; // recentre on the origin
+        return [r * Math.cos(a), r * Math.sin(a), z];
       };
       sweepTube(
         li, perArm, p.tube, out, o,
@@ -1024,20 +1029,20 @@ export const PARAMETRIC_SYSTEMS: Record<string, ParamSurface> = {
     id: 'decaySpiral', label: 'Decaying Spiral', defaultParticleCount: 160_000, scale: 0.12, pointSize: 0.006,
     params: [
       { key: 'freq', label: 'winding k', min: 4, max: 30, step: 1, default: 16 },
-      { key: 'lift', label: '3D lift', min: 0, max: 0.4, step: 0.01, default: 0.06 },
+      { key: 'lift', label: '3D lift', min: 0, max: 0.6, step: 0.01, default: 0.22 },
       { key: 'tube', label: 'thickness', min: 0.01, max: 0.08, step: 0.005, default: 0.03 },
     ],
     // γ(t) = (t + cos(kt)/t, t + sin(kt)/t), t∈[0.2,20]: a 1/t-decaying circular oscillation riding the
     // diagonal baseline y=x — a wide coil near the origin that unwinds into a tight thread along y=x.
-    // t is remapped LOGARITHMICALLY so the large early loops get dense samples. Laid in the X-Y plane
-    // (faces the camera) with a small z-lift; centred by subtracting the bbox midpoint (≈7.6, 8.4).
+    // A z-ripple synced to the winding lifts the ribbon out of the plane into a 3D corrugated coil
+    // (default lift raised so it reads dimensional at rest). t is remapped LOGARITHMICALLY for dense loops.
     position: (i, n, p, out, o) => {
       const TMIN = 0.2, TMAX = 20, CX = 7.6, CY = 8.4, k = p.freq, lift = p.lift;
       const LT = Math.log(TMAX / TMIN);
       sweepTube(i, n, p.tube, out, o, (t) => {
         const T = TMIN * Math.exp((t / TAU) * LT);
         const amp = 1 / T;
-        return [T + Math.cos(k * T) * amp - CX, T + Math.sin(k * T) * amp - CY, lift * Math.sin(0.5 * k * T)];
+        return [T + Math.cos(k * T) * amp - CX, T + Math.sin(k * T) * amp - CY, lift * Math.sin(k * T) * (1 + amp)];
       }, (t) => {
         const T = TMIN * Math.exp((t / TAU) * LT);
         const amp = 1 / T, amp2 = 1 / (T * T);
@@ -1045,7 +1050,7 @@ export const PARAMETRIC_SYSTEMS: Record<string, ParamSurface> = {
         return [
           1 - k * Math.sin(k * T) * amp - Math.cos(k * T) * amp2,
           1 + k * Math.cos(k * T) * amp - Math.sin(k * T) * amp2,
-          lift * 0.5 * k * Math.cos(0.5 * k * T),
+          lift * (k * Math.cos(k * T) * (1 + amp) - Math.sin(k * T) * amp2),
         ];
       });
     },
