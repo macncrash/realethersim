@@ -72,6 +72,23 @@ function sweepTube(
   out[o + 2] = c[2] + rad * (cv * nz + sv * bz);
 }
 
+// Cumulative turning angles of the Spiral of Theodorus: θ_v = Σ_{j=1}^{v} (atan(1/√j) + drift). The
+// running sum is O(N), so memoize it per (N, drift) — rebuild() calls position() for every particle
+// with the same params, and recomputing the sum inside each call would be O(n·N). Single-threaded
+// rebuild ⇒ a module-level cache is safe.
+let _theoCache: { N: number; drift: number; th: Float64Array } | null = null;
+function theodorusAngles(N: number, drift: number): Float64Array {
+  if (_theoCache && _theoCache.N === N && _theoCache.drift === drift) return _theoCache.th;
+  const th = new Float64Array(N);
+  let acc = 0;
+  for (let v = 1; v < N; v++) {
+    acc += Math.atan(1 / Math.sqrt(v)) + drift; // unit leg at radius √v subtends atan(1/√v); drift twists it
+    th[v] = acc;
+  }
+  _theoCache = { N, drift, th };
+  return th;
+}
+
 export interface ParamSurface {
   id: string;
   label: string;
@@ -479,6 +496,60 @@ export const PARAMETRIC_SYSTEMS: Record<string, ParamSurface> = {
           const b = vert(k + 1);
           let dx = b[0] - a[0], dy = b[1] - a[1], dz = b[2] - a[2];
           if (Math.hypot(dx, dy, dz) < 1e-9) { dx = 1; dy = 0; dz = 0; } // guard zero-length chord
+          return [dx, dy, dz];
+        },
+      );
+    },
+  },
+  theodorus: {
+    id: 'theodorus', label: 'Spiral of Theodorus', defaultParticleCount: 160_000, scale: 1.55, pointSize: 0.008,
+    params: [
+      { key: 'triangles', label: 'triangles N', min: 16, max: 160, step: 1, default: 72 },
+      { key: 'symmetry', label: 'symmetry M', min: 1, max: 16, step: 1, default: 9 },
+      { key: 'drift', label: 'drift', min: -0.5, max: 0.5, step: 0.005, default: -0.2 },
+      { key: 'tube', label: 'thickness', min: 0.004, max: 0.04, step: 0.002, default: 0.012 },
+      { key: 'lift', label: '3D lift', min: 0, max: 0.3, step: 0.01, default: 0.05 },
+    ],
+    // The √n spiral of Theodorus: a chain of right triangles each adding a unit outer leg, so vertex v
+    // sits at radius √v and the cumulative turning angle is θ_v = Σ atan(1/√k). DRIFT-DEFORMED — a small
+    // constant angular drift per step twists the arm — and replicated into M rotated copies, so the
+    // single staircase becomes a rotationally-symmetric flower of nested zigzag petals. Each arm is its
+    // own swept tube (no chord linking tip back to centre); radius is normalised by √N so the framing is
+    // stable as N changes. Laid flat in the X-Y plane (faces the camera) with a tiny z-lift.
+    position: (i, n, p, out, o) => {
+      const M = Math.max(1, Math.round(p.symmetry));
+      const N = Math.max(3, Math.round(p.triangles));
+      const lift = p.lift;
+      const invR = 1 / Math.sqrt(N); // normalise the outer radius to ≈1 regardless of N
+      const th = theodorusAngles(N, p.drift);
+      const perArm = Math.max(1, Math.floor(n / M));
+      let arm = Math.floor(i / perArm);
+      if (arm >= M) arm = M - 1; // remainder particles fold into the last arm
+      const li = i - arm * perArm;
+      const rot = arm * (TAU / M);
+      const vert = (vv: number): [number, number, number] => {
+        const v = vv < 0 ? 0 : vv > N - 1 ? N - 1 : vv;
+        const r = Math.sqrt(v + 1) * invR;
+        const a = th[v] + rot;
+        return [r * Math.cos(a), r * Math.sin(a), lift * Math.sin(v * 0.6)];
+      };
+      sweepTube(
+        li, perArm, p.tube, out, o,
+        (t) => {
+          const f = (t / TAU) * (N - 1); // continuous vertex index 0…N-1 along this arm
+          const k = Math.min(N - 2, Math.floor(f));
+          const frac = f - k;
+          const a = vert(k);
+          const b = vert(k + 1);
+          return [a[0] + (b[0] - a[0]) * frac, a[1] + (b[1] - a[1]) * frac, a[2] + (b[2] - a[2]) * frac];
+        },
+        (t) => {
+          const f = (t / TAU) * (N - 1);
+          const k = Math.min(N - 2, Math.floor(f));
+          const a = vert(k);
+          const b = vert(k + 1);
+          let dx = b[0] - a[0], dy = b[1] - a[1], dz = b[2] - a[2];
+          if (Math.hypot(dx, dy, dz) < 1e-9) { dx = 1; dy = 0; dz = 0; } // guard zero-length leg
           return [dx, dy, dz];
         },
       );

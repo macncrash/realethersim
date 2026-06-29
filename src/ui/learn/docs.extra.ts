@@ -2205,4 +2205,78 @@ o[1] = p.b * x[0];`,
       { label: 'Iterated function system (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Iterated_function_system' },
     ],
   },
+  pseudospectrum: {
+    title: 'Pseudospectrum',
+    about:
+      "The eigenvalues of a matrix tell you where it is exactly singular — but for a NON-NORMAL matrix they lie. Add a vanishingly small perturbation and the spectrum can lurch a long way; the matrix behaves as if it had eigenvalues nowhere near the real ones. The honest picture is the pseudospectrum: not isolated points but a whole landscape over the complex plane measuring how CLOSE zI−A comes to singular at every z. We render that landscape — sharp cones spike up at the true eigenvalues, and around a strongly non-normal matrix they swell into broad 'continents' of near-instability that the eigenvalues alone never reveal.",
+    howItWorks:
+      "Closeness-to-singular is measured by the smallest singular value σ_min(zI−A); its reciprocal 1/σ_min is the resolvent norm, which blows up exactly at the eigenvalues. The height field is that resolvent norm sampled across the plane (tanh-saturated so the cones stay finite, with rounded rather than clipped tips). For a 2×2 upper-triangular A = [[a, g],[0, d]] the singular values of M = zI−A have a closed form — σ_min² is the smaller root of λ² − tr(MᴴM)λ + |det M|² = 0 — so the whole grid is exact and cheap, no per-cell SVD. The eigenvalues sit at z = a and z = d (the two cones); the off-diagonal g is the non-normality — crank it and the cones merge into one wide plateau of pseudo-instability. With drift on, the eigenvalues wander along slow Lissajous orbits and the terrain breathes, grows, and splits. Colour is keyed to height: orange valleys and contour rings in the basin, teal up the cone bodies, white at the eigenvalue tips.",
+    equations: [
+      { label: 'resolvent norm = height', latex: 'h(z) = \\dfrac{1}{\\sigma_{\\min}(zI - A)}' },
+      { label: 'ε-pseudospectrum (the level sets)', latex: '\\Lambda_\\varepsilon(A) = \\{\\, z \\in \\mathbb{C} : \\sigma_{\\min}(zI - A) \\le \\varepsilon \\,\\}' },
+      { label: 'σ_min via MᴴM, M = zI − A', latex: '\\sigma_{\\min}^2 = \\tfrac12\\big(T - \\sqrt{T^2 - 4D}\\big),\\quad T = \\operatorname{tr}(M^{H}M),\\ D = |\\det M|^2' },
+      { label: 'upper-triangular A (g = non-normality)', latex: 'A = \\begin{bmatrix} a & g \\\\ 0 & d \\end{bmatrix},\\quad \\det M = (z-a)(z-d)' },
+    ],
+    params: [
+      { key: 'matrix', symbol: 'seed', meaning: 'picks where the two eigenvalues a, d sit — scrub it to wander different two-cone layouts' },
+      { key: 'nonNormal', symbol: '|g|', meaning: 'the off-diagonal magnitude — how non-normal A is; raise it to swell and merge the pseudospectral continents' },
+      { key: 'relief', symbol: 'h·', meaning: 'vertical exaggeration of the resolvent landscape' },
+      { key: 'drift', symbol: 'ω', meaning: 'speed the eigenvalues wander along slow orbits, so the terrain morphs' },
+    ],
+    code: "// resolvent-norm height over the complex plane, exact for a 2x2 upper-triangular A=[[a,g],[0,d]]\nfor (each grid cell z = x + i*y) {\n  const m11 = |z - a|**2, m22 = |z - d|**2;   // M = zI - A\n  const T = m11 + m22 + g*g;                   // tr(M^H M)\n  const D = m11 * m22;                         // |det M|^2 = |(z-a)(z-d)|^2\n  const smin2 = 0.5 * (T - Math.sqrt(T*T - 4*D));\n  h = HMAX * Math.tanh(0.35 / (Math.sqrt(smin2) + 0.02));  // 1/sigma_min, saturated\n}\n// displace a point grid by h, colour by height (orange basin -> teal cones -> white tips)",
+    links: [
+      { label: 'Pseudospectrum (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Pseudospectrum' },
+      { label: 'Trefethen & Embree — Spectra and Pseudospectra', url: 'https://press.princeton.edu/books/hardcover/9780691119465/spectra-and-pseudospectra' },
+      { label: 'Non-normal matrix (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Normal_matrix' },
+    ],
+  },
+  cosmicWeb: {
+    title: 'Cosmic Web',
+    about:
+      "The matter of the universe isn't scattered evenly — gravity has spun it into a vast filigree of empty VOIDS, the SHEETS and FILAMENTS that drape between them, and the blazing NODES (galaxy clusters) where filaments cross. This is the cosmic web, the largest structure that exists. It grew from almost nothing: tiny density ripples in the early universe, amplified by gravity over billions of years. (The eerie resemblance to a slice of brain tissue is a real and much-noted coincidence.) Here it's grown from a single seed — scrub the growth dial and watch a near-uniform cosmos fold into the web before your eyes.",
+    howItWorks:
+      "Rather than an expensive N-body force solve, this uses the ZEL'DOVICH APPROXIMATION — the classic first-order theory of how structure forms. Start with particles on a regular grid q. Build one Gaussian random displacement field ψ(q) = −∇φ from a band-limited cosmological power spectrum (synthesized here as a sum of hundreds of Fourier modes, so it's exact and seedable with no FFT). Then every particle simply slides along a STRAIGHT, frozen trajectory x(q) = q + D·ψ(q), where the single scalar D is the linear growth factor — cosmic time. As D increases, matter streams down-gradient and piles up: first into sheets, then filaments, then dense knots, exactly where the field was already overdense. Each particle is tinted once by the overdensity it's destined for, δ(q) = −∇·ψ: underdense voids fall to near-black, the pile-ups glow orange along the filaments, and the densest crossings blaze yellow-white. Because that overdensity is a fixed property of q, the colour is baked at build and the web is unconditionally bounded and fully reproducible from the seed.",
+    equations: [
+      { label: 'Zel’dovich trajectory (q = grid, D = growth)', latex: '\\mathbf{x}(\\mathbf{q}, D) = \\mathbf{q} + D\\,\\boldsymbol{\\psi}(\\mathbf{q})' },
+      { label: 'displacement = −gradient of the potential', latex: '\\boldsymbol{\\psi}(\\mathbf{q}) = -\\nabla\\varphi = \\textstyle\\sum_m A_m\\,\\hat{\\mathbf{k}}_m \\sin(\\mathbf{k}_m\\!\\cdot\\!\\mathbf{q} + \\phi_m)' },
+      { label: 'overdensity (the colour key)', latex: '\\delta(\\mathbf{q}) = -\\nabla\\!\\cdot\\!\\boldsymbol{\\psi} = -\\textstyle\\sum_m A_m\\,|\\mathbf{k}_m|\\cos(\\mathbf{k}_m\\!\\cdot\\!\\mathbf{q} + \\phi_m)' },
+      { label: 'mode power spectrum', latex: 'A_m \\propto \\sqrt{P(k)}\\,/\\,k,\\qquad P(k) = k\\,e^{-(k/k_{\\mathrm{cut}})^2}' },
+    ],
+    params: [
+      { key: 'field', symbol: 'seed', meaning: 'which random universe — scrub it to grow a different web from a different initial field' },
+      { key: 'growth', symbol: 'D', meaning: 'the growth factor (cosmic time): how far structure has collapsed. Low = smooth, high = sharp web' },
+      { key: 'webScale', symbol: 'k', meaning: 'spatial frequency of the structure — small = a few fat filaments, large = a fine intricate web' },
+      { key: 'contrast', symbol: '—', meaning: 'the void fraction: where the dark floor ends, i.e. how much of the volume reads as empty void' },
+    ],
+    code: "// Zel'dovich approximation: particles ride frozen trajectories x = q + D*psi(q)\n// psi = sum of Fourier modes of the Gaussian displacement field (built once, per seed)\nfor (each grid point q) {\n  let psi = [0,0,0], div = 0;\n  for (each mode m) {\n    const th = dot(k[m], q) + phase[m];\n    psi += u[m] * amp[m] * Math.sin(th);     // displacement -grad(phi)\n    div += amp[m] * kmag[m] * Math.cos(th);  // divergence of psi\n  }\n  delta = -div;                              // overdensity -> colour (void->filament->node)\n}\n// per frame: x = q + D*psi  (D ramps up = structure forming); colour fixed by delta",
+    links: [
+      { label: 'Observable universe / large-scale structure (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Observable_universe#Large-scale_structure' },
+      { label: 'Zel’dovich approximation (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Zeldovich_pancake' },
+      { label: 'The cosmic web (Bond, Kofman & Pogosyan 1996)', url: 'https://www.nature.com/articles/380603a0' },
+    ],
+  },
+  reconnection: {
+    title: 'Magnetic Reconnection',
+    about:
+      "In a plasma — the Sun's corona, Earth's magnetosphere, a fusion reactor — magnetic field lines pointing in opposite directions can collide, snap, and splice into new connections. That reconnection dumps the stored magnetic energy explosively, flinging out high-velocity plasma JETS (this is what drives solar flares and auroral substorms). Right at the heart of it sits a magnetic null shaped like an X: field rushes IN along one axis and is expelled OUT along the perpendicular axis. This is that X-point, live: blue field lines streaming in from the sides, gold jets blasting out top and bottom, and a blazing white null where they meet.",
+    howItWorks:
+      "Near the null the plasma flow is the simplest possible 2D saddle (hyperbolic stagnation point), the linearised core of reconnection. Take the streamfunction ψ = α·x·y; the divergence-free velocity is v = (∂ψ/∂y, −∂ψ/∂x) = (−α·x, +α·y) — slow inflow squeezing toward the null along x, accelerating outflow ejected along y. Making the outflow faster than the inflow (β = α·jetBoost on the y-component) gives the reconnection asymmetry that reads as 'releasing jets'. Every particle is a massless tracer of this closed-form field (O(n), no pairwise solve) and rides a fixed streamline forever. Three baked populations paint the neon X: BLUE tracers fill the horizontal inflow wedges (|x|>|y|) and respawn when they cross the diagonal separatrix; GOLD tracers form the vertical jet beams, seeded log-uniformly along the beam so the exponential outflow reads as a smooth steady jet; a WHITE knot marks the null, kept bright by the pile-up where the flow stalls (v→0). Respawn is deterministic (no RNG in the step) so the flow streams perpetually and can never blow up.",
+    equations: [
+      { label: 'X-point streamfunction', latex: '\\psi(x,y) = \\alpha\\,x\\,y' },
+      { label: 'plasma velocity (inflow x, jets y)', latex: '\\mathbf{v} = \\nabla\\times\\psi\\hat{z} = (-\\alpha x,\\ +\\beta y)' },
+      { label: 'streamlines (hyperbolae)', latex: '|x|^{\\beta}\\,|y|^{\\alpha} = \\text{const}' },
+      { label: 'reconnection asymmetry', latex: '\\beta = \\alpha\\cdot\\text{jetBoost}\\quad(\\text{outflow} > \\text{inflow})' },
+    ],
+    params: [
+      { key: 'rate', symbol: '\\alpha', meaning: 'reconnection rate — strength of the inflow/outflow (how fast field rushes in and jets blast out)' },
+      { key: 'jetBoost', symbol: '\\beta/\\alpha', meaning: 'outflow-to-inflow asymmetry — how much faster the jets are ejected than the field flows in' },
+      { key: 'inflowSpan', symbol: 'h', meaning: 'thickness of the blue inflow band around the x-axis' },
+    ],
+    code: "// X-point saddle flow: every particle is a tracer of v = (-alpha*x, +beta*y)\nconst beta = alpha * jetBoost;          // outflow faster than inflow\nfor (each particle) {\n  x += -alpha * x * dt;                  // inflow squeezes toward the null along x\n  y +=  beta  * y * dt;                  // jets accelerate outward along y\n  // deterministic respawn keeps each tracer in its wedge -> crisp X, bounded, perpetual\n  if (leftItsZone(x, y, role)) { x = home.x; y = home.y; }\n}\n// colour ONCE by role: blue inflow wedges, gold jet beams, white null core",
+    links: [
+      { label: 'Magnetic reconnection (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Magnetic_reconnection' },
+      { label: 'Sweet–Parker & Petschek models', url: 'https://en.wikipedia.org/wiki/Magnetic_reconnection#Sweet%E2%80%93Parker_model' },
+      { label: 'Saddle / hyperbolic stagnation point', url: 'https://en.wikipedia.org/wiki/Saddle_point' },
+    ],
+  },
 };

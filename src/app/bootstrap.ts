@@ -293,6 +293,30 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
       camera.position.set(0, 3.2, 0.85);
       controls.update();
     }
+    // The pseudospectrum is a landscape — frame it from an elevated 3/4 to show the peaks + continents.
+    if ($archetypeId.get() === 'pseudospectrum') {
+      controls.target.set(0, 0.45, 0);
+      camera.position.set(0, 2.5, 3.0);
+      controls.update();
+    }
+    // The cosmic web is a centred 3D volume — frame the whole cube from a 3/4 view.
+    if ($archetypeId.get() === 'cosmicWeb') {
+      controls.target.set(0, 0, 0);
+      camera.position.set(2.3, 1.5, 2.8);
+      controls.update();
+    }
+    // The Spiral of Theodorus is a flat X-Y mandala — view it face-on so the rosette symmetry reads.
+    if ($archetypeId.get() === 'theodorus') {
+      controls.target.set(0, 0, 0);
+      camera.position.set(0, 0, 4.0);
+      controls.update();
+    }
+    // Magnetic reconnection is a flat X-Y flow — face-on so the inflow/jet X reads.
+    if ($archetypeId.get() === 'reconnection') {
+      controls.target.set(0, 0, 0);
+      camera.position.set(0, 0, 4.2);
+      controls.update();
+    }
     scheduleLle();
   }
 
@@ -661,7 +685,20 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
       const { selectArchetype } = await import('../ui/store');
       renderer.setAnimationLoop(null); // stop the live loop: it double-steps + its controls.update() fights our camera
       forceMainDriver = true; // so synchronous stepFrame advances trail systems (worker advances on wall-clock)
-      const ids = listFactories().map((f) => f.id);
+      // A fresh/headless first load can leave the renderer at a 1×1 drawing buffer (the resize observer
+      // hasn't fired yet) → the readback is a single black pixel. Force a real capture resolution.
+      {
+        const el = renderer.domElement as HTMLCanvasElement;
+        const cw = Math.max(el.clientWidth || 0, (typeof window !== 'undefined' && window.innerWidth) || 0, 1280);
+        const ch = Math.max(el.clientHeight || 0, (typeof window !== 'undefined' && window.innerHeight) || 0, 800);
+        renderer.setSize(cw, ch, false);
+        camera.aspect = cw / ch;
+        camera.updateProjectionMatrix();
+      }
+      const only = new URLSearchParams(location.search).get('only'); // ?capture=thumbs&only=<id> → just one
+      const ids = listFactories()
+        .map((f) => f.id)
+        .filter((id) => !only || id === only);
       // Wait for the queued (microtask) rebuild swap AND the async GPU setup to finish, so stepFrame
       // drives the right path (raymarch / GPU compute / CPU) against a fully-built system.
       const settle = async (): Promise<void> => {
@@ -685,6 +722,10 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
         // the rebuild — don't override it. Point clouds get a deterministic default 3/4 (karman top-down).
         if (!isRaymarch(id)) {
           if (id === 'karman') camera.position.set(0, 3.2, 0.85);
+          else if (id === 'pseudospectrum') { controls.target.set(0, 0.45, 0); camera.position.set(0, 2.5, 3.0); }
+          else if (id === 'cosmicWeb') { controls.target.set(0, 0, 0); camera.position.set(2.3, 1.5, 2.8); }
+          else if (id === 'theodorus') { controls.target.set(0, 0, 0); camera.position.set(0, 0, 4.0); }
+          else if (id === 'reconnection') { controls.target.set(0, 0, 0); camera.position.set(0, 0, 4.2); }
           else camera.position.set(2.4, 1.5, 4.4);
         }
         controls.update();
