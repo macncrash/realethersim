@@ -1875,4 +1875,27 @@ const F = (x,y,z) => { const a=x*x,b=y*y,c=z*z, s=a+b+c-1;
       { label: 'Ray marching / distance fields (Íñigo Quílez)', url: 'https://iquilezles.org/articles/distfunctions/' },
     ],
   },
+  newtonFractal: {
+    "title": "Newton Fractal",
+    "about": "Run Newton's root-finding method on the simplest interesting polynomial, p(z)=zⁿ−1, starting from every point of the complex plane. Most starting points spiral into one of the n roots-of-unity — colour each pixel by WHICH root it reaches and you get n smooth basins of attraction. But the boundaries between basins are not curves: they are an infinitely intricate fractal where all n basins meet at every point, and that filigree is the flowing, n-fold-symmetric structure of polynomiography (Bahman Kalantari's term for root-finding-as-art, and the family of images behind Simone Conradi's polynomial-root pieces).",
+    "howItWorks": "For each pixel a complex coordinate z is read from the screen and iterated by Newton's map. For p(z)=zⁿ−1 the step simplifies to z ← z − a·(z − z^{1−n})/n, where a is an over-relaxation factor (a=1 is ordinary Newton; a>1 over-shoots, thickening the fractal seams into the dramatic flowing ribbons). The complex power z^{1−n} is evaluated in polar form r^{1−n}·(cos(1−n)θ, sin(1−n)θ) with a pole-floor on r so z=0 stays finite. After a fixed iteration budget the final z is snapped to the nearest n-th root of unity (its argument → root index) to pick a hue; the number of iterations taken modulates brightness, so the slow-to-converge fractal boundary glows while basin interiors stay dark. 'morph' slowly drifts a so the seams breathe.",
+    "equations": [
+      { "label": "polynomial and its roots", "latex": "p(z) = z^{n} - 1, \\qquad \\text{roots } \\omega_k = e^{2\\pi i k / n}" },
+      { "label": "Newton iteration (over-relaxed)", "latex": "z \\;\\leftarrow\\; z - a\\,\\frac{p(z)}{p'(z)} = z - a\\,\\frac{z - z^{1-n}}{n}" },
+      { "label": "complex power in polar form", "latex": "z^{m} = r^{m}\\,\\big(\\cos m\\theta,\\ \\sin m\\theta\\big), \\quad r=|z|,\\ \\theta=\\operatorname{atan}(y,x)" },
+    ],
+    "params": [
+      { "key": "fold", "symbol": "n", "meaning": "degree of zⁿ−1 → the number of roots and the n-fold symmetry of the basins" },
+      { "key": "relax", "symbol": "a", "meaning": "over-relaxation: a=1 ordinary Newton (thin seams), a>1 thickens the flowing fractal ribbons" },
+      { "key": "zoom", "symbol": "Z", "meaning": "view scale on the complex plane" },
+      { "key": "animate", "symbol": "\\omega", "meaning": "morph rate — slowly drifts a so the basin boundaries shimmer" },
+      { "key": "colShift", "symbol": "\\phi", "meaning": "hue rotation of the per-root palette" },
+    ],
+    code: "// per pixel: Newton's method on p(z)=zⁿ−1\nz = vec2(ndc.x, ndc.y) * zoom;\nfor (i in 0..iters) {\n  r = max(|z|, 1e-6);  th = atan(z.y, z.x);\n  zPow = r^(1-n) * (cos((1-n)th), sin((1-n)th));  // z^{1−n}\n  dz = a * (z - zPow) / n;   z -= dz;\n  if (|dz| < 1e-4) break;     // converged → which root?\n}\nrootId = round( atan(z.y,z.x)/2π * n );   // hue\nglow   = pow(iter/iters, 0.5);            // boundary brightness",
+    links: [
+      { label: 'Newton fractal (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Newton_fractal' },
+      { label: 'Polynomiography (Bahman Kalantari)', url: 'https://en.wikipedia.org/wiki/Polynomiography' },
+      { label: "Newton's method (Wikipedia)", url: 'https://en.wikipedia.org/wiki/Newton%27s_method' },
+    ],
+  },
 };

@@ -26,6 +26,8 @@ const GPU_FACTORIES: Record<string, GpuFactory> = {
   quantumFoam: gpuFoam,
   lenia: gpuLenia,
   // dla: runs CPU-only — its pre-grown frontier-launch dendrite + bright palette live in the CPU archetype
+  // polynomialRoots: CPU-only — one-shot Durand–Kerner root cloud computed at build (no GPU twin)
+  // cymatics: CPU-only — Faraday Bessel-mode superposition evaluated per mode-change (no GPU twin)
   particleLife: gpuParticleLife,
   boids: gpuBoids,
   slimeMold: gpuSlimeMold,

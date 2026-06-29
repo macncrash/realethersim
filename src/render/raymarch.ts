@@ -763,6 +763,36 @@ export function createRaymarch(sys: RaymarchSystem, backend: 'webgpu' | 'webgl2'
       const tile = mix(cA, cB, chk).toVar();
       const fade = float(1).div(float(1).add(length(w).mul(0.18))); // far cells dissolve into the BG
       col.assign(mix(col, tile, fade));
+    } else if (sys.sdf === 'newton') {
+      // ── Newton fractal / polynomiography: per-pixel basins of Newton's method for p(z)=zⁿ−1. ──
+      // z ← z − a·(z − z^{1−n})/n  (a=over-relaxation). Colour = which root it lands in (hue) × how
+      // long it took to converge (the fractal basin boundaries glow → flowing N-fold ribbons).
+      const TAU = 6.2831853;
+      const n = u.fold; // 3..7 (uniform); roots are the n-th roots of unity
+      const a = u.relax.add(u.animate.mul(0.4).mul(sin(uTime.mul(0.3)))).toVar(); // morph: drift relaxation
+      const z = vec2(ndc.x, ndc.y).mul(u.zoom).toVar();
+      const iter = float(0).toVar();
+      const done = float(0).toVar();
+      Loop(sys.iters, () => {
+        const r = max(length(z), 1e-6);
+        const th = atan(z.y, z.x); // two-arg atan (no atan2 in TSL)
+        const m = float(1).sub(n); // exponent 1−n
+        const rm = pow(r, m);
+        const zpow = vec2(rm.mul(cos(m.mul(th))), rm.mul(sin(m.mul(th)))); // z^{1−n} in polar form
+        const dz = z.sub(zpow).div(n).mul(a).toVar(); // a·(z − z^{1−n})/n
+        const stepLen = length(dz).toVar();
+        z.assign(z.sub(dz));
+        iter.addAssign(done.oneMinus()); // count iterations until converged (then stops)
+        If(stepLen.lessThan(2e-4), () => { done.assign(1); });
+      });
+      // root id → hue; per-root cosine palette shifted by colShift so the n sectors read distinctly
+      const rootId = floor(atan(z.y, z.x).div(TAU).mul(n).add(0.5)); // nearest n-th root of unity
+      const hue = rootId.div(n).mul(TAU).add(u.colShift.mul(TAU));
+      const base = vec3(cos(hue).mul(0.5).add(0.5), cos(hue.add(2.1)).mul(0.5).add(0.5), cos(hue.add(4.2)).mul(0.5).add(0.5)).toVar();
+      const mu = iter.div(float(sys.iters)).toVar(); // interior converges fast (→0); fractal boundary slow (→1)
+      const glow = pow(mu, 1.25).toVar(); // dark basin interiors → the bright fractal seams pop (flowing ribbons)
+      const white = pow(mu, 4).mul(0.7); // white-hot at the sharpest boundaries
+      col.assign(base.mul(glow.mul(0.92).add(0.06)).add(white));
     } else if (sys.sdf === 'volumetric') {
       // ── Non-SDF marcher: accumulate volumetric EMISSION through a domain-warped density field. ──
       // Fixed-step ray, no bending. Density e drives o += exp(−e·k)·palette·e·Δs·E (the twigl look).

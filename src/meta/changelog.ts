@@ -18,6 +18,19 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    "version": "0.1.46",
+    "date": "2026-06-29",
+    "title": "Three new systems: Newton fractal, root cloud, cymatics",
+    "summary": "A daily-adds trio inspired by math art in the wild: polynomiography's flowing n-fold basins, Simone Conradi's polynomial-root clouds, and the standing-wave geometry of cymatics.",
+    "newSystems": ["newtonFractal", "polynomialRoots", "cymatics"],
+    "notes": [
+      "Newton Fractal (Conformal): per-pixel basins of Newton's method for zⁿ−1 — flowing n-fold-symmetric ribbons, coloured by which root each point reaches and how long it took. Live fold/over-relaxation/zoom/morph",
+      "Polynomial Root Cloud (Sampler): scatters the complex roots of thousands of random ±1 (Littlewood) or {−1,0,1} (Bohemian) polynomials, found via Durand–Kerner — the iconic fractal feather hugging the unit circle (after Simone Conradi's 40-million-root pieces)",
+      "Cymatic Plate (Field): a Faraday-wave superposition of the circular eigenmode band near a drive frequency — dense shimmering interference rosettes, distinct from the single-mode Chladni drumhead",
+      "Refactor: the Bessel-function helpers are now a shared module (src/archetypes/bessel.ts) used by both drumhead and cymatics"
+    ]
+  },
+  {
     "version": "0.1.45",
     "date": "2026-06-29",
     "title": "Engine upgrade — Three.js r185",

@@ -39,6 +39,7 @@ export type RaymarchKind =
   | 'blackhole'
   | 'volumetric'
   | 'conformal'
+  | 'newton'
   | 'kaleidoTunnel';
 
 export interface RaymarchSystem {
@@ -361,6 +362,19 @@ export const RAYMARCH_SYSTEMS: Record<string, RaymarchSystem> = {
       { key: 'scale', label: 'checker', min: 1, max: 16, step: 0.1, default: 5 },
       { key: 'zoom', label: 'zoom', min: 0.3, max: 4, step: 0.05, default: 1.8 },
       { key: 'animate', label: 'spin', min: 0, max: 1, step: 0.01, default: 0.3 },
+      COL,
+    ],
+  },
+
+  // ── Newton fractal / polynomiography: per-pixel basins of Newton's method for zⁿ−1 (non-SDF) ──
+  newtonFractal: {
+    id: 'newtonFractal', label: 'Newton Fractal', sdf: 'newton', category: 'Conformal',
+    iters: 40, bound: 1, camDist: 1, maxSteps: 1,
+    params: [
+      { key: 'fold', label: 'roots n', min: 3, max: 7, step: 1, default: 5 },
+      { key: 'relax', label: 'over-relax a', min: 0.5, max: 2, step: 0.01, default: 1 },
+      { key: 'zoom', label: 'zoom', min: 0.3, max: 4, step: 0.05, default: 1.5 },
+      { key: 'animate', label: 'morph', min: 0, max: 1, step: 0.01, default: 0.3 },
       COL,
     ],
   },
