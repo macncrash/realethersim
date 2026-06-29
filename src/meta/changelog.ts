@@ -18,6 +18,17 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    "version": "0.1.45",
+    "date": "2026-06-29",
+    "title": "Engine upgrade — Three.js r185",
+    "summary": "ETHERSIM's WebGPU/TSL engine moves up to Three.js r185. A full 169-system smoke test — every family, on both the WebGPU and WebGL2-fallback backends — confirmed pixel-faithful parity, so nothing changes on screen; the upgrade just keeps us current on perf and TSL features.",
+    "newSystems": [],
+    "notes": [
+      "Upgraded three.js r184 → r185 (WebGPU renderer + TSL node materials + GPU-compute). Verified: all 169 systems render correctly, GPU-compute attractors/maps/fields intact, raymarch surfaces/fractals/volumes intact, additive-blend glow at parity (no premultiplied-alpha regression), WebGL2 fallback OK",
+      "Silenced a benign r185 TSL console warning on raymarch systems — wrapped an inline If() callback in braces so it no longer hands TSL an implicit return"
+    ]
+  },
+  {
     "version": "0.1.44",
     "date": "2026-06-28",
     "title": "Symmetric icons gain depth",

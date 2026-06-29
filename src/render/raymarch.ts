@@ -879,7 +879,7 @@ export function createRaymarch(sys: RaymarchSystem, backend: 'webgpu' | 'webgl2'
         });
         If(hit.greaterThan(0.5), () => {
           const n = calcNormal(hp).toVar();
-          If(n.dot(rd).greaterThan(0), () => n.assign(n.negate())); // face the camera (implicit surfaces flip sign)
+          If(n.dot(rd).greaterThan(0), () => { n.assign(n.negate()); }); // face the camera (implicit surfaces flip sign). Braces avoid the implicit-return the arrow would otherwise hand If() — r185 warns on a return inside an inline Fn's If().
           const diff = max(n.dot(LIGHT), 0).toVar();
           const sh = softShadow(hp.add(n.mul(0.0025)), LIGHT).toVar();
           const ao = calcAO(hp, n).toVar();
