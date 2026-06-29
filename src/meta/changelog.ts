@@ -18,6 +18,18 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    "version": "0.1.43",
+    "date": "2026-06-28",
+    "title": "Maps gain depth + Decaying Spiral reborn",
+    "summary": "The attractor-image iterated maps now drape over a 3D relief so orbiting reveals real dimensionality, and the Decaying Spiral is rebuilt as a true 3D logarithmic funnel-coil. Canonical phase portraits (Hénon, Ikeda, the symmetric icons…) stay authentically flat.",
+    "newSystems": [],
+    "notes": [
+      "Iterated maps: Clifford, de Jong, Svensson, Hopalong, Gumowski–Mira, Bedhead, King's Dream, Sprott Quadratic, Duffing, Gingerbreadman, Martin now drape over a 3D height-field relief (CPU + GPU twins); the face-on image is unchanged",
+      "Left authentically 2D: Hénon, Lozi, Chirikov Standard, Zaslavsky, Tinkerbell, Ikeda, and the symmetric icons (their structure is only meaningful in the plane)",
+      "Decaying Spiral: rebuilt as a genuine 3D logarithmic funnel-coil (uniform turns, exponentially-decaying radius, climbing) instead of a flat comet"
+    ]
+  },
+  {
     "version": "0.1.42",
     "date": "2026-06-28",
     "title": "3D depth + fixes",

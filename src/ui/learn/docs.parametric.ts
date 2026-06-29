@@ -1624,49 +1624,22 @@ point(r*st*Math.cos(phi), r*Math.cos(theta), r*st*Math.sin(phi));`,
   decaySpiral: {
     title: 'Decaying Spiral',
     about:
-      'A single curve that starts as a wide, lazy coil sitting at the origin and slowly unwinds into a tight thread as it travels outward — the loops shrinking the further they get, like a spring being stretched while it spins. The whole figure rides a straight diagonal baseline, so the early big loops cluster in one corner and the curve tapers off toward the far corner. It is the path of a point circling a moving centre while its orbit radius decays.',
+      'A genuine 3D funnel-coil: a point winds a fixed number of turns around a vertical axis while its orbit radius decays exponentially and it climbs in height. The result is a logarithmic spiral pulled into the third dimension — wide, lazy loops at the base that tighten into a fine thread at the apex, like a spring wound into a horn. Orbit it to see the depth.',
     howItWorks:
-      'A base point marches up the diagonal line y = x as the parameter T grows, and onto it we add a small circular wobble of radius 1/T. Because that radius falls off as 1/T, the wobble is large and obvious when T is small (the fat coil near the origin) and almost invisible when T is large (the tight thread). The winding count k sets how many times the wobble circles per unit of T. To give the early, visually busy loops plenty of points, T is sampled logarithmically — equal steps in the curve parameter map to a geometric progression in T. The closed path is swept into a glowing tube, laid in the camera-facing X–Y plane with a faint z-ripple for depth, and recentred on the bounding-box midpoint.',
+      'As the curve parameter u runs 0 → 1, three things happen at once: the winding angle φ sweeps a fixed number of turns (φ = turns·2π·u), the radius decays exponentially (ρ = R₀·e^(−decay·u), so it loses a constant fraction of its width per turn — the signature of a logarithmic spiral), and the height climbs linearly (y = climb·(u − ½)). The point therefore spirals around the vertical axis, tightening as it rises into a funnel/horn. The closed-form curve is swept into a glowing tube; it is unconditionally bounded (every term is bounded) and needs no special framing — the default 3/4 camera shows the coil standing in space.',
     equations: [
-      {
-        label: 'logarithmic time map',
-        latex: 'T(t) = T_{\\min}\\,\\exp\\!\\Big(\\tfrac{t}{2\\pi}\\,\\ln\\tfrac{T_{\\max}}{T_{\\min}}\\Big),\\quad t\\in[0,2\\pi]'
-      },
-      {
-        label: 'x component',
-        latex: 'x = T + \\dfrac{\\cos(kT)}{T}'
-      },
-      {
-        label: 'y component',
-        latex: 'y = T + \\dfrac{\\sin(kT)}{T}'
-      },
-      {
-        label: 'decaying orbit radius',
-        latex: 'a(T) = \\dfrac{1}{T}\\ \\longrightarrow\\ 0\\quad\\text{as }T\\text{ grows}'
-      },
-      {
-        label: 'vertical ripple',
-        latex: 'z = \\ell\\,\\sin\\!\\big(\\tfrac{1}{2}kT\\big)'
-      }
+      { label: 'winding angle (uniform turns)', latex: '\\varphi(u) = \\text{turns}\\cdot 2\\pi\\,u,\\quad u\\in[0,1]' },
+      { label: 'exponentially-decaying radius', latex: '\\rho(u) = R_0\\,e^{-\\text{decay}\\cdot u}' },
+      { label: 'height (climb)', latex: 'y(u) = \\text{climb}\\,(u - \\tfrac12)' },
+      { label: 'curve', latex: 'C(u) = \\big(\\rho\\cos\\varphi,\\ y,\\ \\rho\\sin\\varphi\\big)' }
     ],
     params: [
-      {
-        key: 'freq',
-        symbol: 'k',
-        meaning: 'winding rate — how many times the curve loops around its moving centre per unit of T (more = a finer, busier coil)'
-      },
-      {
-        key: 'lift',
-        symbol: '\\ell',
-        meaning: 'amplitude of the vertical (z) ripple that lifts the flat spiral into a gently undulating 3D ribbon'
-      },
-      {
-        key: 'tube',
-        symbol: '\\rho',
-        meaning: 'radius of the glowing tube swept along the curve'
-      }
+      { key: 'turns', symbol: 'N', meaning: 'how many full turns the coil winds from base to apex' },
+      { key: 'decay', symbol: '\\kappa', meaning: 'exponential radius-decay rate — higher tightens the funnel faster' },
+      { key: 'climb', symbol: 'h', meaning: 'total height of the coil (how tall the funnel stands)' },
+      { key: 'tube', symbol: '\\rho', meaning: 'radius of the glowing tube swept along the curve' }
     ],
-    code: "const TMIN = 0.2, TMAX = 20, k = p.freq, lift = p.lift;\nconst LT = Math.log(TMAX / TMIN);\nconst C = (t) => {\n  const T = TMIN * Math.exp((t / (2*Math.PI)) * LT); // log-time sampling\n  const amp = 1 / T;                                  // orbit radius decays as 1/T\n  return [T + Math.cos(k*T)*amp, T + Math.sin(k*T)*amp, lift*Math.sin(0.5*k*T)];\n};\n// C(t) over t∈[0,2π]; swept into a glowing tube (centred on its bbox midpoint)",
+    code: "const R0 = 1.15, turns = p.turns, decay = p.decay, climb = p.climb;\nconst W = turns * 2*Math.PI;\nconst C = (t) => {\n  const u = t / (2*Math.PI);              // u in [0,1] along the coil\n  const rho = R0 * Math.exp(-decay * u);  // radius decays exponentially\n  const phi = W * u;                       // uniform winding\n  return [rho*Math.cos(phi), climb*(u-0.5), rho*Math.sin(phi)];\n};\n// swept into a glowing tube — a 3D logarithmic funnel-coil",
     links: [
       {
         label: 'Logarithmic spiral (Wikipedia)',
