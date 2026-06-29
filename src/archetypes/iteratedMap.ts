@@ -32,14 +32,16 @@ export interface MapSystem {
   pointSize: number;
   dt: number; // accumulator pacing only
   depth?: number; // 2D maps only: opt-in 3D relief amplitude — drapes the attractor over a height field
+  radialDepth?: number; // 2D icons: radial-only relief z=f(R) — adds depth while preserving N-fold symmetry
 }
 
-const DEPTH_FREQ = 1.7; // spatial frequency of the 3D relief the depth-maps drape over (render space)
-// Canonical-2D maps that MUST stay flat: strange-attractor phase portraits whose fractal banding /
-// stochastic-web structure is only meaningful in the plane, and the symmetric icons (read by N-fold
-// symmetry face-on). Every OTHER 2D map is an attractor-image that gains a tasteful 3D relief drape.
-const FLAT_MAPS = new Set([
-  'tinkerbell', 'ikeda', 'henon', 'lozi', 'standard', 'zaslavsky',
+const DEPTH_FREQ = 1.7; // spatial frequency of the eggcrate relief the depth-maps drape over (render space)
+const RADIAL_FREQ = 4.5; // concentric-ripple frequency for the radial relief (icons — keeps N-fold symmetry)
+// Canonical phase portraits that MUST stay flat: their fractal banding / stochastic-web structure is
+// only meaningful in the plane. Every other non-icon 2D map is an attractor-image that gets the eggcrate
+// drape; the symmetric icons get a RADIAL relief instead (z=f(R) only ⇒ N-fold symmetry preserved).
+const FLAT_MAPS = new Set(['tinkerbell', 'ikeda', 'henon', 'lozi', 'standard', 'zaslavsky']);
+const RADIAL_MAPS = new Set([
   'icon-sanddollar', 'icon-trinity', 'icon-pentagram', 'icon-hexagon', 'icon-heptagon', 'icon-clamshell',
 ]);
 
@@ -82,7 +84,9 @@ function makeMap(o: MapSpec): MapSystem {
     center: [mid(o.bounds.x), mid(o.bounds.y), o.bounds.z ? mid(o.bounds.z) : 0],
     pointSize: o.pointSize ?? 0.01,
     dt: 0.004,
-    depth: dim > 2 ? undefined : (o.depth ?? (FLAT_MAPS.has(o.id) ? 0 : 0.5)),
+    // attractor-image maps drape over the eggcrate; icons get a radial relief; canonical/3D stay flat
+    depth: dim > 2 ? undefined : (o.depth ?? ((FLAT_MAPS.has(o.id) || RADIAL_MAPS.has(o.id)) ? 0 : 0.5)),
+    radialDepth: dim > 2 ? undefined : (RADIAL_MAPS.has(o.id) ? 0.4 : undefined),
   };
 }
 
@@ -206,6 +210,7 @@ class IteratedMapArchetype implements Archetype {
     const [cx, cy, cz] = system.center;
     const s = system.scale;
     const depth = system.depth ?? 0;
+    const radialDepth = system.radialDepth ?? 0;
     const n = this.particleCount;
     for (let i = 0; i < n; i++) {
       const so = i * dim;
@@ -218,9 +223,13 @@ class IteratedMapArchetype implements Archetype {
       const Y = (state[so + 1] - cy) * s;
       positions[po] = X;
       positions[po + 1] = Y;
-      // dim-3 maps use their own z; flat 2D maps optionally drape over a height field so orbiting reveals
-      // depth (the face-on X-Y image is unchanged). Canonical phase portraits leave depth unset → stay flat.
-      positions[po + 2] = dim > 2 ? (state[so + 2] - cz) * s : (depth ? depth * Math.sin(DEPTH_FREQ * X) * Math.sin(DEPTH_FREQ * Y) : 0);
+      // dim-3 maps use their own z; attractor-image maps drape over an eggcrate; icons get a RADIAL relief
+      // (z=f(R) only ⇒ N-fold symmetry preserved); canonical phase portraits stay flat. Face-on X-Y is unchanged.
+      let z = 0;
+      if (dim > 2) z = (state[so + 2] - cz) * s;
+      else if (depth) z = depth * Math.sin(DEPTH_FREQ * X) * Math.sin(DEPTH_FREQ * Y);
+      else if (radialDepth) { const R = Math.hypot(X, Y); z = radialDepth * Math.cos(RADIAL_FREQ * R) * Math.max(0, 1 - 0.45 * R); }
+      positions[po + 2] = z;
     }
   }
 

@@ -187,7 +187,7 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
     try {
       const sim = createGpu(id, g.particleCount, g.dt, $params.get());
       scene.add(sim.points);
-      if (sim.init) await renderer.computeAsync(sim.init);
+      if (sim.init) renderer.compute(sim.init); // renderer.init() already awaited at startup → sync compute
       gpuSim = sim;
     } catch (err) {
       console.error('[ethersim] GPU compute init failed — reverting to CPU', err);
@@ -501,7 +501,7 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
       rt.texture.colorSpace = THREE.SRGBColorSpace;
       const prev = renderer.getRenderTarget();
       renderer.setRenderTarget(rt);
-      await renderer.renderAsync(scene, camera);
+      renderer.render(scene, camera); // enqueue synchronously; the async readback below awaits GPU completion
       const buf = (await renderer.readRenderTargetPixelsAsync(rt, 0, 0, w, h)) as Uint8Array;
       renderer.setRenderTarget(prev);
       rt.dispose();
@@ -641,7 +641,7 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
       let buf: Uint8Array;
       try {
         renderer.setRenderTarget(rt);
-        await renderer.renderAsync(scene, camera);
+        renderer.render(scene, camera); // enqueue synchronously; the async readback below awaits GPU completion
         buf = (await renderer.readRenderTargetPixelsAsync(rt, 0, 0, w, h)) as Uint8Array;
       } finally {
         renderer.setRenderTarget(prev); // always restore + free, even if render/readback threw

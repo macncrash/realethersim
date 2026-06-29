@@ -18,13 +18,16 @@ interface GpuMapSystem {
   pointSize: number;
 }
 
-const DEPTH_FREQ = 1.7; // 3D relief frequency — MUST match iteratedMap.ts DEPTH_FREQ (CPU/GPU twins)
-const DEPTH_AMP = 0.5; // relief amplitude for attractor-image maps
-// Maps that stay FLAT (no relief) — must match iteratedMap.ts FLAT_MAPS + pickover (already true-3D).
-const GPU_FLAT = new Set([
-  'tinkerbell', 'ikeda', 'henon', 'lozi', 'standard', 'zaslavsky', 'pickover',
+// Relief constants — MUST match iteratedMap.ts (CPU/GPU twins) so the face-on image is identical.
+const DEPTH_FREQ = 1.7; // eggcrate frequency (attractor-image maps)
+const DEPTH_AMP = 0.5;
+const RADIAL_FREQ = 4.5; // concentric-ripple frequency (icons — radial relief preserves N-fold symmetry)
+const RADIAL_AMP = 0.4;
+const GPU_RADIAL = new Set([
   'icon-sanddollar', 'icon-trinity', 'icon-pentagram', 'icon-hexagon', 'icon-heptagon', 'icon-clamshell',
 ]);
+// Canonical phase portraits + pickover (true-3D): no relief at all.
+const GPU_FLAT = new Set(['tinkerbell', 'ikeda', 'henon', 'lozi', 'standard', 'zaslavsky', 'pickover']);
 
 export const GPU_MAPS: Record<string, GpuMapSystem> = {
   clifford: {
@@ -269,7 +272,7 @@ export const GPU_MAPS: Record<string, GpuMapSystem> = {
   },
 };
 
-function buildGpuMap(sys: GpuMapSystem, count: number, depth: number): GpuSim {
+function buildGpuMap(sys: GpuMapSystem, count: number, depth: number, radialDepth: number): GpuSim {
   const pos: GpuNode = attributeArray(count, 'vec3');
   const u: Record<string, GpuNode> = {};
   for (const k of sys.paramKeys) u[k] = uniform(sys.defaults[k]);
@@ -298,11 +301,17 @@ function buildGpuMap(sys: GpuMapSystem, count: number, depth: number): GpuSim {
   material.blending = THREE.AdditiveBlending;
   material.opacity = 0.85;
   const rp = attr.sub(vec3(c[0], c[1], c[2])).mul(sys.scale).toVar();
-  // attractor-image maps drape over a 3D relief (z = depth·sin(F·x)·sin(F·y)); mirrors the CPU twin
-  // exactly so the face-on X-Y image is identical. Flat maps (depth=0) keep z from iterate().
-  material.positionNode = depth > 0
-    ? vec3(rp.x, rp.y, rp.x.mul(DEPTH_FREQ).sin().mul(rp.y.mul(DEPTH_FREQ).sin()).mul(float(depth)))
-    : rp;
+  // Relief mirrors the CPU twin exactly so the face-on X-Y image is identical. Attractor-image maps drape
+  // over an eggcrate; icons get a RADIAL relief (z=f(R) ⇒ N-fold symmetry preserved); flat maps keep z.
+  if (depth > 0) {
+    material.positionNode = vec3(rp.x, rp.y, rp.x.mul(DEPTH_FREQ).sin().mul(rp.y.mul(DEPTH_FREQ).sin()).mul(float(depth)));
+  } else if (radialDepth > 0) {
+    const R = rp.x.mul(rp.x).add(rp.y.mul(rp.y)).sqrt().toVar();
+    const zr = R.mul(RADIAL_FREQ).cos().mul(float(1).sub(R.mul(0.45)).max(0)).mul(float(radialDepth));
+    material.positionNode = vec3(rp.x, rp.y, zr);
+  } else {
+    material.positionNode = rp;
+  }
   material.colorNode = mix(color(0x4ad6c8), color(0xff8a4a), attr.x.mul(0.3).add(0.5).clamp(0, 1));
 
   const geometry = new THREE.BufferGeometry();
@@ -330,6 +339,8 @@ function buildGpuMap(sys: GpuMapSystem, count: number, depth: number): GpuSim {
 
 export function makeGpuMap(id: string): GpuFactory {
   const sys = GPU_MAPS[id];
-  const depth = GPU_FLAT.has(id) ? 0 : DEPTH_AMP; // attractor-image maps get relief; canonical/3D stay flat
-  return (count) => buildGpuMap(sys, count, depth);
+  const radial = GPU_RADIAL.has(id);
+  const depth = (GPU_FLAT.has(id) || radial) ? 0 : DEPTH_AMP; // attractor-images get eggcrate; icons radial; rest flat
+  const radialDepth = radial ? RADIAL_AMP : 0;
+  return (count) => buildGpuMap(sys, count, depth, radialDepth);
 }
