@@ -1922,4 +1922,28 @@ const F = (x,y,z) => { const a=x*x,b=y*y,c=z*z, s=a+b+c-1;
       { label: 'Marching squares / isolines', url: 'https://en.wikipedia.org/wiki/Marching_squares' },
     ],
   },
+  seedform: {
+    "title": "Seedform",
+    "about": "A soft botanical bloom built the way a watercolourist layers a flower: a ring of overlapping translucent petals, each a wash of pigment laid over the cream of the paper, deepening to an inky heart where they all pool. It is not a 3D surface or a fractal — it is pure compositing, a generative homage to Lindsay Kokoska's 'Seedform' studies, where warm peach and cool indigo petals overlap into the dense, dark centre of an opening seed.",
+    "howItWorks": "Each pixel reads a plane coordinate that is first domain-warped by a few slow sines so the petal edges undulate organically. Then N petals are placed around a ring; each is a Gaussian blob whose width is the 'softness'. The colour is built by TRANSLUCENT INK LAYERING (subtractive, like watercolour) rather than by summing a field: starting from the cream paper, each petal multiplies the colour beneath it toward its own pigment with an alpha set by the Gaussian. Because the layering is multiplicative, a lone petal stays a pale wash but wherever petals OVERLAP the colour compounds and deepens — and at the centre, where every petal meets a final pooled blob, it darkens to a deep indigo heart. Petal pigment alternates between warm peach and cool indigo (biased by 'warmth'); the whole ring slowly rotates and the warp drifts with 'morph'.",
+    "equations": [
+      { "label": "petal alpha (Gaussian on a ring)", "latex": "a_i = \\operatorname{clamp}\\big(\\beta\\,e^{-\\lVert \\mathbf{q}-\\mathbf{c}_i\\rVert^{2}/\\sigma^{2}}\\big), \\quad \\mathbf{c}_i = \\rho\\,(\\cos\\theta_i,\\ \\sin\\theta_i)" },
+      { "label": "translucent ink layering (overlaps deepen)", "latex": "\\mathbf{C} \\;\\leftarrow\\; \\operatorname{mix}\\big(\\mathbf{C},\\ \\mathbf{C}\\odot\\mathbf{ink}_i,\\ a_i\\big)" },
+      { "label": "pigment: warm peach ↔ cool indigo", "latex": "\\mathbf{ink}_i = \\operatorname{mix}(\\mathbf{indigo},\\ \\mathbf{peach},\\ w_i), \\quad w_i \\sim \\tfrac12 + \\tfrac12\\cos(\\cdots) + (\\text{warmth}-\\tfrac12)" },
+    ],
+    "params": [
+      { "key": "softness", "symbol": "\\sigma", "meaning": "petal width — small = crisp distinct petals, large = a single soft cloud" },
+      { "key": "warmth", "symbol": "w", "meaning": "pigment bias: low = cool indigo bloom, high = warm peach bloom" },
+      { "key": "bloom", "symbol": "\\beta", "meaning": "petal opacity / overall density of the wash" },
+      { "key": "zoom", "symbol": "Z", "meaning": "view scale of the bloom" },
+      { "key": "animate", "symbol": "\\omega", "meaning": "morph rate — how fast the ring rotates and the petal edges drift" },
+      { "key": "colShift", "symbol": "\\phi", "meaning": "rotates which petals are warm vs cool around the ring" },
+    ],
+    code: "// per pixel: layer N translucent petals over cream paper\nlet C = cream;\nconst q = warp(vec2(ndc.x, ndc.y) * zoom);   // slow-sine domain warp\nfor (i in 0..N) {                              // petals on a ring\n  const c  = 0.62 * vec2(cos(ang_i), sin(ang_i));\n  const a  = clamp(bloom * exp(-dot(q-c, q-c) / softness^2), 0, 0.7);\n  const ink = mix(indigo, peach, warmLobe_i);  // alternating pigment\n  C = mix(C, C * ink * 1.25, a);               // multiplicative → overlaps deepen\n}\nconst ac = clamp(bloom * exp(-dot(q,q) / (1.8*softness^2)), 0, 0.82);\nC = mix(C, C * deepIndigo, ac);                // pooled inky heart",
+    links: [
+      { label: 'Lindsay Kokoska (artist)', url: 'https://www.lindsaykokoska.com/' },
+      { label: 'Alpha compositing (Porter–Duff)', url: 'https://en.wikipedia.org/wiki/Alpha_compositing' },
+      { label: 'Subtractive colour (pigment mixing)', url: 'https://en.wikipedia.org/wiki/Subtractive_color' },
+    ],
+  },
 };

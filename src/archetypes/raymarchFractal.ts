@@ -41,6 +41,7 @@ export type RaymarchKind =
   | 'conformal'
   | 'newton'
   | 'contour'
+  | 'seedform'
   | 'kaleidoTunnel';
 
 export interface RaymarchSystem {
@@ -66,6 +67,7 @@ export interface RaymarchSystem {
   volStep?: number; // fixed march step
   sdf2?: 'plasmaOrb' | 'nebula' | 'voxelCloud'; // which density field the volumetric branch dispatches
   cells?: number; // voxelCloud only: cubic-lattice resolution (cells per q-unit), compile-time const
+  lobes?: number; // seedform only: number of soft bloom lobes (compile-time const — TSL loop bound)
   occlude?: boolean; // volumetric only: front-to-back compositing (crisp solid voxels) vs additive emission
   sdf3?: 'mobius' | 'inverse' | 'square' | 'cexp' | 'joukowski'; // conformal only: which complex map f(z)
 }
@@ -390,6 +392,20 @@ export const RAYMARCH_SYSTEMS: Record<string, RaymarchSystem> = {
       { key: 'thickness', label: 'line weight', min: 0.02, max: 0.45, step: 0.01, default: 0.16 },
       { key: 'zoom', label: 'zoom', min: 0.4, max: 4, step: 0.05, default: 1.6 },
       { key: 'animate', label: 'morph', min: 0, max: 1, step: 0.01, default: 0.5 },
+      COL,
+    ],
+  },
+
+  // ── Bloom: soft ink-diffusion field on a light ground (after Lindsay Kokoska's "Seedform") ──
+  seedform: {
+    id: 'seedform', label: 'Seedform', sdf: 'seedform', category: 'Bloom',
+    iters: 0, bound: 1, camDist: 1, maxSteps: 1, lobes: 6,
+    params: [
+      { key: 'softness', label: 'softness', min: 0.25, max: 1.2, step: 0.02, default: 0.42 },
+      { key: 'warmth', label: 'warmth', min: 0, max: 1, step: 0.01, default: 0.55 },
+      { key: 'bloom', label: 'bloom', min: 0.5, max: 3, step: 0.05, default: 1.5 },
+      { key: 'zoom', label: 'zoom', min: 0.4, max: 3, step: 0.05, default: 1.7 },
+      { key: 'animate', label: 'morph', min: 0, max: 1, step: 0.01, default: 0.4 },
       COL,
     ],
   },

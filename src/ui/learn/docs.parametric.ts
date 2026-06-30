@@ -1678,4 +1678,31 @@ point(r*st*Math.cos(phi), r*Math.cos(theta), r*st*Math.sin(phi));`,
       { label: 'Hlawka — the Theodorus constant', url: 'https://en.wikipedia.org/wiki/Spiral_of_Theodorus#Growth_rate' },
     ]
   },
+  stringWorldsheet: {
+    title: 'String Worldsheet',
+    about:
+      "A classical point particle drags a 1-D worldLINE through spacetime; a relativistic string sweeps a 2-D worldSHEET. This is that sheet, made visible. The string is a vibrating curve — a superposition of standing-wave harmonics, exactly the normal modes of a violin string — and as time advances the curve is swept along a second axis so the surface it traces flows through a static spacetime grid: the leading edge is the string 'now', and every row behind it is the string at an earlier, retarded time. Switch between an OPEN string (pinned ends, like a guitar string) and a CLOSED loop (periodic, the kind whose lowest mode is the graviton in string theory) and the whole sheet changes character.",
+    howItWorks:
+      "Two coordinates parametrise the sheet: σ runs along the string (0→1) and τ is time. The transverse shape is a sum of N harmonics, y(σ,τ) = Σ aₙ·basisₙ(σ)·cos(ωₙτ+φₙ), with amplitudes aₙ = 1/n (high modes taper) and frequencies ωₙ = nπc set by the tension (wave speed c = √T). For an OPEN string the spatial basis is sin(nπσ) — nodes pinned at both ends; for a CLOSED string it is cos(2πnσ) — periodic around the loop. A second, independently-phased copy of the same sum drives a transverse z displacement, so the string is a genuinely 3-D wiggling curve rather than a flat graph. To make the sheet FLOW, each grid row is evaluated at a retarded time τ = t − (1−τ_local)·window: the present edge (τ_local=1) shows the string now, rows behind it show its past, and as t advances the whole history scrolls through the fixed grid. Colour is baked once — hue along σ (teal→violet), brightness ramping from the dim past edge to the bright present, multiplied by the standing-wave antinode envelope so nodes stay dark and antinodes glow. Bounded for all time (a sum of cosines).",
+    equations: [
+      { label: 'transverse displacement (mode sum)', latex: 'y(\\sigma,\\tau) = \\sum_{n=1}^{N} a_n\\,\\beta_n(\\sigma)\\,\\cos(\\omega_n \\tau + \\varphi_n), \\quad a_n = \\tfrac{1}{n}' },
+      { label: 'spatial basis: open vs closed', latex: '\\beta_n(\\sigma) = \\begin{cases} \\sin(n\\pi\\sigma) & \\text{open (pinned ends)} \\\\ \\cos(2\\pi n\\sigma) & \\text{closed (loop)} \\end{cases}' },
+      { label: 'mode frequency from tension', latex: '\\omega_n = n\\pi c, \\qquad c = \\sqrt{T}' },
+      { label: 'retarded-time sweep (the sheet flows)', latex: '\\tau(\\sigma_{\\text{row}}) = t - (1 - \\tau_{\\text{local}})\\,W' },
+    ],
+    params: [
+      { key: 'harmonics', symbol: 'N', meaning: 'number of standing-wave modes summed — more = a richer, busier string' },
+      { key: 'openVsClosed', symbol: '\\beta', meaning: 'open string (pinned ends, sin basis) vs closed loop (periodic, cos basis)' },
+      { key: 'tension', symbol: 'T', meaning: 'string tension → wave speed c=√T → how fast the harmonics oscillate' },
+      { key: 'amp', symbol: 'a', meaning: 'overall vibration amplitude (how far the sheet bulges)' },
+      { key: 'sweep', symbol: 's', meaning: 'how fast time advances and the sheet scrolls through the grid' },
+      { key: 'window', symbol: 'W', meaning: 'how much past history the swept τ-window holds behind the present edge' },
+    ],
+    code: "// worldsheet point at (σ, retarded τ): sum of standing-wave harmonics\nconst displace = (sg, rt) => {            // sg=σ∈[0,1], rt=retarded time\n  const c = Math.sqrt(tension);\n  let y = 0, z = 0;\n  for (let n = 1; n <= N; n++) {\n    const basis = closed ? Math.cos(2*Math.PI*n*sg) : Math.sin(Math.PI*n*sg);\n    const w = n*Math.PI*c;                 // mode frequency ωₙ\n    y += (1/n)*basis*Math.cos(w*rt + phY[n]);\n    z += (1/n)*basis*Math.cos(w*rt + phZ[n]);   // 2nd polarisation\n  }\n  return [y*amp, z*amp];\n};\nconst rt = t - (1 - tauLocal)*window;       // present edge leads, past trails\n// x = σ along string, y = displacement, z = τ-axis + z-bulge",
+    links: [
+      { label: 'Worldsheet (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Worldsheet' },
+      { label: 'Vibrating string / normal modes', url: 'https://en.wikipedia.org/wiki/String_vibration' },
+      { label: 'String theory (Wikipedia)', url: 'https://en.wikipedia.org/wiki/String_theory' },
+    ]
+  },
 };
