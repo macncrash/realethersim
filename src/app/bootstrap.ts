@@ -20,6 +20,7 @@ import { createRaymarch, type RaymarchPass } from '../render/raymarch';
 import { RAYMARCH_SYSTEMS } from '../archetypes/raymarchFractal';
 import { APP_VERSION } from '../version';
 import { embedText } from '../state/pngMeta';
+import { GIFEncoder, quantize, applyPalette } from 'gifenc';
 import { detectCapabilities } from './capabilities';
 import type { Engine } from './engine';
 import { $archetypeId, $engine, $global, $guides, $hierarchy, $params, $paused, $selectedNode, $telemetry } from '../ui/store';
@@ -436,7 +437,7 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
     }
   }
 
-  renderer.setAnimationLoop(() => {
+  function animate(): void {
     timer.update();
     const dt = Math.min(timer.getDelta(), 0.05); // clamp residual large deltas
 
@@ -456,7 +457,8 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
       frames = 0;
       windowStart = now;
     }
-  });
+  }
+  renderer.setAnimationLoop(animate);
 
   // --- snapshot ---
   function cameraSnapshot(): SnapshotCamera {
@@ -579,6 +581,143 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
       a.download = `ethersim-${driver.archetypeId}-${Date.now()}.png`;
       a.click();
       URL.revokeObjectURL(url);
+    },
+    // Record a short looping clip of the live view and download it as WebM (+ animated GIF) — a
+    // motion-faithful share asset for social/marketing (a still can't show the 3D animation). The
+    // live render loop keeps running; each tick we re-render the current scene to an offscreen target
+    // (the WebGPU swap-chain isn't readable, same as captureImageBlob), restore the target BEFORE the
+    // async readback (so the live loop never renders into our target), and draw the frame onto a 2D
+    // mirror canvas: MediaRecorder records that mirror for the WebM, and we sample its pixels for the GIF.
+    async captureClip(onStatus?: (msg: string) => void): Promise<void> {
+      const DUR = 5000; // ms recorded
+      const FPS = 20; // webm sample / mirror-update rate
+      const GIF_EVERY = 2; // gif takes every Nth mirror frame → ~10fps
+      const MAXW = 560; // mirror width (aspect-preserved; webm + gif source)
+      const id = driver.archetypeId;
+      const label = getFactory(id).label;
+
+      const sizeV = new THREE.Vector2();
+      renderer.getDrawingBufferSize(sizeV);
+      // Fall back to the CSS canvas size × DPR if the drawing buffer reports empty (a 1×1/0 buffer can
+      // happen in headless/automation contexts — the offline thumbnail pass guards the same way).
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const sw = Math.max(2, (sizeV.x | 0) || Math.round((canvas.clientWidth || window.innerWidth || 1280) * dpr));
+      const sh = Math.max(2, (sizeV.y | 0) || Math.round((canvas.clientHeight || window.innerHeight || 800) * dpr));
+      const scale = Math.min(1, MAXW / sw);
+      const w = Math.max(2, (Math.round(sw * scale) >> 1) << 1); // even dims (encoder-friendly)
+      const h = Math.max(2, (Math.round(sh * scale) >> 1) << 1);
+
+      const rt = new THREE.RenderTarget(w, h); // render directly at the (small) clip resolution → fast readback
+      rt.texture.colorSpace = THREE.SRGBColorSpace;
+      const mirror = document.createElement('canvas');
+      mirror.width = w;
+      mirror.height = h;
+      const mctx = mirror.getContext('2d')!;
+
+      const stamp = (): void => {
+        const fs = Math.max(10, Math.round(h * 0.04));
+        mctx.save();
+        mctx.shadowColor = 'rgba(0,0,0,0.8)';
+        mctx.shadowBlur = fs * 0.5;
+        mctx.textBaseline = 'alphabetic';
+        mctx.textAlign = 'left';
+        mctx.font = `600 ${fs}px ui-monospace, Menlo, monospace`;
+        mctx.fillStyle = 'rgba(120,232,220,0.92)';
+        mctx.fillText('ETHERSIM', fs * 0.6, h - fs * 1.5);
+        mctx.font = `${Math.round(fs * 0.66)}px ui-monospace, monospace`;
+        mctx.fillStyle = 'rgba(200,220,240,0.6)';
+        mctx.fillText('ethersim.ai', fs * 0.6, h - fs * 0.55);
+        mctx.textAlign = 'right';
+        mctx.fillStyle = 'rgba(225,238,252,0.85)';
+        mctx.font = `${Math.round(fs * 0.8)}px ui-monospace, monospace`;
+        mctx.fillText(label, w - fs * 0.6, h - fs * 0.7);
+        mctx.restore();
+      };
+
+      // optional WebM recorder on the mirror (guarded — captureStream / MediaRecorder may be absent)
+      const canRec = typeof MediaRecorder !== 'undefined' && typeof (mirror as HTMLCanvasElement).captureStream === 'function';
+      let rec: MediaRecorder | null = null;
+      let webmDone: Promise<Blob | null> = Promise.resolve(null);
+      if (canRec) {
+        const mime = ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm'].find((m) => MediaRecorder.isTypeSupported(m)) || 'video/webm';
+        const stream = mirror.captureStream(FPS);
+        rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 8_000_000 });
+        const chunks: Blob[] = [];
+        rec.ondataavailable = (e) => { if (e.data.size) chunks.push(e.data); };
+        webmDone = new Promise((res) => { rec!.onstop = () => res(new Blob(chunks, { type: 'video/webm' })); });
+        rec.start();
+      }
+
+      const gifFrames: Uint8ClampedArray[] = [];
+      const prevTarget = renderer.getRenderTarget();
+      // Take over the render loop for the duration so nothing else renders into our target mid-readback
+      // (the readback must run while rt is the active target — same ordering as captureImageBlob).
+      renderer.setAnimationLoop(null);
+      const dt = 1 / FPS;
+      let elapsed = 0;
+      const t0 = performance.now();
+      let frame = 0;
+      onStatus?.('● recording…');
+      try {
+        await new Promise<void>((resolve) => {
+          const tick = async (): Promise<void> => {
+            elapsed += dt;
+            stepFrame(dt, elapsed); // advance the sim ourselves (live loop is paused)
+            controls.update();
+            renderer.setRenderTarget(rt);
+            renderer.render(scene, camera);
+            const buf = (await renderer.readRenderTargetPixelsAsync(rt, 0, 0, w, h)) as Uint8Array;
+            renderer.setRenderTarget(prevTarget);
+            const img = mctx.createImageData(w, h);
+            const stride = buf.length === w * h * 4 ? w * 4 : Math.ceil((w * 4) / 256) * 256;
+            for (let r = 0; r < h; r++) {
+              const src = (h - 1 - r) * stride; // flip Y (readback is bottom-up)
+              img.data.set(buf.subarray(src, src + w * 4), r * w * 4);
+            }
+            mctx.putImageData(img, 0, 0);
+            stamp();
+            if (frame % GIF_EVERY === 0) gifFrames.push(mctx.getImageData(0, 0, w, h).data.slice());
+            frame++;
+            if (performance.now() - t0 >= DUR) { resolve(); return; }
+            setTimeout(() => void tick(), 1000 / FPS);
+          };
+          void tick();
+        });
+      } finally {
+        renderer.setRenderTarget(prevTarget);
+        renderer.setAnimationLoop(animate); // restore the live loop no matter what
+      }
+      rt.dispose();
+
+      // download helper
+      const save = (blob: Blob, ext: string): void => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `ethersim-${id}-${Date.now()}.${ext}`;
+        a.click();
+        URL.revokeObjectURL(url);
+      };
+
+      if (rec) {
+        rec.stop();
+        const webm = await webmDone;
+        if (webm && webm.size) save(webm, 'webm');
+      }
+
+      onStatus?.('encoding GIF…');
+      // yield so the status paints before the (blocking) GIF encode
+      await new Promise((r) => setTimeout(r, 30));
+      const enc = GIFEncoder();
+      const delay = Math.round(1000 / (FPS / GIF_EVERY));
+      for (const data of gifFrames) {
+        const palette = quantize(data, 256);
+        const index = applyPalette(data, palette);
+        enc.writeFrame(index, w, h, { palette, delay });
+      }
+      enc.finish();
+      save(new Blob([enc.bytes() as unknown as BlobPart], { type: 'image/gif' }), 'gif');
+      onStatus?.(`clip saved ✓ (${rec ? 'webm + gif' : 'gif'}) — ${gifFrames.length} frames`);
     },
     togglePause(): boolean {
       paused = !paused;
