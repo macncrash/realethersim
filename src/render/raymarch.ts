@@ -820,6 +820,36 @@ export function createRaymarch(sys: RaymarchSystem, backend: 'webgpu' | 'webgl2'
       const a0 = u.colShift.mul(6.2832); // faint tint (default ≈ white-on-black)
       const tint = vec3(cos(a0).mul(0.12).add(0.88), cos(a0.add(2.1)).mul(0.12).add(0.9), cos(a0.add(4.2)).mul(0.12).add(0.95));
       col.assign(tint.mul(line));
+    } else if (sys.sdf === 'seedform') {
+      // ── Bloom: soft ink-diffusion lobes over a light "paper" ground (after Lindsay Kokoska's
+      //    "Seedform"). Per-pixel sum of soft radial lobes (a metaball-ish field), domain-warped into
+      //    organic petals, composited as translucent ink: peach at the soft edges, deep indigo where it
+      //    pools. This branch OWNS col → it overrides the shared dark BG with a light paper gradient.
+      const t = uTime.mul(0.15).mul(u.animate);
+      const s2 = u.softness.mul(u.softness).toVar();
+      col.assign(mix(vec3(0.99, 0.97, 0.95), vec3(0.97, 0.93, 0.91), ndc.y.mul(0.5).add(0.5))); // cream paper
+      const p = vec2(ndc.x, ndc.y).mul(u.zoom).toVar();
+      const pw = vec2(
+        p.x.add(sin(p.y.mul(2.3).add(t)).mul(0.16)).add(sin(p.y.mul(1.1).sub(t.mul(1.3))).mul(0.1)),
+        p.y.add(sin(p.x.mul(2.1).sub(t.mul(0.8))).mul(0.16)).add(sin(p.x.mul(0.9).add(t.mul(1.1))).mul(0.1)),
+      ).toVar(); // domain warp → petal edges
+      const a0 = u.colShift.mul(6.2832);
+      const N = sys.lobes ?? 6;
+      // Each petal is a TRANSLUCENT ink layer composited over the paper (watercolour): a petal multiplies
+      // the colour beneath toward its pigment, so where petals OVERLAP the colour deepens — single petals
+      // stay pale peach, the pooled heart goes deep indigo. (Subtractive layering, not a summed field.)
+      for (let i = 0; i < N; i++) {
+        const ang = float((i * 6.2831853) / N).add(t.mul(2)); // petals drift around a ring
+        const ci = vec2(cos(ang), sin(ang)).mul(0.62);
+        const d = pw.sub(ci);
+        const a = clamp(exp(d.dot(d).div(s2).negate()).mul(u.bloom).mul(0.6), 0, 0.7); // petal alpha (translucent)
+        const warmLobe = clamp(float(0.5).add(cos(float(i * 2.3).add(a0)).mul(0.5)).add(u.warmth.sub(0.5)), 0, 1);
+        const ink = mix(vec3(0.34, 0.30, 0.62), vec3(0.98, 0.58, 0.42), warmLobe); // indigo ↔ peach pigment
+        col.assign(mix(col, col.mul(ink).mul(1.25), a)); // layer the ink; overlaps multiply → deepen
+      }
+      const ac = clamp(exp(pw.dot(pw).div(s2.mul(1.8)).negate()).mul(u.bloom).mul(0.7), 0, 0.82); // pooled heart
+      col.assign(mix(col, col.mul(vec3(0.34, 0.31, 0.52)), ac));
+      col.assign(clamp(col, 0, 1));
     } else if (sys.sdf === 'volumetric') {
       // ── Non-SDF marcher: accumulate volumetric EMISSION through a domain-warped density field. ──
       // Fixed-step ray, no bending. Density e drives o += exp(−e·k)·palette·e·Δs·E (the twigl look).

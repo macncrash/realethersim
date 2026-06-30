@@ -2326,4 +2326,31 @@ o[1] = p.b * x[0];`,
       { label: 'Vibrations of a circular membrane', url: 'https://en.wikipedia.org/wiki/Vibrations_of_a_circular_membrane' },
     ],
   },
+  stokesPhase: {
+    title: 'Stokes Phase Surface',
+    about:
+      "When a physicist evaluates an integral like ∫e^{Φ(z)/ħ}dz in the limit of small ħ, almost all of the answer comes from a handful of SADDLE POINTS of the phase Φ — the method of steepest descent. The eerie part is the Stokes phenomenon: as you slowly turn a parameter, a saddle's contribution can switch on or off discontinuously, even though everything in sight is smooth. This surface makes it geometric. We take the textbook cubic phase Φ(z;s) = z³/3 − s·z over the complex plane and render its real part as a 3-D landscape — a monkey-saddle terrain with two saddle points at z± = ±√s — then light up the steepest-descent paths through them (warm from one saddle, cool from the other). Scrub the argument of s and watch the two descent contours swing into alignment as a saddle's contribution switches across a Stokes line.",
+    howItWorks:
+      "Over a patch of the complex z-plane we compute Φ = z³/3 − s·z and split it: the height of the terrain is the saturated real part h = HMAX·tanh(ReΦ/HMAX) (the cubic blows up, so tanh caps it into a bounded, finite landscape). The two saddles sit where Φ′(z) = z²−s = 0, i.e. z± = ±√s. Through each saddle runs a steepest-DESCENT contour — the curve along which ImΦ stays constant (= ImΦ at that saddle) while ReΦ falls away fastest; that is the path the integral actually follows. We bake a glow wherever ImΦ ≈ ImΦ(z±) on the descending side, warm orange for z₊ and cool cyan for z₋, plus a bright marker blob at each saddle. The Stokes condition — where a hidden exponential switches on — is Im(Φ(z₊)−Φ(z₋)) = 0, i.e. Im(s^{3/2}) = 0, which happens at arg(s) ∈ {0, 2π/3, 4π/3}. Sweep arg(s) and the two descent curves rotate until they meet at exactly those angles. The terrain and glow recompute only when |s| or arg(s) change; per frame is just a gentle vertical breathing.",
+    equations: [
+      { label: 'cubic phase over the complex plane', latex: '\\Phi(z; s) = \\tfrac{1}{3}z^{3} - s\\,z' },
+      { label: 'saddle points (Φ′ = 0)', latex: "\\Phi'(z) = z^{2} - s = 0 \\;\\Rightarrow\\; z_\\pm = \\pm\\sqrt{s}" },
+      { label: 'terrain height (saturated real part)', latex: 'h = H\\,\\tanh\\!\\big(\\operatorname{Re}\\Phi / H\\big)' },
+      { label: 'steepest-descent contour through a saddle', latex: '\\operatorname{Im}\\Phi(z) = \\operatorname{Im}\\Phi(z_\\pm), \\quad \\operatorname{Re}\\Phi \\le \\operatorname{Re}\\Phi(z_\\pm)' },
+      { label: 'Stokes condition (exponential switches on)', latex: '\\operatorname{Im}\\big(\\Phi(z_+) - \\Phi(z_-)\\big) = 0 \\;\\Leftrightarrow\\; \\arg(s) \\in \\{0, \\tfrac{2\\pi}{3}, \\tfrac{4\\pi}{3}\\}' },
+    ],
+    params: [
+      { key: 'smag', symbol: '|s|', meaning: 'magnitude of s → saddle separation z±=±√|s| (how far apart the two saddles sit)' },
+      { key: 'stokes', symbol: '\\arg s', meaning: 'sweeps the argument of s through [0,2π); crossing 0, 2π/3, 4π/3 are the Stokes lines' },
+      { key: 'glowWidth', symbol: 'w', meaning: 'width of the steepest-descent glow band around each contour' },
+      { key: 'relief', symbol: 'h', meaning: 'vertical exaggeration of the terrain' },
+      { key: 'speed', symbol: '\\nu', meaning: 'rate of the gentle vertical breathing' },
+    ],
+    code: "// per |s|/arg(s) change: build the terrain h=ReΦ and the descent-glow colours\nconst sRe = smag*Math.cos(arg), sIm = smag*Math.sin(arg);\nconst rePhi = (x,y) => x**3/3 - x*y*y - sRe*x + sIm*y;   // Re Φ\nconst imPhi = (x,y) => x*x*y - y**3/3 - sRe*y - sIm*x;   // Im Φ\nconst [zx, zy] = [Math.sqrt(smag)*Math.cos(arg/2),       // saddle z₊ = √s\n                  Math.sqrt(smag)*Math.sin(arg/2)];\nconst imP = imPhi(zx, zy);                                // Im Φ on z₊ contour\nfor (each grid point (x,y)) {\n  h = HMAX*Math.tanh(rePhi(x,y)/HMAX);                    // bounded height\n  glow = Math.exp(-(imPhi(x,y)-imP)**2 / w**2)            // steepest-descent path\n         * (rePhi(x,y) <= rePhi(zx,zy)+0.2 ? 1 : 0.15);   // descending side only\n}",
+    links: [
+      { label: 'Method of steepest descent (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Method_of_steepest_descent' },
+      { label: 'Stokes phenomenon (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Stokes_phenomenon' },
+      { label: 'Saddle point (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Saddle_point' },
+    ],
+  },
 };

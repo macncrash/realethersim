@@ -32,6 +32,8 @@ import { cosmicWebFactory } from './cosmicWeb';
 import { reconnectionFactory } from './reconnection';
 import { polynomialRootsFactory } from './polynomialRoots';
 import { cymaticsFactory } from './cymatics';
+import { stringWorldsheetFactory } from './stringWorldsheet';
+import { stokesPhaseFactory } from './stokesPhase';
 import { makeParametricFactory, PARAMETRIC_SYSTEMS } from './parametric';
 import { makeRaymarchFactory, RAYMARCH_SYSTEMS } from './raymarchFractal';
 
@@ -83,6 +85,8 @@ export function registerArchetypes(): void {
   register(reconnectionFactory);
   register(polynomialRootsFactory);
   register(cymaticsFactory);
+  register(stringWorldsheetFactory);
+  register(stokesPhaseFactory);
   for (const system of Object.values(PARAMETRIC_SYSTEMS)) {
     register(makeParametricFactory(system));
   }

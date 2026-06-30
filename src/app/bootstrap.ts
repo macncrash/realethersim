@@ -340,6 +340,19 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
       camera.position.set(0, 0, 3.6);
       controls.update();
     }
+    // The string worldsheet is a ribbon swept along z, bulging in y — frame it 3/4 so the σ-extent and
+    // the τ-sweep history both read.
+    if ($archetypeId.get() === 'stringWorldsheet') {
+      controls.target.set(0, 0, 0);
+      camera.position.set(3.1, 2.2, 3.4);
+      controls.update();
+    }
+    // The Stokes phase surface is a terrain — frame it from an elevated 3/4 (like the pseudospectrum).
+    if ($archetypeId.get() === 'stokesPhase') {
+      controls.target.set(0, 0, 0);
+      camera.position.set(0, 2.6, 3.0);
+      controls.update();
+    }
     scheduleLle();
   }
 
@@ -891,6 +904,8 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
           else if (id === 'dla') { controls.target.set(0, 0, 0); camera.position.set(0, 3.5, 1.15); }
           else if (id === 'cymatics') { controls.target.set(0, 0, 0); camera.position.set(0, 4.2, 1.4); }
           else if (id === 'polynomialRoots') { controls.target.set(0, 0, 0); camera.position.set(0, 0, 3.6); }
+          else if (id === 'stringWorldsheet') { controls.target.set(0, 0, 0); camera.position.set(3.1, 2.2, 3.4); }
+          else if (id === 'stokesPhase') { controls.target.set(0, 0, 0); camera.position.set(0, 2.6, 3.0); }
           else camera.position.set(2.4, 1.5, 4.4);
         }
         controls.update();

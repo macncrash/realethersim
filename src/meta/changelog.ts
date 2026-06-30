@@ -18,6 +18,19 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    "version": "0.1.49",
+    "date": "2026-06-30",
+    "title": "Three new systems: string worldsheet, Stokes phase, Seedform",
+    "summary": "A daily-adds trio spanning physics and art: the 2-D sheet a relativistic string sweeps through spacetime, the saddle-point landscape behind the Stokes phenomenon, and a watercolour seed-bloom that opens a new Bloom category.",
+    "newSystems": ["stringWorldsheet", "stokesPhase", "seedform"],
+    "notes": [
+      "String Worldsheet (Parametric): a vibrating string (sum of standing-wave harmonics, open or closed) swept through a static spacetime grid by retarded time — the present edge leads and its past trails, so the worldsheet flows. Live harmonics/tension/amplitude/sweep/window",
+      "Stokes Phase Surface (Spectral): the cubic phase Φ=z³/3−sz as a 3-D monkey-saddle terrain, with the steepest-descent contours through its two saddles lit warm/cool — sweep arg(s) to cross the Stokes lines where a saddle's contribution switches on",
+      "Seedform (Bloom): a soft botanical bloom of overlapping translucent petals composited like watercolour (subtractive ink layering, so overlaps deepen to an inky heart), after Lindsay Kokoska's seed studies",
+      "New 'Bloom' category (generative botanical / watercolour pieces)"
+    ]
+  },
+  {
     "version": "0.1.48",
     "date": "2026-06-30",
     "title": "Capture Clip — share the motion (WebM + GIF)",
