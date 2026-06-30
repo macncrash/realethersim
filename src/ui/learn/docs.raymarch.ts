@@ -1969,4 +1969,27 @@ const F = (x,y,z) => { const a=x*x,b=y*y,c=z*z, s=a+b+c-1;
       { label: 'MACS J0416 (Hubble Frontier Fields)', url: 'https://en.wikipedia.org/wiki/MACS_J0416.1-2403' },
     ],
   },
+  jellyfishBloom: {
+    "title": "Jellyfish Bloom",
+    "about": "In the dark of the deep ocean, life makes its own light. A swarm of jellyfish — fittingly, the collective noun is a 'bloom' — drifts through the water as a constellation of glowing bells, each pulsing to swim and trailing luminous tentacles. This is a generative version of that bioluminescent scene: translucent medusae lit from within in cool living-light blues and violets, pulsing and wandering against an abyssal gradient flecked with drifting marine snow.",
+    "howItWorks": "It is drawn per-pixel, with no 3D geometry — pure additive glow composited over a dark blue-to-black gradient. Each jellyfish is an ellipse: an elliptical 'radius' e measures distance from the bell's centre, and the membrane glows where e≈1 (a bright rim) with a soft inner fill, masked to the upper half so it reads as a dome. The bell pulses by oscillating its width and height in ANTI-PHASE — wide-and-flat then tall-and-narrow — the jet propulsion real jellyfish use. Below each bell, a few wavy strands hang and sway as tentacles. The whole swarm drifts on slow sines, each medusa tinted a little differently across the cyan-violet range, and faint hashed motes of marine snow rise through the scene. Everything is bounded glow in [0,1].",
+    "equations": [
+      { "label": "elliptical bell membrane", "latex": "e = \\Big\\lVert \\big(\\tfrac{q_x}{r_w},\\ \\tfrac{q_y}{r_h}\\big) \\Big\\rVert, \\qquad \\text{rim} = e^{-45\\,(e-1)^2}\\;\\text{(upper half)}" },
+      { "label": "pulsation (anti-phase = jet propulsion)", "latex": "r_w = r_w^0 + a\\sin(\\omega t + \\phi), \\quad r_h = r_h^0 - 0.6\\,a\\sin(\\omega t + \\phi)" },
+      { "label": "swarm drift", "latex": "\\mathbf{c}_j(t) = \\mathbf{c}_j^0 + \\big(0.16\\sin(0.6t + \\cdots),\\ 0.1\\sin(0.4t + \\cdots)\\big)" },
+    ],
+    "params": [
+      { "key": "glow", "symbol": "G", "meaning": "brightness of the bioluminescence (bells + tentacles)" },
+      { "key": "pulse", "symbol": "a", "meaning": "how strongly the bells pulse as they swim" },
+      { "key": "zoom", "symbol": "Z", "meaning": "field of view — lower shows fewer, larger medusae; higher shows more of the swarm" },
+      { "key": "animate", "symbol": "\\omega", "meaning": "drift + pulse rate of the bloom" },
+      { "key": "colShift", "symbol": "\\phi", "meaning": "hue of the living light, across cyan → violet" },
+    ],
+    code: "// per pixel: additive glow of a drifting swarm of pulsing bells over the abyss\nfor (let j = 0; j < N; j++) {\n  const c = drift(basePos[j], t);                 // slow wander\n  const q = p - c;\n  const a = pulse * Math.sin(2.2*t + j*1.7);\n  const rw = 0.24 + a, rh = 0.18 - 0.6*a;          // anti-phase → propulsion\n  const e = length(vec2(q.x/rw, q.y/rh));\n  const rim  = exp(-45*(e-1)**2) * upperHalf(q.y); // glowing membrane\n  const fill = exp(-2*e*e) * 0.35 * upperHalf(q.y);\n  col += jellyColor(j) * (rim + fill) * glow;\n  col += tentacles(q, t, j) * glow;                // wavy strands below\n}",
+    links: [
+      { label: 'Bioluminescence (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Bioluminescence' },
+      { label: 'Jellyfish (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Jellyfish' },
+      { label: 'Jellyfish bloom (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Jellyfish#Blooms' },
+    ],
+  },
 };
