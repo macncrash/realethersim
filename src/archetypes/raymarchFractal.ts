@@ -43,6 +43,7 @@ export type RaymarchKind =
   | 'contour'
   | 'seedform'
   | 'gravLens'
+  | 'jellyfishBloom'
   | 'kaleidoTunnel';
 
 export interface RaymarchSystem {
@@ -407,6 +408,18 @@ export const RAYMARCH_SYSTEMS: Record<string, RaymarchSystem> = {
       { key: 'bloom', label: 'bloom', min: 0.5, max: 3, step: 0.05, default: 1.5 },
       { key: 'zoom', label: 'zoom', min: 0.4, max: 3, step: 0.05, default: 1.7 },
       { key: 'animate', label: 'morph', min: 0, max: 1, step: 0.01, default: 0.4 },
+      COL,
+    ],
+  },
+
+  jellyfishBloom: {
+    id: 'jellyfishBloom', label: 'Jellyfish Bloom', sdf: 'jellyfishBloom', category: 'Bloom',
+    iters: 0, bound: 1, camDist: 1, maxSteps: 1, lobes: 6, // lobes = number of jellyfish in the swarm
+    params: [
+      { key: 'glow', label: 'glow', min: 0.4, max: 2.5, step: 0.05, default: 1.3 },
+      { key: 'pulse', label: 'pulse', min: 0, max: 1, step: 0.02, default: 0.6 },
+      { key: 'zoom', label: 'zoom', min: 0.5, max: 2, step: 0.05, default: 1.35 },
+      { key: 'animate', label: 'drift', min: 0, max: 1.2, step: 0.02, default: 0.6 },
       COL,
     ],
   },

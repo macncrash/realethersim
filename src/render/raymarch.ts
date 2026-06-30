@@ -889,6 +889,49 @@ export function createRaymarch(sys: RaymarchSystem, backend: 'webgpu' | 'webgl2'
       // the deflector galaxy: a small dim central glow
       col.assign(col.add(vec3(0.6, 0.55, 0.7).mul(exp(b.mul(b).mul(-40)).mul(0.18))));
       col.assign(clamp(col, 0, 1));
+    } else if (sys.sdf === 'jellyfishBloom') {
+      // ── Bloom: a drifting swarm of bioluminescent jellyfish. Each is a pulsing translucent bell (a
+      //    glowing elliptical membrane + soft inner light) trailing wavy tentacles, in cool living-light
+      //    colours over an abyssal gradient flecked with marine snow. Pure additive glow over the dark. ──
+      const t = uTime.mul(0.5).mul(u.animate);
+      const p = vec2(ndc.x, ndc.y).mul(u.zoom).toVar();
+      col.assign(mix(vec3(0.012, 0.03, 0.05), vec3(0.0, 0.008, 0.02), ndc.y.mul(0.5).add(0.5))); // abyss
+      // marine snow: faint round motes drifting slowly upward (hashed point per cell, not whole cells)
+      const sP = vec2(p.x, p.y.add(t.mul(0.04))).mul(9).toVar();
+      const scell = floor(sP);
+      const sf = fract(sP).sub(0.5);
+      const sh = fract(sin(dot(scell, vec2(12.9, 78.2))).mul(43758.5453));
+      const sh2 = fract(sin(dot(scell, vec2(63.7, 11.4))).mul(24634.6345));
+      const md = sf.sub(vec2(sh.sub(0.5), sh2.sub(0.5)).mul(0.6));
+      col.assign(col.add(vec3(0.4, 0.6, 0.75).mul(exp(md.dot(md).mul(-55)).mul(pow(sh, 28).mul(0.4)))));
+      const N = sys.lobes ?? 6;
+      for (let j = 0; j < N; j++) {
+        const bx = ((j * 0.61803398875) % 1) * 2 - 1; // spread base positions (compile-time)
+        const by = ((j * 0.4142 + 0.31) % 1) * 2 - 1;
+        const cx = float(bx * 1.2).add(sin(t.mul(0.6).add(j * 1.3)).mul(0.16));
+        const cy = float(by * 0.8).add(sin(t.mul(0.4).add(j * 2.1)).mul(0.1));
+        const q = vec2(p.x.sub(cx), p.y.sub(cy)).toVar();
+        const pulse = sin(t.mul(2.2).add(j * 1.7)).mul(0.1).mul(u.pulse);
+        const rw = float(0.24 + (j % 3) * 0.03).add(pulse); // bell half-width (pulses)
+        const rh = float(0.18 + (j % 2) * 0.03).sub(pulse.mul(0.6)); // bell half-height (anti-phase → propulsion)
+        const e = length(vec2(q.x.div(rw), q.y.div(rh))).toVar(); // elliptical radius
+        const upper = smoothstep(-0.12, 0.08, q.y); // the bell occupies the upper half
+        const rim = exp(e.sub(1).mul(e.sub(1)).mul(-45)).mul(upper); // glowing membrane edge
+        const fill = exp(e.mul(e).mul(-2)).mul(0.35).mul(upper); // soft inner light
+        const jhue = u.colShift.add(j * 0.11).mul(6.2832);
+        const jcol = vec3(cos(jhue).mul(0.28).add(0.32), 0.72, cos(jhue.add(2.2)).mul(0.25).add(0.72)); // cyan↔violet
+        col.assign(col.add(jcol.mul(rim.add(fill).mul(u.glow))));
+        // tentacles: a few wavy glowing strands hanging below the bell
+        const ty = q.y.negate().toVar(); // depth below the bell centre
+        for (let s = 0; s < 3; s++) {
+          const off = (s / 2 - 0.5) * 0.22;
+          const wav = sin(q.y.mul(8).sub(t.mul(3)).add(j + s)).mul(0.05).mul(smoothstep(0, 0.6, ty));
+          const tox = q.x.sub(off).add(wav);
+          const strand = exp(tox.mul(tox).mul(-220)).mul(smoothstep(0.02, 0.3, ty)).mul(exp(ty.mul(-1.5)));
+          col.assign(col.add(jcol.mul(strand.mul(u.glow.mul(0.9)))));
+        }
+      }
+      col.assign(clamp(col, 0, 1));
     } else if (sys.sdf === 'volumetric') {
       // ── Non-SDF marcher: accumulate volumetric EMISSION through a domain-warped density field. ──
       // Fixed-step ray, no bending. Density e drives o += exp(−e·k)·palette·e·Δs·E (the twigl look).

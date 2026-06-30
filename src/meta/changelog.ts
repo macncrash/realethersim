@@ -18,6 +18,16 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    "version": "0.1.51",
+    "date": "2026-06-30",
+    "title": "Jellyfish Bloom — bioluminescence in the deep",
+    "summary": "A drifting swarm of bioluminescent jellyfish: pulsing translucent bells trailing luminous tentacles, in cool living-light blues and violets over the abyss.",
+    "newSystems": ["jellyfishBloom"],
+    "notes": [
+      "Jellyfish Bloom (Bloom): a per-pixel swarm of glowing medusae — each an elliptical bell (luminous rim + soft fill) pulsing in anti-phase (the jellyfish jet) with wavy tentacles, drifting over an abyssal gradient flecked with marine snow. Live glow / pulse / drift / hue"
+    ]
+  },
+  {
     "version": "0.1.50",
     "date": "2026-06-30",
     "title": "Four new systems: light, lensing & a dandelion",
