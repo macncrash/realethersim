@@ -1705,4 +1705,28 @@ point(r*st*Math.cos(phi), r*Math.cos(theta), r*st*Math.sin(phi));`,
       { label: 'String theory (Wikipedia)', url: 'https://en.wikipedia.org/wiki/String_theory' },
     ]
   },
+  dandelion: {
+    title: 'Dandelion',
+    about:
+      "A dandelion blowball is a lesson in spherical packing. Hundreds of seeds sit on a tiny domed receptacle, each on a slender stalk tipped with a pappus — a radial umbrella of fine bristles that catches the wind. To crowd that many seeds onto a sphere without gaps or seams, the plant uses the same golden-angle spacing that sets the spirals of a sunflower head. The result is the familiar near-perfect translucent sphere of fluff. This is a generative reconstruction of that geometry — nature as a mathematician.",
+    howItWorks:
+      "Each seed's stalk points outward in a direction taken from a Fibonacci sphere: walk down the sphere in equal steps of height while turning by the golden angle (≈137.5°) each step, and the directions spread out evenly with no two crowding — the 3-D analogue of sunflower phyllotaxis. Along each direction we draw a thin radial filament from a small central receptacle out to a faintly ellipsoidal shell, and at the tip we scatter a soft Gaussian 'puff' of bristles (the pappus). Stalks are drawn dim, the pappus tips bright cream, and the innermost points carry the tan of the seed cup. A slow tumble shows it's a sphere, not a disk. Static geometry — nothing to integrate, bounded by the shell radius.",
+    equations: [
+      { label: 'Fibonacci-sphere seed directions', latex: 'y_k = 1 - \\tfrac{2k+1}{N}, \\quad \\phi_k = k\\,\\gamma, \\quad \\gamma = \\pi(3-\\sqrt{5})' },
+      { label: 'golden angle (even spherical packing)', latex: '\\gamma = 2\\pi\\big(1 - \\tfrac{1}{\\varphi}\\big) \\approx 137.5^{\\circ}' },
+      { label: 'stalk + pappus along each direction', latex: '\\mathbf{x} = \\hat{\\mathbf{d}}_k\\,r + \\text{puff},\\quad r \\in [r_0,\\,R]' },
+    ],
+    params: [
+      { key: 'seeds', symbol: 'N', meaning: 'number of seed stalks packed on the sphere' },
+      { key: 'puff', symbol: '\\rho', meaning: 'size of the pappus bristle-burst at each tip' },
+      { key: 'oblate', symbol: 'e', meaning: 'vertical stretch — a faintly ellipsoidal (not perfectly round) blowball' },
+      { key: 'spin', symbol: '\\nu', meaning: 'tumble rate' },
+    ],
+    code: "// each seed: a Fibonacci-sphere direction, a stalk, and a pappus puff at the tip\nfor (let k = 0; k < N; k++) {\n  const y = 1 - 2*(k + 0.5)/N;             // even heights\n  const rad = Math.sqrt(1 - y*y);\n  const phi = k * Math.PI*(3 - Math.sqrt(5));   // golden angle\n  const dir = [rad*Math.cos(phi), y, rad*Math.sin(phi)];\n  // stalk: dir * r  for r in [r0, R];   pappus: dir*R + small gaussian burst\n}",
+    links: [
+      { label: 'Pappus (botany) (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Pappus_(botany)' },
+      { label: 'Fibonacci sphere / lattice', url: 'https://en.wikipedia.org/wiki/Fibonacci_sequence#Nature' },
+      { label: 'Phyllotaxis (golden angle)', url: 'https://en.wikipedia.org/wiki/Phyllotaxis' },
+    ]
+  },
 };

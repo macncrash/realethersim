@@ -18,6 +18,19 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    "version": "0.1.50",
+    "date": "2026-06-30",
+    "title": "Four new systems: light, lensing & a dandelion",
+    "summary": "An optics-and-nature batch: a gravitational lens bending a starfield into an Einstein ring, two diffraction pieces (crossed-grating spokes and a dispersive wavefront), and a Fibonacci-packed dandelion blowball.",
+    "newSystems": ["gravLens", "crossedDiffraction", "dispersionWave", "dandelion"],
+    "notes": [
+      "Gravitational Lens (Spacetime): a procedural sky bent by a point mass into an Einstein ring + arcs via the thin-lens map β=θ(1−rE²/|θ|²) — pure lensing, no disk/horizon (unlike the black-hole marcher). Live Einstein-radius / zoom / drift",
+      "Crossed Diffraction (Spectral): white light through crossed gratings → a radiant lattice of spectral spokes (white zeroth order, blue→red within each diffraction order). After the OPN 'Image of the Week'",
+      "Dispersion (Spectral): a point-source wavefront on a grainy domed bowl; crests propagate outward while the dispersed spectrum is baked by radius, so each crest recolours warm→cool as it travels. After hal09999",
+      "Dandelion (Parametric): a blowball — seed stalks on a Fibonacci (golden-angle) sphere, each tipped with a pappus puff; the same packing nature uses for sunflower phyllotaxis"
+    ]
+  },
+  {
     "version": "0.1.49",
     "date": "2026-06-30",
     "title": "Three new systems: string worldsheet, Stokes phase, Seedform",

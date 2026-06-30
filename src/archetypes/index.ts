@@ -34,6 +34,9 @@ import { polynomialRootsFactory } from './polynomialRoots';
 import { cymaticsFactory } from './cymatics';
 import { stringWorldsheetFactory } from './stringWorldsheet';
 import { stokesPhaseFactory } from './stokesPhase';
+import { dispersionWaveFactory } from './dispersionWave';
+import { crossedDiffractionFactory } from './crossedDiffraction';
+import { dandelionFactory } from './dandelion';
 import { makeParametricFactory, PARAMETRIC_SYSTEMS } from './parametric';
 import { makeRaymarchFactory, RAYMARCH_SYSTEMS } from './raymarchFractal';
 
@@ -87,6 +90,9 @@ export function registerArchetypes(): void {
   register(cymaticsFactory);
   register(stringWorldsheetFactory);
   register(stokesPhaseFactory);
+  register(dispersionWaveFactory);
+  register(crossedDiffractionFactory);
+  register(dandelionFactory);
   for (const system of Object.values(PARAMETRIC_SYSTEMS)) {
     register(makeParametricFactory(system));
   }

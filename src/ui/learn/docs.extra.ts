@@ -2353,4 +2353,57 @@ o[1] = p.b * x[0];`,
       { label: 'Saddle point (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Saddle_point' },
     ],
   },
+  dispersionWave: {
+    title: 'Dispersion',
+    about:
+      "Drop a pebble in still water and rings spread out; do it in a DISPERSIVE medium — where the wave speed depends on wavelength — and something stranger happens: the colours separate. Long and short wavelengths travel at different speeds, so a single white disturbance fans out into a chirp of colour sorted by distance. This is that, rendered as a slowly tumbling grainy bowl: a white-hot point source on the surface, concentric crests rippling outward, and the spectrum smeared across the radius so each crest recolours as it travels — a homage to the diffraction-bloom photographs of generative artist hal09999.",
+    howItWorks:
+      "A grid of points is laid out on a shallow domed disk (a Fibonacci sunflower packing, jittered so it reads as soft grain rather than a lattice). A source sits off-centre; the height of each point is a travelling radial wave z = A·e^{−γr}·cos(kr − ωt), so crests propagate outward from the source as time advances (this is the only thing that animates — point colours can only be uploaded once, so the motion lives in the geometry). The colour is the dispersed spectrum BAKED by radius: warm at the core, sweeping red → magenta → blue → cyan outward, which is physically what dispersion does — it sorts wavelengths by distance. A dense cluster at the source blooms it white-hot. The bowl has real depth (a base dome) so it reads as 3-D from any angle, and it rocks gently rather than spinning flat. Bounded for all time.",
+    equations: [
+      { label: 'travelling radial wave (the relief)', latex: 'z(r,t) = A\\,e^{-\\gamma r}\\cos(k\\,r - \\omega t)' },
+      { label: 'dispersion: speed depends on wavelength', latex: 'v_{\\text{phase}} = \\frac{\\omega}{k} = v(\\lambda) \\;\\Rightarrow\\; \\text{colours sort by distance}' },
+      { label: 'spectrum baked by radius (hue)', latex: 'H(r) = H_0 - \\Delta\\,(r/r_{\\max})^{1.6}' },
+      { label: 'domed bowl (depth from every angle)', latex: 'z_{\\text{base}} = D\\,\\big(1 - (r_c/R)^{2}\\big)' },
+    ],
+    params: [
+      { key: 'wavelength', symbol: 'k', meaning: 'spatial frequency — how many concentric rings' },
+      { key: 'dispersion', symbol: '\\Delta', meaning: 'how far the spectrum spreads from warm core to cool rim' },
+      { key: 'offset', symbol: 's', meaning: 'how far off-centre the point source sits' },
+      { key: 'speed', symbol: '\\omega', meaning: 'how fast the crests propagate outward' },
+      { key: 'amp', symbol: 'A', meaning: 'relief height of the ripple' },
+      { key: 'falloff', symbol: '\\gamma', meaning: 'ripple decay — low = the wave reaches farther across the bowl' },
+      { key: 'spin', symbol: '\\nu', meaning: 'rocking rate of the bowl' },
+    ],
+    code: "// per point: travelling radial wave on a domed bowl, dispersed colour baked by radius\nconst dome = D * (1 - (rc*rc)/(R*R));            // base bowl (depth)\nconst ripple = amp * Math.exp(-r*falloff) * Math.cos(k*r - omega*t);\nconst z = dome + ripple + grain;\n// colour baked once, by distance from the source (the dispersed spectrum):\nconst hue = 0.14 - dispersion * Math.pow(r/rMax, 1.6);   // warm core → cool rim\n// dense white-hot cluster at the source → over-exposed bloom",
+    links: [
+      { label: 'Dispersion (optics) (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Dispersion_(optics)' },
+      { label: 'Wave packet (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Wave_packet' },
+      { label: 'hal09999 (generative artist)', url: 'https://twitter.com/hal09999' },
+    ],
+  },
+  crossedDiffraction: {
+    title: 'Crossed Diffraction',
+    about:
+      "Shine a white point source through a diffraction grating — a surface ruled with fine parallel lines — and the light fans into a row of spectra at fixed angles. CROSS two gratings (or use a 2-D mesh) and those rows fire off in several directions at once, turning a single white dot into a radiant lattice of rainbow spokes. It's a classic optics-bench demonstration (and a favourite of the Optics & Photonics community): the centre stays white, and every spoke carries the spectrum repeated, order after order, spreading wider as it goes.",
+    howItWorks:
+      "A grating with line spacing d sends wavelength λ into bright orders at angles sin θ_m = m·λ/d. The zeroth order (m=0) passes straight through undeviated — that's the white centre, where all colours overlap. Each higher order m is a little spectrum, and because the deflection grows with λ, blue lands nearest the centre and red farthest; higher orders sit farther out and spread wider. Crossed gratings give several such rows at once, so we scatter points along a set of radial spokes, place them at radius ∝ order, and colour each by its wavelength (blue inner → red outer within every order). Soft point blobs give the out-of-focus 'bokeh' look of the photographs; a gentle spin keeps it alive. A flat optical figure, bounded by construction.",
+    equations: [
+      { label: 'grating equation', latex: 'd\\,\\sin\\theta_m = m\\,\\lambda, \\qquad m = 0, \\pm 1, \\pm 2, \\dots' },
+      { label: 'zeroth order is undeviated (white centre)', latex: 'm = 0 \\;\\Rightarrow\\; \\theta_0 = 0 \\ \\text{for all } \\lambda' },
+      { label: 'each order is a spectrum (blue inner, red outer)', latex: 'r_m(\\lambda) \\propto m\\,\\lambda \\;\\Rightarrow\\; r(\\text{blue}) < r(\\text{red})' },
+    ],
+    params: [
+      { key: 'arms', symbol: 'N', meaning: 'number of grating-direction spokes' },
+      { key: 'orders', symbol: 'M', meaning: 'how many diffraction orders along each spoke' },
+      { key: 'spacing', symbol: 'd^{-1}', meaning: 'radial gap between orders (∝ inverse grating constant)' },
+      { key: 'spread', symbol: '\\Delta\\lambda', meaning: 'chromatic smear within an order (grows with order)' },
+      { key: 'spin', symbol: '\\nu', meaning: 'gentle rotation rate' },
+    ],
+    code: "// scatter points across the diffraction lattice, colour by wavelength\nconst th = (arm / arms) * 2*Math.PI;            // grating direction\nconst m  = 1 + (order % orders);                 // diffraction order\nconst t  = Math.random();                        // spectral fraction (0=blue, 1=red)\nconst r  = spacing * (m + (t - 0.5) * spread);   // blue inner, red outer\nconst hue = 0.66 * (1 - t);                       // blue → green → red\n// plus a tight white cluster at the centre = the zeroth order",
+    links: [
+      { label: 'Diffraction grating (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Diffraction_grating' },
+      { label: 'Diffraction (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Diffraction' },
+      { label: 'Optics & Photonics News', url: 'https://www.optica-opn.org/' },
+    ],
+  },
 };
