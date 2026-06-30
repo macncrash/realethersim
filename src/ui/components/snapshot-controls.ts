@@ -19,6 +19,7 @@ export class SnapshotControls extends LitElement {
 
   private status = '';
   private statusErr = false;
+  private clipping = false;
 
   override connectedCallback(): void {
     super.connectedCallback();
@@ -138,6 +139,24 @@ export class SnapshotControls extends LitElement {
     }
   }
 
+  // Record a short looping clip (WebM + GIF) of the live view — a motion-faithful share asset, since a
+  // still frame can't show the 3D animation. Everything is client-side; the files just download.
+  private async captureClip(): Promise<void> {
+    const engine = $engine.get();
+    if (!engine || this.clipping) return;
+    this.clipping = true;
+    this.requestUpdate();
+    try {
+      await engine.captureClip((msg) => this.setStatus(msg, false, 12000));
+    } catch (err) {
+      console.error('[ethersim] clip capture failed', err);
+      this.setStatus('clip capture failed', true);
+    } finally {
+      this.clipping = false;
+      this.requestUpdate();
+    }
+  }
+
   private async importFile(ev: Event): Promise<void> {
     const input = ev.target as HTMLInputElement;
     const file = input.files?.[0];
@@ -174,6 +193,7 @@ export class SnapshotControls extends LitElement {
         <div class="row" style="gap:6px;flex-wrap:wrap;justify-content:flex-start">
           <button @click=${() => void $engine.get()?.exportImage()} title="Screenshot (⌘S)">Screenshot</button>
           <button @click=${() => void this.share()} title="Share this view to social media">Share ↗</button>
+          <button @click=${() => void this.captureClip()} ?disabled=${this.clipping} title="Record a short looping clip (WebM + GIF) for social — captures the motion a screenshot can't">${this.clipping ? '● recording…' : 'Clip ↗'}</button>
           <button @click=${() => this.exportSnapshot()} title="Export snapshot JSON (⌘E)">Export</button>
           <label class="filebtn" title="Import a snapshot or PNG (⌘I)" style="background:#14203a;border:1px solid var(--panel-border);border-radius:6px;padding:6px 10px;cursor:pointer">
             Import

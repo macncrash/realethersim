@@ -18,6 +18,17 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    "version": "0.1.48",
+    "date": "2026-06-30",
+    "title": "Capture Clip — share the motion (WebM + GIF)",
+    "summary": "A new 'Clip ↗' export records a few seconds of the live animation as a WebM video and an animated GIF — because a still frame can't show the 3D motion. Watermarked and ready to post.",
+    "newSystems": [],
+    "notes": [
+      "New 'Clip ↗' button (Snapshot controls): records ~5s of the live view and downloads BOTH a WebM (MediaRecorder) and an animated GIF (in-browser via gifenc), each watermarked (ETHERSIM · ethersim.ai · system) — a motion-faithful share asset a screenshot can't be",
+      "Capture pauses the live loop for clean frames and renders at a compact clip resolution; everything is client-side (nothing uploaded)"
+    ]
+  },
+  {
     "version": "0.1.47",
     "date": "2026-06-29",
     "title": "Contour Field — a new Linework category",

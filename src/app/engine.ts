@@ -11,6 +11,9 @@ export interface Engine {
   exportImage(): Promise<void>;
   // The same branded, metadata-embedded PNG as exportImage() but returned as a Blob (for sharing).
   captureImageBlob(): Promise<Blob>;
+  // Record a short looping clip of the live view and download it as WebM (+ animated GIF) — a
+  // motion-faithful share asset (a still can't convey the 3D animation). onStatus reports progress.
+  captureClip(onStatus?: (msg: string) => void): Promise<void>;
   // A clean, downscaled thumbnail of the current view (no overlay, no metadata) as a WebP data URL.
   // DEV-ONLY: attached to the engine only under import.meta.env.DEV (the offline thumbnail-capture
   // pass), so the readback/encode body tree-shakes out of the production bundle. Optional at the type
