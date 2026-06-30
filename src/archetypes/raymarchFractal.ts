@@ -42,6 +42,7 @@ export type RaymarchKind =
   | 'newton'
   | 'contour'
   | 'seedform'
+  | 'gravLens'
   | 'kaleidoTunnel';
 
 export interface RaymarchSystem {
@@ -406,6 +407,17 @@ export const RAYMARCH_SYSTEMS: Record<string, RaymarchSystem> = {
       { key: 'bloom', label: 'bloom', min: 0.5, max: 3, step: 0.05, default: 1.5 },
       { key: 'zoom', label: 'zoom', min: 0.4, max: 3, step: 0.05, default: 1.7 },
       { key: 'animate', label: 'morph', min: 0, max: 1, step: 0.01, default: 0.4 },
+      COL,
+    ],
+  },
+
+  gravLens: {
+    id: 'gravLens', label: 'Gravitational Lens', sdf: 'gravLens', category: 'Spacetime',
+    iters: 0, bound: 1, camDist: 1, maxSteps: 1,
+    params: [
+      { key: 'mass', label: 'Einstein radius', min: 0.15, max: 0.8, step: 0.01, default: 0.42 },
+      { key: 'zoom', label: 'zoom', min: 0.4, max: 2.5, step: 0.05, default: 1.0 },
+      ANIM,
       COL,
     ],
   },

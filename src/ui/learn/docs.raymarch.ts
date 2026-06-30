@@ -1946,4 +1946,27 @@ const F = (x,y,z) => { const a=x*x,b=y*y,c=z*z, s=a+b+c-1;
       { label: 'Subtractive colour (pigment mixing)', url: 'https://en.wikipedia.org/wiki/Subtractive_color' },
     ],
   },
+  gravLens: {
+    "title": "Gravitational Lens",
+    "about": "Mass bends spacetime, and light follows the bend — so a massive foreground object acts as a lens for whatever sits behind it. When the source, lens, and observer line up, a background galaxy is smeared into a luminous EINSTEIN RING; off-axis it splits into arcs and multiple images. Hubble's view of the cluster MACS J0416 is the famous example, its background galaxies stretched into arcs by the cluster's mass. This is the pure-optics version: a point mass lensing a procedural sky into a ring of light — no accretion disk or event horizon (that's the black-hole marcher); just the geometry of bent light.",
+    "howItWorks": "For each pixel we read its observed direction θ on the image plane and ask: where on the SOURCE plane did that light actually come from? A point mass deflects a ray passing at impact parameter b by α = 4GM/(c²b), which for the thin-lens geometry gives the lens equation β = θ − θ_E²/θ, where θ_E is the Einstein radius (the ring's angular size). We invert that as a forward map β = θ·(1 − r_E²/|θ|²) and sample the background sky at β — so a source at the optic axis (β=0) lights up the entire ring |θ|=r_E at once, and everything else is pulled into arcs. The sky is two drifting source galaxies plus a hashed star field; the ring is brightened by the lensing magnification (which formally diverges at θ_E), and a faint deflector glows at the centre. Sweep the Einstein radius to grow or shrink the ring.",
+    "equations": [
+      { "label": "point-mass deflection angle", "latex": "\\alpha = \\frac{4GM}{c^{2}\\,b}" },
+      { "label": "thin-lens equation", "latex": "\\beta = \\theta - \\frac{\\theta_E^{2}}{\\theta}, \\qquad \\theta_E = \\sqrt{\\frac{4GM}{c^{2}}\\frac{D_{LS}}{D_L D_S}}" },
+      { "label": "observed → source map (what the shader samples)", "latex": "\\beta = \\theta\\,\\Big(1 - \\frac{r_E^{2}}{\\lvert\\theta\\rvert^{2}}\\Big)" },
+      { "label": "Einstein ring (source on axis)", "latex": "\\beta = 0 \\;\\Rightarrow\\; \\lvert\\theta\\rvert = r_E \\ \\text{(a full ring)}" },
+    ],
+    "params": [
+      { "key": "mass", "symbol": "r_E", "meaning": "Einstein radius — the lens mass / ring size (bigger = stronger lensing, larger ring)" },
+      { "key": "zoom", "symbol": "Z", "meaning": "field of view on the image plane" },
+      { "key": "animate", "symbol": "\\alpha", "meaning": "drift rate of the background source galaxies (ring breathes as they move)" },
+      { "key": "colShift", "symbol": "\\phi", "meaning": "hue of the lensed source light" },
+    ],
+    code: "// per pixel: invert the thin-lens map, sample the background sky at the source position\nconst theta = vec2(ndc.x, ndc.y) * zoom;\nconst b = max(length(theta), 1e-3);\nconst beta = theta * (1 - rE*rE / (b*b));     // observed → source\nlet col = sampleGalaxies(beta) + starfield(beta);  // lensed background\ncol += ringGlow(b, rE);                         // magnification brightens |θ|=rE\ncol += deflectorGlow(b);                         // faint lensing mass at centre",
+    links: [
+      { label: 'Gravitational lens (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Gravitational_lens' },
+      { label: 'Einstein ring (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Einstein_ring' },
+      { label: 'MACS J0416 (Hubble Frontier Fields)', url: 'https://en.wikipedia.org/wiki/MACS_J0416.1-2403' },
+    ],
+  },
 };

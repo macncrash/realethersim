@@ -850,6 +850,45 @@ export function createRaymarch(sys: RaymarchSystem, backend: 'webgpu' | 'webgl2'
       const ac = clamp(exp(pw.dot(pw).div(s2.mul(1.8)).negate()).mul(u.bloom).mul(0.7), 0, 0.82); // pooled heart
       col.assign(mix(col, col.mul(vec3(0.34, 0.31, 0.52)), ac));
       col.assign(clamp(col, 0, 1));
+    } else if (sys.sdf === 'gravLens') {
+      // ── Spacetime: thin-lens gravitational lensing of a procedural sky by a point mass. The observed
+      //    direction θ maps back to the SOURCE position β = θ·(1 − rE²/|θ|²) (point-mass deflection), so a
+      //    source near the optic axis smears into an EINSTEIN RING at |θ|=rE plus counter-arcs. We sample
+      //    two bright source galaxies + a faint star sprinkle through that map, glow the ring, and leave a
+      //    dim deflector at the centre. (Pure lensing — no disk/horizon, unlike the black-hole marcher.)
+      const t = uTime.mul(0.06).mul(u.animate);
+      const p = vec2(ndc.x, ndc.y).mul(u.zoom).toVar(); // observed image plane
+      const b = length(p).max(1e-3).toVar();
+      const rE2 = u.mass.mul(u.mass).toVar(); // Einstein radius²
+      const beta = p.mul(float(1).sub(rE2.div(b.mul(b)))).toVar(); // → source-plane position
+      col.assign(vec3(0.012, 0.014, 0.028)); // deep space (this branch owns col)
+      const a0 = u.colShift.mul(6.2832);
+      // two drifting source galaxies, lensed into rings/arcs by the β map
+      const g1 = vec2(sin(t).mul(0.1), cos(t.mul(0.8)).mul(0.07));
+      const d1 = beta.sub(g1);
+      const blob1 = exp(d1.dot(d1).mul(-70));
+      const warm = vec3(cos(a0).mul(0.1).add(1.0), 0.8, 0.5);
+      col.assign(col.add(warm.mul(blob1.mul(1.3))));
+      const g2 = vec2(sin(t.mul(0.6).add(2)).mul(0.16), cos(t.add(1)).mul(0.12).add(0.05));
+      const d2 = beta.sub(g2);
+      const blob2 = exp(d2.dot(d2).mul(-110));
+      col.assign(col.add(vec3(0.55, 0.75, 1.0).mul(blob2)));
+      // faint star sprinkle in the source plane (hashed point per cell) — also lensed
+      const s = beta.mul(14);
+      const cell = floor(s);
+      const fc = fract(s).sub(0.5);
+      const h1 = fract(sin(dot(cell, vec2(127.1, 311.7))).mul(43758.5453)); // presence
+      const h2 = fract(sin(dot(cell, vec2(269.5, 183.3))).mul(43758.5453)); // x offset
+      const h3 = fract(sin(dot(cell, vec2(419.2, 371.9))).mul(43758.5453)); // y offset
+      const sp = fc.sub(vec2(h2.sub(0.5), h3.sub(0.5)).mul(0.7));
+      const star = exp(sp.dot(sp).mul(-110)).mul(pow(h1, 9)); // round, sparse
+      col.assign(col.add(vec3(star)));
+      // Einstein-ring magnification glow at |θ|=rE
+      const ring = exp(b.sub(u.mass).mul(b.sub(u.mass)).mul(-160)).mul(0.25);
+      col.assign(col.add(warm.mul(ring)));
+      // the deflector galaxy: a small dim central glow
+      col.assign(col.add(vec3(0.6, 0.55, 0.7).mul(exp(b.mul(b).mul(-40)).mul(0.18))));
+      col.assign(clamp(col, 0, 1));
     } else if (sys.sdf === 'volumetric') {
       // ── Non-SDF marcher: accumulate volumetric EMISSION through a domain-warped density field. ──
       // Fixed-step ray, no bending. Density e drives o += exp(−e·k)·palette·e·Δs·E (the twigl look).

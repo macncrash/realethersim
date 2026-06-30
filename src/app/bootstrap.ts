@@ -353,6 +353,24 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
       camera.position.set(0, 2.6, 3.0);
       controls.update();
     }
+    // Dispersion is a rocking domed disk facing +Z — frame so the whole bowl + rings fill the frame.
+    if ($archetypeId.get() === 'dispersionWave') {
+      controls.target.set(0, 0, 0);
+      camera.position.set(0, 0.6, 3.9);
+      controls.update();
+    }
+    // Crossed diffraction is a flat radial figure facing +Z — view it face-on.
+    if ($archetypeId.get() === 'crossedDiffraction') {
+      controls.target.set(0, 0, 0);
+      camera.position.set(0, 0, 3.4);
+      controls.update();
+    }
+    // The dandelion blowball is a sphere — a gentle 3/4 so it reads as a 3-D puff.
+    if ($archetypeId.get() === 'dandelion') {
+      controls.target.set(0, 0, 0);
+      camera.position.set(0.6, 0.4, 3.1);
+      controls.update();
+    }
     scheduleLle();
   }
 
@@ -906,6 +924,9 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
           else if (id === 'polynomialRoots') { controls.target.set(0, 0, 0); camera.position.set(0, 0, 3.6); }
           else if (id === 'stringWorldsheet') { controls.target.set(0, 0, 0); camera.position.set(3.1, 2.2, 3.4); }
           else if (id === 'stokesPhase') { controls.target.set(0, 0, 0); camera.position.set(0, 2.6, 3.0); }
+          else if (id === 'dispersionWave') { controls.target.set(0, 0, 0); camera.position.set(0, 0.6, 3.9); }
+          else if (id === 'crossedDiffraction') { controls.target.set(0, 0, 0); camera.position.set(0, 0, 3.4); }
+          else if (id === 'dandelion') { controls.target.set(0, 0, 0); camera.position.set(0.6, 0.4, 3.1); }
           else camera.position.set(2.4, 1.5, 4.4);
         }
         controls.update();
