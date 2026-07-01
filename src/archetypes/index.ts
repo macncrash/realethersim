@@ -38,6 +38,8 @@ import { dispersionWaveFactory } from './dispersionWave';
 import { crossedDiffractionFactory } from './crossedDiffraction';
 import { dandelionFactory } from './dandelion';
 import { lorenzSwarmFactory, attractorMenagerieFactory } from './attractorSwarm';
+import { solarCoronaFactory } from './solarCorona';
+import { spiralGalaxyFactory } from './spiralGalaxy';
 import { makeParametricFactory, PARAMETRIC_SYSTEMS } from './parametric';
 import { makeRaymarchFactory, RAYMARCH_SYSTEMS } from './raymarchFractal';
 
@@ -96,6 +98,8 @@ export function registerArchetypes(): void {
   register(dandelionFactory);
   register(lorenzSwarmFactory);
   register(attractorMenagerieFactory);
+  register(solarCoronaFactory);
+  register(spiralGalaxyFactory);
   for (const system of Object.values(PARAMETRIC_SYSTEMS)) {
     register(makeParametricFactory(system));
   }
