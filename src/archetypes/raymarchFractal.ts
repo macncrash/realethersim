@@ -41,7 +41,8 @@ export type RaymarchKind =
   | 'conformal'
   | 'newton'
   | 'contour'
-  | 'seedform'
+  | 'inkBloom'
+  | 'moire'
   | 'gravLens'
   | 'jellyfishBloom'
   | 'kaleidoTunnel';
@@ -69,7 +70,7 @@ export interface RaymarchSystem {
   volStep?: number; // fixed march step
   sdf2?: 'plasmaOrb' | 'nebula' | 'voxelCloud'; // which density field the volumetric branch dispatches
   cells?: number; // voxelCloud only: cubic-lattice resolution (cells per q-unit), compile-time const
-  lobes?: number; // seedform only: number of soft bloom lobes (compile-time const — TSL loop bound)
+  lobes?: number; // inkBloom only: number of soft bloom lobes (compile-time const — TSL loop bound)
   occlude?: boolean; // volumetric only: front-to-back compositing (crisp solid voxels) vs additive emission
   sdf3?: 'mobius' | 'inverse' | 'square' | 'cexp' | 'joukowski'; // conformal only: which complex map f(z)
 }
@@ -398,9 +399,9 @@ export const RAYMARCH_SYSTEMS: Record<string, RaymarchSystem> = {
     ],
   },
 
-  // ── Bloom: soft ink-diffusion field on a light ground (after Lindsay Kokoska's "Seedform") ──
-  seedform: {
-    id: 'seedform', label: 'Seedform', sdf: 'seedform', category: 'Bloom',
+  // ── Bloom: soft ink-diffusion field — translucent pigment lobes blooming on a light ground ──
+  inkBloom: {
+    id: 'inkBloom', label: 'Ink Bloom', sdf: 'inkBloom', category: 'Bloom',
     iters: 0, bound: 1, camDist: 1, maxSteps: 1, lobes: 6,
     params: [
       { key: 'softness', label: 'softness', min: 0.25, max: 1.2, step: 0.02, default: 0.42 },
@@ -421,6 +422,18 @@ export const RAYMARCH_SYSTEMS: Record<string, RaymarchSystem> = {
       { key: 'zoom', label: 'zoom', min: 0.5, max: 2, step: 0.05, default: 1.35 },
       { key: 'animate', label: 'drift', min: 0, max: 1.2, step: 0.02, default: 0.6 },
       COL,
+    ],
+  },
+
+  // ── Linework: barrier-grid moiré illusion — static gratings that read as rotation ──
+  moire: {
+    id: 'moire', label: 'Moiré Grid', sdf: 'moire', category: 'Linework',
+    iters: 0, bound: 1, camDist: 1, maxSteps: 1,
+    params: [
+      { key: 'spokes', label: 'hashes', min: 20, max: 200, step: 2, default: 90 },
+      { key: 'bars', label: 'barrier', min: 5, max: 60, step: 1, default: 26 },
+      { key: 'zoom', label: 'zoom', min: 0.4, max: 2.5, step: 0.05, default: 1.0 },
+      ANIM,
     ],
   },
 

@@ -18,6 +18,19 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    "version": "0.1.52",
+    "date": "2026-06-30",
+    "title": "Moiré illusion + attractor swarms",
+    "summary": "A barrier-grid moiré that reads as rotation, and two scatters of tumbling strange-attractor 'butterflies' (all-Lorenz, or a mixed menagerie). Plus: the Bloom piece is now the generic 'Ink Bloom'.",
+    "newSystems": ["moire", "lorenzSwarm", "attractorMenagerie"],
+    "notes": [
+      "Moiré Grid (Linework): a fixed radial hash grating XOR'd with a sliding vertical barrier — the interference rosette sweeps as illusory rotation, though nothing actually turns. Live hashes / barrier density / speed",
+      "Lorenz Butterfly Swarm (Attractor): a scatter of Lorenz attractors, each baked into a butterfly and tumbling on its own axis — a nod to the butterfly effect (and Sagan's butterflies who 'flutter for a day')",
+      "Attractor Menagerie (Attractor): the same swarm across a mix of species — Lorenz, Rössler, Aizawa, Thomas, Halvorsen — to show the variety of bounded chaos",
+      "Renamed 'Seedform' → 'Ink Bloom' and made it a generic watercolour/ink-diffusion piece (removed the prior artist attribution at the artist's request)"
+    ]
+  },
+  {
     "version": "0.1.51",
     "date": "2026-06-30",
     "title": "Jellyfish Bloom — bioluminescence in the deep",
@@ -43,13 +56,13 @@ export const RELEASES: Release[] = [
   {
     "version": "0.1.49",
     "date": "2026-06-30",
-    "title": "Three new systems: string worldsheet, Stokes phase, Seedform",
-    "summary": "A daily-adds trio spanning physics and art: the 2-D sheet a relativistic string sweeps through spacetime, the saddle-point landscape behind the Stokes phenomenon, and a watercolour seed-bloom that opens a new Bloom category.",
-    "newSystems": ["stringWorldsheet", "stokesPhase", "seedform"],
+    "title": "Three new systems: string worldsheet, Stokes phase, Ink Bloom",
+    "summary": "A daily-adds trio spanning physics and art: the 2-D sheet a relativistic string sweeps through spacetime, the saddle-point landscape behind the Stokes phenomenon, and a watercolour ink-bloom that opens a new Bloom category.",
+    "newSystems": ["stringWorldsheet", "stokesPhase", "inkBloom"],
     "notes": [
       "String Worldsheet (Parametric): a vibrating string (sum of standing-wave harmonics, open or closed) swept through a static spacetime grid by retarded time — the present edge leads and its past trails, so the worldsheet flows. Live harmonics/tension/amplitude/sweep/window",
       "Stokes Phase Surface (Spectral): the cubic phase Φ=z³/3−sz as a 3-D monkey-saddle terrain, with the steepest-descent contours through its two saddles lit warm/cool — sweep arg(s) to cross the Stokes lines where a saddle's contribution switches on",
-      "Seedform (Bloom): a soft botanical bloom of overlapping translucent petals composited like watercolour (subtractive ink layering, so overlaps deepen to an inky heart), after Lindsay Kokoska's seed studies",
+      "Ink Bloom (Bloom): a soft watercolour bloom of overlapping translucent pigment lobes (subtractive ink layering, so overlaps deepen to an inky heart)",
       "New 'Bloom' category (generative botanical / watercolour pieces)"
     ]
   },

@@ -1922,9 +1922,9 @@ const F = (x,y,z) => { const a=x*x,b=y*y,c=z*z, s=a+b+c-1;
       { label: 'Marching squares / isolines', url: 'https://en.wikipedia.org/wiki/Marching_squares' },
     ],
   },
-  seedform: {
-    "title": "Seedform",
-    "about": "A soft botanical bloom built the way a watercolourist layers a flower: a ring of overlapping translucent petals, each a wash of pigment laid over the cream of the paper, deepening to an inky heart where they all pool. It is not a 3D surface or a fractal — it is pure compositing, a generative homage to Lindsay Kokoska's 'Seedform' studies, where warm peach and cool indigo petals overlap into the dense, dark centre of an opening seed.",
+  inkBloom: {
+    "title": "Ink Bloom",
+    "about": "A drop of ink in water, or a wash of watercolour on wet paper: pigment blooms outward in soft translucent lobes, and wherever two washes overlap the colour deepens. This is that, built as pure compositing rather than a fluid simulation — a ring of overlapping translucent petals laid over a cream ground, warm peach at the soft edges pooling to a dark, inky heart at the centre. Not a 3D surface or a fractal; just layered light and pigment.",
     "howItWorks": "Each pixel reads a plane coordinate that is first domain-warped by a few slow sines so the petal edges undulate organically. Then N petals are placed around a ring; each is a Gaussian blob whose width is the 'softness'. The colour is built by TRANSLUCENT INK LAYERING (subtractive, like watercolour) rather than by summing a field: starting from the cream paper, each petal multiplies the colour beneath it toward its own pigment with an alpha set by the Gaussian. Because the layering is multiplicative, a lone petal stays a pale wash but wherever petals OVERLAP the colour compounds and deepens — and at the centre, where every petal meets a final pooled blob, it darkens to a deep indigo heart. Petal pigment alternates between warm peach and cool indigo (biased by 'warmth'); the whole ring slowly rotates and the warp drifts with 'morph'.",
     "equations": [
       { "label": "petal alpha (Gaussian on a ring)", "latex": "a_i = \\operatorname{clamp}\\big(\\beta\\,e^{-\\lVert \\mathbf{q}-\\mathbf{c}_i\\rVert^{2}/\\sigma^{2}}\\big), \\quad \\mathbf{c}_i = \\rho\\,(\\cos\\theta_i,\\ \\sin\\theta_i)" },
@@ -1941,7 +1941,7 @@ const F = (x,y,z) => { const a=x*x,b=y*y,c=z*z, s=a+b+c-1;
     ],
     code: "// per pixel: layer N translucent petals over cream paper\nlet C = cream;\nconst q = warp(vec2(ndc.x, ndc.y) * zoom);   // slow-sine domain warp\nfor (i in 0..N) {                              // petals on a ring\n  const c  = 0.62 * vec2(cos(ang_i), sin(ang_i));\n  const a  = clamp(bloom * exp(-dot(q-c, q-c) / softness^2), 0, 0.7);\n  const ink = mix(indigo, peach, warmLobe_i);  // alternating pigment\n  C = mix(C, C * ink * 1.25, a);               // multiplicative → overlaps deepen\n}\nconst ac = clamp(bloom * exp(-dot(q,q) / (1.8*softness^2)), 0, 0.82);\nC = mix(C, C * deepIndigo, ac);                // pooled inky heart",
     links: [
-      { label: 'Lindsay Kokoska (artist)', url: 'https://www.lindsaykokoska.com/' },
+      { label: 'Watercolour (wet-on-wet)', url: 'https://en.wikipedia.org/wiki/Watercolor_painting' },
       { label: 'Alpha compositing (Porter–Duff)', url: 'https://en.wikipedia.org/wiki/Alpha_compositing' },
       { label: 'Subtractive colour (pigment mixing)', url: 'https://en.wikipedia.org/wiki/Subtractive_color' },
     ],
@@ -1990,6 +1990,28 @@ const F = (x,y,z) => { const a=x*x,b=y*y,c=z*z, s=a+b+c-1;
       { label: 'Bioluminescence (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Bioluminescence' },
       { label: 'Jellyfish (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Jellyfish' },
       { label: 'Jellyfish bloom (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Jellyfish#Blooms' },
+    ],
+  },
+  moire: {
+    "title": "Moiré Grid",
+    "about": "Overlap two regular patterns and a third, coarser pattern appears out of nowhere — the moiré. It's the beat frequency of the visual world: where the two grids almost-but-not-quite align, they reinforce; where they fall out of step, they cancel. The barrier-grid illusion weaponises this for apparent motion — a fixed image seen through a sliding stripe mask appears to move, though nothing rotates. Here a fixed radial hash grating sits under a sliding vertical barrier, and the moiré rosette between them sweeps around as the barrier translates: static geometry your brain insists is spinning.",
+    "howItWorks": "Two binary gratings are built per pixel. The fixed one is a RADIAL hash grating — a square wave of the polar angle θ, so it reads as a set of ticks fanning out around the centre (crisp-thresholded from sin(N·θ)). The moving one is a linear BARRIER — a vertical square wave of x that slides with time. The displayed value is their XOR (|A − B|): white where exactly one grating is 'on', black where they agree. Because one grating is radial and the other linear, their interference fringes are curved (hyperbolic), and translating the linear barrier makes those fringes rotate around the disk — the illusion. The pattern is confined to a soft-edged disk, and the very centre (where the angular frequency is infinite) is calmed to avoid aliasing.",
+    "equations": [
+      { "label": "radial hash grating (fixed)", "latex": "A = \\big[\\sin(N\\theta) > 0\\big], \\quad \\theta = \\operatorname{atan}(y, x)" },
+      { "label": "barrier grating (sliding)", "latex": "B = \\big[\\sin(k\\,x + v t) > 0\\big]" },
+      { "label": "moiré = exclusive-or of the two", "latex": "M = \\lvert A - B\\rvert" },
+    ],
+    "params": [
+      { "key": "spokes", "symbol": "N", "meaning": "number of radial hash ticks around the circle" },
+      { "key": "bars", "symbol": "k", "meaning": "density of the sliding vertical barrier stripes" },
+      { "key": "zoom", "symbol": "Z", "meaning": "view scale of the figure" },
+      { "key": "animate", "symbol": "v", "meaning": "barrier speed — how fast the illusory rotation sweeps" },
+    ],
+    code: "// per pixel: XOR a fixed radial grating with a sliding vertical barrier\nconst th = atan(ndc.y, ndc.x);\nconst A = step(0, sin(th * spokes));            // radial hashes (fixed)\nconst B = step(0, sin(ndc.x * bars + t));       // barrier (sliding)\nconst moire = abs(A - B);                        // interference fringes\ncol = vec3(moire) * diskMask * calmCentre;       // white on black, circular",
+    links: [
+      { label: 'Moiré pattern (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Moir%C3%A9_pattern' },
+      { label: 'Barrier-grid animation / scanimation', url: 'https://en.wikipedia.org/wiki/Barrier-grid_animation_and_stereography' },
+      { label: 'Op art (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Op_art' },
     ],
   },
 };

@@ -2406,4 +2406,48 @@ o[1] = p.b * x[0];`,
       { label: 'Optics & Photonics News', url: 'https://www.optica-opn.org/' },
     ],
   },
+  lorenzSwarm: {
+    title: 'Lorenz Butterfly Swarm',
+    about:
+      "The Lorenz attractor is the shape chaos made famous — two spiralling lobes a trajectory hops between, never repeating, forever bounded: the original 'butterfly.' It also named the butterfly EFFECT, the idea that a tiny nudge grows into a wholly different future. This is a swarm of them: a scatter of Lorenz butterflies, each frozen mid-flight and tumbling at its own angle — a nod to Sagan's line that we are 'like butterflies who flutter for a day and think it is forever.'",
+    howItWorks:
+      "Each butterfly is a Lorenz trajectory ẋ=σ(y−x), ẏ=x(ρ−z)−y, ż=xy−βz (with the classic σ=10, ρ=28, β=8/3), integrated once at build after discarding its transient, so a few thousand points trace out the two-lobed attractor. That point cloud is centred, normalised to a common size, given a random 3-D orientation, and dropped onto a scattered ring. Nothing re-integrates per frame — the shape is baked; each butterfly simply tumbles about its own random axis (a Rodrigues rotation), so the swarm drifts and turns while every wing keeps its exact chaotic form. White on black. Bounded (the Lorenz system is dissipative).",
+    equations: [
+      { label: 'Lorenz system (each butterfly)', latex: '\\dot{x} = \\sigma(y-x), \\quad \\dot{y} = x(\\rho - z) - y, \\quad \\dot{z} = xy - \\beta z' },
+      { label: 'classic parameters', latex: '\\sigma = 10, \\quad \\rho = 28, \\quad \\beta = \\tfrac{8}{3}' },
+      { label: 'per-frame tumble (Rodrigues)', latex: '\\mathbf{v}\' = \\mathbf{v}\\cos\\theta + (\\mathbf{k}\\times\\mathbf{v})\\sin\\theta + \\mathbf{k}(\\mathbf{k}\\cdot\\mathbf{v})(1-\\cos\\theta)' },
+    ],
+    params: [
+      { key: 'count', symbol: 'M', meaning: 'number of butterflies in the swarm' },
+      { key: 'scatter', symbol: 'R', meaning: 'radius of the ring the butterflies are scattered on' },
+    ],
+    code: "// each butterfly: bake a Lorenz trajectory, orient it, scatter it; per frame just tumble\nlet [x,y,z] = [0.1, 0, 0.1];\nfor (w in 0..800) step();               // discard transient\nfor (i in 0..K) { step(); pts[i] = [x,y,z]; }   // bake the butterfly\nnormalise(pts); orient(pts, randomFrame); place(pts, ringCentre);\n// per frame: rotate each butterfly about its own axis by rate*t (Rodrigues)",
+    links: [
+      { label: 'Lorenz system (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Lorenz_system' },
+      { label: 'Butterfly effect (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Butterfly_effect' },
+      { label: 'Attractor (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Attractor' },
+    ],
+  },
+  attractorMenagerie: {
+    title: 'Attractor Menagerie',
+    about:
+      "A cabinet of curiosities for chaos: a scatter of DIFFERENT strange attractors, each tumbling in its own little frame. Where the Lorenz swarm repeats one species, this mixes the zoo — Lorenz's butterfly, Rössler's folded band, the Aizawa torus-knot, the ghostly cyclic-symmetric Thomas, and Halvorsen's three-fold spiral — so you can see at a glance how many distinct forms bounded chaos can take.",
+    howItWorks:
+      "Same machinery as the Lorenz swarm, but each butterfly draws from a different ODE. The build cycles through five species — Lorenz, Rössler, Aizawa, Thomas, and Halvorsen — integrating each with its own suitable timestep, discarding the transient, and baking a few thousand points into the attractor's shape. Every cloud is normalised to a common size (so a sprawling Lorenz and a compact Rössler sit together), given a random orientation, scattered on a ring, and tumbled per frame. The shapes are fixed; only the rotation animates. All five systems are dissipative, so the swarm stays bounded.",
+    equations: [
+      { label: 'Rössler', latex: '\\dot{x} = -y - z, \\quad \\dot{y} = x + a y, \\quad \\dot{z} = b + z(x - c)' },
+      { label: 'Thomas (cyclically symmetric)', latex: '\\dot{x} = \\sin y - b x, \\quad \\dot{y} = \\sin z - b y, \\quad \\dot{z} = \\sin x - b z' },
+      { label: 'Halvorsen (cyclically symmetric)', latex: '\\dot{x} = -a x - 4y - 4z - y^{2}, \\ \\text{(and cyclic in } x,y,z)' },
+    ],
+    params: [
+      { key: 'count', symbol: 'M', meaning: 'number of attractors in the swarm' },
+      { key: 'scatter', symbol: 'R', meaning: 'radius of the ring they are scattered on' },
+    ],
+    code: "// like the Lorenz swarm, but butterfly b uses species[b % 5]:\n// ['lorenz','rossler','aizawa','thomas','halvorsen'] — each with its own dt\nconst sp = MENAGERIE[b % MENAGERIE.length];\nfor (i in 0..K) { [x,y,z] = stepSpecies(sp, x,y,z, DT[sp]); pts[i] = [x,y,z]; }\nnormalise(pts); orient(pts); scatter(pts); // per frame: tumble",
+    links: [
+      { label: 'List of chaotic maps / attractors', url: 'https://en.wikipedia.org/wiki/List_of_chaotic_maps' },
+      { label: 'Rössler attractor (Wikipedia)', url: 'https://en.wikipedia.org/wiki/R%C3%B6ssler_attractor' },
+      { label: 'Thomas’ cyclically symmetric attractor', url: 'https://en.wikipedia.org/wiki/Thomas%27_cyclically_symmetric_attractor' },
+    ],
+  },
 };
