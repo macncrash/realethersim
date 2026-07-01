@@ -62,16 +62,16 @@ class SpiralGalaxyArchetype implements Archetype {
       let bright: number;
       let r0: number, g0: number, b0: number;
       if (i < nBulge) {
-        // bright central bulge (near-circular, warm) — the innermost ellipses align into a bar
+        // bright central bulge — a 3-D spheroid (vertical extent ≈ its in-plane size, rounder at core)
         a = 0.015 + 0.22 * Math.sqrt(rng());
-        this.z0[i] = (rng() - 0.5) * 0.06;
+        this.z0[i] = (rng() * 2 - 1) * 0.3 * Math.sqrt(Math.max(0, 1 - (a / 0.24) * (a / 0.24)));
         bright = (1.3 + 0.6 * rng()) * (1 - a / 0.24) + 0.5; // hot, brightest at the very core
         r0 = 1.0; g0 = 0.82; b0 = 0.5;
       } else {
-        // disk: radius spread out to the rim, thinner vertically
+        // disk: radius spread out to the rim, with a thin scale height that FLARES outward
         a = 0.2 + 1.35 * Math.pow(rng(), 0.85);
-        this.z0[i] = (rng() - 0.5) * 0.03;
         const f = (a - 0.2) / 1.35; // 0 inner disk → 1 rim
+        this.z0[i] = ((rng() + rng() + rng() - 1.5) / 1.5) * (0.03 + 0.06 * f); // Gaussian-ish, flaring
         // warm-white inner disk → blue outer arms
         r0 = 1.0 - 0.5 * f;
         g0 = 0.84 - 0.2 * f;
@@ -104,9 +104,9 @@ class SpiralGalaxyArchetype implements Archetype {
       const ey = b * Math.sin(psi);
       const ct = Math.cos(th0), st = Math.sin(th0);
       const o = i * 3;
-      pos[o] = ct * ex - st * ey; // galaxy lies in the X–Y plane, facing the camera
-      pos[o + 1] = st * ex + ct * ey;
-      pos[o + 2] = this.z0[i];
+      pos[o] = ct * ex - st * ey; // galaxy disk lies in the X–Z plane (horizontal)…
+      pos[o + 1] = this.z0[i]; // …with real thickness in Y (scale height + 3-D bulge)
+      pos[o + 2] = st * ex + ct * ey;
     }
   }
 
