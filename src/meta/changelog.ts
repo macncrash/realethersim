@@ -18,6 +18,17 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    "version": "0.1.54",
+    "date": "2026-06-30",
+    "title": "Solar eruptions + a 3-D galaxy",
+    "summary": "Two upgrades: the Sun now erupts (animated prominences + CMEs, not just rotation), and the spiral galaxy gained real 3-D depth — a spheroidal bulge, a flaring disk, and an inclined view.",
+    "newSystems": [],
+    "notes": [
+      "Solar Corona: active sites now ERUPT on a staggered cycle — confined prominences that rise and fall back, and coronal mass ejections that escape — flung out as curved plasma jets. New 'eruptions' rate control",
+      "Spiral Galaxy: no longer a flat sheet — a 3-D spheroidal bulge, a disk with a flaring scale height, and a tilted view so the depth reads"
+    ]
+  },
+  {
     "version": "0.1.53",
     "date": "2026-06-30",
     "title": "The active Sun + a spiral galaxy",

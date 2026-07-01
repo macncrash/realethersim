@@ -28,6 +28,15 @@ class SolarCoronaArchetype implements Archetype {
   private readonly positions: Float32Array;
   private readonly colors: Float32Array;
   private spin = 0.15;
+  private erSpeed = 0.28; // eruption cycle rate
+  // erupting plasma (prominences + CMEs) — trajectories computed per frame, not baked as static points
+  private ejStart = 0; // index where the ejecta block begins
+  private ejN = 0;
+  private ejAnchor = new Float64Array(0); // unit launch anchor (site + spread)
+  private ejTan = new Float64Array(0); // tangential drift direction
+  private ejS = new Float64Array(0); // peak height
+  private ejEsc = new Uint8Array(0); // 1 = escapes (CME), 0 = rises & falls back (prominence)
+  private ejPh = new Float64Array(0); // eruption phase offset
   private t = 0;
   private buildKey = '';
   private readonly seed: number;
@@ -52,15 +61,17 @@ class SolarCoronaArchetype implements Archetype {
     const loopH = p.loopHeight ?? 0.32;
     const activity = p.activity ?? 0.5; // fraction of points spent on loops vs surface
     this.spin = p.spin ?? 0.15;
+    this.erSpeed = p.eruptions ?? 0.28;
     this.buildKey = this.keyOf(p);
     const rng = mulberry32((this.seed ^ 0x9e3779b9) >>> 0);
     const N = this.particleCount;
     const col = this.colors;
 
+    const nEject = Math.floor(N * 0.16); // erupting plasma (prominences + CMEs)
     const nLoop = Math.floor(N * clamp01(activity)); // coronal loops
     const nPlume = Math.floor(N * 0.05); // polar plumes
-    const nHalo = Math.floor(N * 0.07); // soft corona halo (limb glow + extension)
-    const nSurf = N - nLoop - nPlume - nHalo; // granular surface shell
+    const nHalo = Math.floor(N * 0.06); // soft corona halo (limb glow + extension)
+    const nSurf = N - nLoop - nPlume - nHalo - nEject; // granular surface shell
 
     let idx = 0;
     const put = (x: number, y: number, z: number, r: number, g: number, b: number): void => {
@@ -148,28 +159,85 @@ class SolarCoronaArchetype implements Archetype {
       put(nx * rad, ny * rad, nz * rad, v * 0.18, v * 0.6, v * 0.8);
     }
 
+    // ── erupting plasma: prominences (rise & fall) and CMEs (escape) launched from a few active sites,
+    //    each site cycling with a staggered phase. Trajectories are computed live in syncPositions; here
+    //    we bake each particle's launch geometry. This block is contiguous at the END of the buffer. ──
+    this.ejStart = idx;
+    this.ejN = N - idx;
+    const M = this.ejN;
+    this.ejAnchor = new Float64Array(M * 3);
+    this.ejTan = new Float64Array(M * 3);
+    this.ejS = new Float64Array(M);
+    this.ejEsc = new Uint8Array(M);
+    this.ejPh = new Float64Array(M);
+    const nSites = 4;
+    const sites: number[][] = [];
+    for (let s = 0; s < nSites; s++) {
+      const lat = (12 + 34 * rng()) * (Math.PI / 180) * (rng() < 0.5 ? 1 : -1);
+      const lon = rng() * TAU;
+      const cx = Math.cos(lat) * Math.cos(lon), cy = Math.sin(lat), cz = Math.cos(lat) * Math.sin(lon);
+      const [t1x, t1y, t1z, t2x, t2y, t2z] = tangentBasis(cx, cy, cz);
+      sites.push([cx, cy, cz, t1x, t1y, t1z, t2x, t2y, t2z, s / nSites]); // last = phase offset
+    }
+    for (let k = 0; k < M; k++) {
+      const S = sites[k % nSites];
+      const spread = 0.12 * Math.sqrt(rng());
+      const sa = rng() * TAU;
+      // anchor: site centre nudged by a small tangential spread (the eruption's footprint)
+      let ax = S[0] + (S[3] * Math.cos(sa) + S[6] * Math.sin(sa)) * spread;
+      let ay = S[1] + (S[4] * Math.cos(sa) + S[7] * Math.sin(sa)) * spread;
+      let az = S[2] + (S[5] * Math.cos(sa) + S[8] * Math.sin(sa)) * spread;
+      const al = Math.hypot(ax, ay, az) || 1; ax /= al; ay /= al; az /= al;
+      // tangential drift direction (the arc lean)
+      const ta = rng() * TAU;
+      this.ejTan[k * 3] = S[3] * Math.cos(ta) + S[6] * Math.sin(ta);
+      this.ejTan[k * 3 + 1] = S[4] * Math.cos(ta) + S[7] * Math.sin(ta);
+      this.ejTan[k * 3 + 2] = S[5] * Math.cos(ta) + S[8] * Math.sin(ta);
+      this.ejAnchor[k * 3] = ax; this.ejAnchor[k * 3 + 1] = ay; this.ejAnchor[k * 3 + 2] = az;
+      const esc = rng() < 0.35;
+      this.ejEsc[k] = esc ? 1 : 0;
+      this.ejS[k] = esc ? 0.8 + 1.0 * rng() : 0.3 + 0.5 * rng(); // CMEs fly higher than confined prominences
+      this.ejPh[k] = S[9] + (rng() - 0.5) * 0.12; // share the site's phase (erupt together), slight jitter
+      const bri = 1.1 + 0.5 * rng();
+      put(ax * R, ay * R, az * R, 0.55 * bri, 0.92 * bri, 1.0 * bri); // hot cyan-white plasma
+    }
+
     // any leftover slots (rounding) → dim surface points at the origin-safe shell
     while (idx < N) put(0, R, 0, 0.02, 0.1, 0.14);
     this.syncPositions();
   }
 
   private syncPositions(): void {
-    const N = this.particleCount;
     const pos = this.positions;
+    const t = this.t;
     // solar rotation about a slightly tilted axis
-    const th = this.spin * this.t;
+    const th = this.spin * t;
     const ct = Math.cos(th), st = Math.sin(th);
     const tilt = 0.12, ctl = Math.cos(tilt), stl = Math.sin(tilt);
-    for (let i = 0; i < N; i++) {
-      const x0 = this.bx[i], y0 = this.by[i], z0 = this.bz[i];
-      // rotate about Y (solar rotation)
-      const rx = x0 * ct + z0 * st;
+    const place = (i: number, x0: number, y0: number, z0: number): void => {
+      const rx = x0 * ct + z0 * st; // rotate about Y (solar rotation)
       const rz = -x0 * st + z0 * ct;
-      // small fixed tilt about X so the rotation axis leans
       const o = i * 3;
       pos[o] = rx;
-      pos[o + 1] = y0 * ctl - rz * stl;
+      pos[o + 1] = y0 * ctl - rz * stl; // small fixed tilt about X so the axis leans
       pos[o + 2] = y0 * stl + rz * ctl;
+    };
+    // static structure (surface shell, coronal loops, plumes, halo)
+    for (let i = 0; i < this.ejStart; i++) place(i, this.bx[i], this.by[i], this.bz[i]);
+    // erupting plasma: each particle rises along a rise-&-fall (prominence) or escape (CME) height
+    // envelope over its eruption phase, drifting tangentially into an arc, then rotates with the Sun
+    for (let k = 0; k < this.ejN; k++) {
+      const ph = t * this.erSpeed + this.ejPh[k];
+      const tau = ph - Math.floor(ph); // eruption phase ∈ [0,1)
+      const hEnv = this.ejEsc[k] ? tau : 4 * tau * (1 - tau);
+      const h = this.ejS[k] * hEnv;
+      const drift = tau * 0.5;
+      let dx = this.ejAnchor[k * 3] + this.ejTan[k * 3] * drift;
+      let dy = this.ejAnchor[k * 3 + 1] + this.ejTan[k * 3 + 1] * drift;
+      let dz = this.ejAnchor[k * 3 + 2] + this.ejTan[k * 3 + 2] * drift;
+      const l = Math.hypot(dx, dy, dz) || 1;
+      const rad = R + h;
+      place(this.ejStart + k, (dx / l) * rad, (dy / l) * rad, (dz / l) * rad);
     }
   }
 
@@ -180,6 +248,7 @@ class SolarCoronaArchetype implements Archetype {
       return;
     }
     this.spin = p.spin ?? 0.15;
+    this.erSpeed = p.eruptions ?? 0.28;
     this.t += dt;
     this.syncPositions();
   }
@@ -252,6 +321,7 @@ export const solarCoronaFactory: ArchetypeFactory = {
     { key: 'regions', label: 'active regions', min: 1, max: 12, step: 1, default: 6, rebuild: true },
     { key: 'loopHeight', label: 'loop height', min: 0.1, max: 0.6, step: 0.02, default: 0.32, rebuild: true },
     { key: 'activity', label: 'activity', min: 0.3, max: 0.8, step: 0.02, default: 0.5, rebuild: true }, // loops vs surface
+    { key: 'eruptions', label: 'eruptions', min: 0, max: 0.8, step: 0.02, default: 0.28 }, // prominence/CME cycle rate
     { key: 'spin', label: 'rotation', min: 0, max: 1, step: 0.02, default: 0.15 },
   ],
   defaultParticleCount: 220_000,
