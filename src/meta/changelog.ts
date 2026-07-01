@@ -18,6 +18,17 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    "version": "0.1.53",
+    "date": "2026-06-30",
+    "title": "The active Sun + a spiral galaxy",
+    "summary": "Two pieces of real astrophysics: the Sun's corona built from its magnetic loop structure, and a spiral galaxy whose arms are density waves (why the arms don't wind up — and why their distances keep getting revised).",
+    "newSystems": ["solarCorona", "spiralGalaxy"],
+    "notes": [
+      "Solar Corona (Plasma): the Sun in 171 Å EUV, built from magnetism not fluid — coronal loops arcing between active-region footpoints in the sunspot latitude bands, a granular surface, polar plumes, a glowing limb, and slow rotation",
+      "Spiral Galaxy (Cosmology): a density-wave spiral — stars on precessing elliptical orbits crowd into two arms and flow through them while the pattern turns at its own speed, with a central bar/bulge and pink star-forming knots. The generative answer to the 'winding problem'"
+    ]
+  },
+  {
     "version": "0.1.52",
     "date": "2026-06-30",
     "title": "Moiré illusion + attractor swarms",

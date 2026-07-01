@@ -2450,4 +2450,53 @@ o[1] = p.b * x[0];`,
       { label: 'Thomas’ cyclically symmetric attractor', url: 'https://en.wikipedia.org/wiki/Thomas%27_cyclically_symmetric_attractor' },
     ],
   },
+  solarCorona: {
+    title: 'Solar Corona',
+    about:
+      "The Sun in extreme ultraviolet — the way space telescopes like SDO watch it storm. What glows isn't fire but million-degree plasma trapped on MAGNETIC FIELD LINES. Each active region is a pair of opposite-polarity sunspots (magnetic footpoints), and coronal loops arch between them along the field, brightening when the region flares. Scattered across the disk in the ±30° latitude bands where sunspots emerge, with a mottled granular surface, a glowing limb, and plumes at the poles where the field opens to the solar wind. Lit in the teal of the 171 Å channel.",
+    howItWorks:
+      "Rather than simulate the plasma fluid, we build the magnetic structure it rides. A Fibonacci-sphere shell of points makes the granular surface (limb-brightened for free by additive density where the line of sight grazes the shell). Active regions are placed at sunspot latitudes; each is a fan of coronal loops, and every loop is a semicircular arc between two footpoints — a great-circle path (slerp) lifted to a height that grows with the footpoint separation, brightest and whitest at the feet. Near the poles, short near-radial streamers stand in for open-field plumes, and a faint outer shell gives the corona its glow. The whole disk turns with the ~25-day solar rotation. Bounded by construction.",
+    equations: [
+      { label: 'coronal loop = arc between magnetic footpoints', latex: '\\mathbf{r}(s) = \\big(R + H\\sin\\pi s\\big)\\,\\operatorname{slerp}(\\mathbf{f}_+, \\mathbf{f}_-, s), \\quad s \\in [0,1]' },
+      { label: 'footpoints straddle the region centre', latex: '\\mathbf{f}_\\pm = \\mathbf{c}\\cos\\delta \\pm \\hat{\\mathbf{d}}\\sin\\delta' },
+      { label: 'active regions in the sunspot bands', latex: '\\lvert\\text{lat}\\rvert \\in [10^\\circ,\\ 42^\\circ]' },
+    ],
+    params: [
+      { key: 'regions', symbol: 'n', meaning: 'number of active regions (sunspot loop bundles)' },
+      { key: 'loopHeight', symbol: 'H', meaning: 'how high the coronal loops arch above the surface' },
+      { key: 'activity', symbol: '\\alpha', meaning: 'share of the corona spent on loops vs the quiet surface' },
+      { key: 'spin', symbol: '\\nu', meaning: 'solar rotation rate' },
+    ],
+    code: "// each active region: a fan of loops between two magnetic footpoints\nconst f_plus  = c*cos(sep) + dir*sin(sep);   // footpoints straddle region centre c\nconst f_minus = c*cos(sep) - dir*sin(sep);\nfor (s in 0..1) {                             // arc from foot to foot\n  const base = slerp(f_plus, f_minus, s);     // great-circle path\n  const rad  = R + H*sin(PI*s);               // lifted into a loop\n  point = base * rad;  brightness = hot at the feet, teal along the crown\n}",
+    links: [
+      { label: 'Corona (Sun) (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Corona' },
+      { label: 'Coronal loop (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Coronal_loop' },
+      { label: 'Solar Dynamics Observatory (171 Å)', url: 'https://en.wikipedia.org/wiki/Solar_Dynamics_Observatory' },
+    ],
+  },
+  spiralGalaxy: {
+    title: 'Spiral Galaxy',
+    about:
+      "Spiral arms are one of astronomy's great illusions: they are not rivers of stars but WAVES. If they were solid structures, they'd wind up into a tight coil within a few rotations — the 'winding problem.' Density-wave theory (Lindblad; Lin & Shu) resolves it: the arms are a standing wave, a slowly-rotating pattern of denser regions that stars drift into and out of, like cars bunching through a traffic jam. It's also why measuring an arm's exact distance is so slippery — recent X-ray work pushed the Milky Way's outer arms up to 10% farther than we thought. You're not measuring a wall; you're measuring a wave.",
+    howItWorks:
+      "Each star rides a slightly elliptical orbit centred on the galaxy. The trick is that every orbit's ellipse is rotated a bit more than the one just inside it — the orientation winds with radius (θ₀ = pitch·a). Where neighbouring ellipses crowd, stars pile up along two spiral loci: the arms. Per frame each star advances along its orbit (a flat rotation curve, so orbital speed ∝ 1/radius), while the whole set of ellipse orientations precesses rigidly at the 'pattern speed' — so the arm pattern turns slowly while stars stream through it. The innermost ellipses are nearly aligned, forming the central bar; a bright bulge anchors the centre; pink knots mark star-forming regions. Colour runs warm-white in the bulge to blue in the outer arms. Bounded (every orbit is closed).",
+    equations: [
+      { label: 'orbit ellipse, orientation winds with radius', latex: '\\theta_0(a) = \\text{pitch}\\cdot a + \\Omega_p\\, t' },
+      { label: 'star position (ellipse of semi-axes a, b=a(1−e))', latex: '\\begin{pmatrix}x\\\\y\\end{pmatrix} = R(\\theta_0)\\begin{pmatrix}a\\cos\\psi\\\\ b\\sin\\psi\\end{pmatrix}' },
+      { label: 'orbital phase (flat rotation curve)', latex: '\\psi(t) = \\psi_0 + \\frac{V_0}{a + a_c}\\,t' },
+      { label: 'the arm is a pattern, not the stars', latex: '\\Omega_p \\ne \\Omega_\\star(a) \\;\\Rightarrow\\; \\text{stars flow through the arms}' },
+    ],
+    params: [
+      { key: 'pitch', symbol: 'k', meaning: 'how fast the ellipse orientation winds with radius → arm tightness' },
+      { key: 'eccentricity', symbol: 'e', meaning: 'how elliptical the orbits are (stronger bar + arms)' },
+      { key: 'patternSpeed', symbol: '\\Omega_p', meaning: 'rotation speed of the arm pattern (independent of the stars)' },
+      { key: 'orbitSpeed', symbol: 'V_0', meaning: 'orbital speed of the stars along their ellipses' },
+    ],
+    code: "// each star: an ellipse whose orientation winds with radius; stars flow, pattern precesses\nconst psi = psi0 + (V0 / (a + CORE)) * t;      // orbital phase (flat rotation curve)\nconst th0 = pitch * a + patternSpeed * t;       // ellipse orientation (winds + precesses)\nconst b = a * (1 - ecc);\nconst ex = a*cos(psi), ey = b*sin(psi);\nx = cos(th0)*ex - sin(th0)*ey;                  // ellipses crowd → spiral arms\ny = sin(th0)*ex + cos(th0)*ey;",
+    links: [
+      { label: 'Density wave theory (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Density_wave_theory' },
+      { label: 'Spiral galaxy / winding problem', url: 'https://en.wikipedia.org/wiki/Spiral_galaxy#Winding_problem' },
+      { label: 'Lin–Shu density wave theory', url: 'https://en.wikipedia.org/wiki/Lin%E2%80%93Shu_density_wave_theory' },
+    ],
+  },
 };

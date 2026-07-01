@@ -377,6 +377,18 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
       camera.position.set(0, 0, 4.4);
       controls.update();
     }
+    // The solar corona is a sphere — frame it face-on, filling the frame like the SDO disk.
+    if ($archetypeId.get() === 'solarCorona') {
+      controls.target.set(0, 0, 0);
+      camera.position.set(0, 0, 2.8);
+      controls.update();
+    }
+    // The spiral galaxy is a flat disk — view it near face-on with a slight tilt so the arms + bar read.
+    if ($archetypeId.get() === 'spiralGalaxy') {
+      controls.target.set(0, 0, 0);
+      camera.position.set(0, 0.9, 3.6);
+      controls.update();
+    }
     scheduleLle();
   }
 
@@ -934,6 +946,8 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
           else if (id === 'crossedDiffraction') { controls.target.set(0, 0, 0); camera.position.set(0, 0, 3.4); }
           else if (id === 'dandelion') { controls.target.set(0, 0, 0); camera.position.set(0.6, 0.4, 3.1); }
           else if (id === 'lorenzSwarm' || id === 'attractorMenagerie') { controls.target.set(0, 0, 0); camera.position.set(0, 0, 4.4); }
+          else if (id === 'solarCorona') { controls.target.set(0, 0, 0); camera.position.set(0, 0, 2.8); }
+          else if (id === 'spiralGalaxy') { controls.target.set(0, 0, 0); camera.position.set(0, 0.9, 3.6); }
           else camera.position.set(2.4, 1.5, 4.4);
         }
         controls.update();
