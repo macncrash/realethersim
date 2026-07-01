@@ -820,11 +820,11 @@ export function createRaymarch(sys: RaymarchSystem, backend: 'webgpu' | 'webgl2'
       const a0 = u.colShift.mul(6.2832); // faint tint (default ≈ white-on-black)
       const tint = vec3(cos(a0).mul(0.12).add(0.88), cos(a0.add(2.1)).mul(0.12).add(0.9), cos(a0.add(4.2)).mul(0.12).add(0.95));
       col.assign(tint.mul(line));
-    } else if (sys.sdf === 'seedform') {
-      // ── Bloom: soft ink-diffusion lobes over a light "paper" ground (after Lindsay Kokoska's
-      //    "Seedform"). Per-pixel sum of soft radial lobes (a metaball-ish field), domain-warped into
-      //    organic petals, composited as translucent ink: peach at the soft edges, deep indigo where it
-      //    pools. This branch OWNS col → it overrides the shared dark BG with a light paper gradient.
+    } else if (sys.sdf === 'inkBloom') {
+      // ── Bloom: soft ink-diffusion lobes over a light "paper" ground. Per-pixel sum of soft radial
+      //    lobes (a metaball-ish field), domain-warped into organic petals, composited as translucent
+      //    ink: peach at the soft edges, deep indigo where it pools. This branch OWNS col → it overrides
+      //    the shared dark BG with a light paper gradient.
       const t = uTime.mul(0.15).mul(u.animate);
       const s2 = u.softness.mul(u.softness).toVar();
       col.assign(mix(vec3(0.99, 0.97, 0.95), vec3(0.97, 0.93, 0.91), ndc.y.mul(0.5).add(0.5))); // cream paper
@@ -889,6 +889,21 @@ export function createRaymarch(sys: RaymarchSystem, backend: 'webgpu' | 'webgl2'
       // the deflector galaxy: a small dim central glow
       col.assign(col.add(vec3(0.6, 0.55, 0.7).mul(exp(b.mul(b).mul(-40)).mul(0.18))));
       col.assign(clamp(col, 0, 1));
+    } else if (sys.sdf === 'moire') {
+      // ── Linework: a barrier-grid MOIRÉ illusion. A fixed radial hash grating (ticks around the
+      //    circle) is overlaid with a sliding vertical stripe barrier; the XOR of the two binary
+      //    gratings is a moiré rosette whose hyperbolic fringes SWEEP as the barrier translates — static
+      //    geometry that reads as rotation. Stark black/white; this branch owns col. ──
+      const t = uTime.mul(u.animate).mul(2);
+      const p = vec2(ndc.x, ndc.y).mul(u.zoom).toVar();
+      const r = length(p).toVar();
+      const th = atan(p.y, p.x);
+      const A = smoothstep(float(-0.12), float(0.12), sin(th.mul(u.spokes))); // fixed radial hashes
+      const B = smoothstep(float(-0.12), float(0.12), sin(p.x.mul(u.bars).add(t))); // moving barrier
+      const moire = abs(A.sub(B)).toVar(); // XOR → interference fringes
+      const disk = smoothstep(float(1.0), float(0.82), r); // circular figure, soft edge
+      const calm = smoothstep(float(0.04), float(0.16), r); // tame the centre singularity
+      col.assign(vec3(moire.mul(disk).mul(calm)));
     } else if (sys.sdf === 'jellyfishBloom') {
       // ── Bloom: a drifting swarm of bioluminescent jellyfish. Each is a pulsing translucent bell (a
       //    glowing elliptical membrane + soft inner light) trailing wavy tentacles, in cool living-light

@@ -371,6 +371,12 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
       camera.position.set(0.6, 0.4, 3.1);
       controls.update();
     }
+    // Attractor swarms are a scatter of butterflies in the view plane — view face-on to see the whole ring.
+    if ($archetypeId.get() === 'lorenzSwarm' || $archetypeId.get() === 'attractorMenagerie') {
+      controls.target.set(0, 0, 0);
+      camera.position.set(0, 0, 4.4);
+      controls.update();
+    }
     scheduleLle();
   }
 
@@ -927,6 +933,7 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
           else if (id === 'dispersionWave') { controls.target.set(0, 0, 0); camera.position.set(0, 0.6, 3.9); }
           else if (id === 'crossedDiffraction') { controls.target.set(0, 0, 0); camera.position.set(0, 0, 3.4); }
           else if (id === 'dandelion') { controls.target.set(0, 0, 0); camera.position.set(0.6, 0.4, 3.1); }
+          else if (id === 'lorenzSwarm' || id === 'attractorMenagerie') { controls.target.set(0, 0, 0); camera.position.set(0, 0, 4.4); }
           else camera.position.set(2.4, 1.5, 4.4);
         }
         controls.update();
