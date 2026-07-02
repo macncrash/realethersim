@@ -2620,4 +2620,28 @@ o[1] = p.b * x[0];`,
       { label: 'Atokirina — Artem Korenevych (@artcreativecode)', url: 'https://x.com/artcreativecode' },
     ],
   },
+  structureFormation: {
+    title: 'Structure Formation',
+    about:
+      "How the universe got its shape. At recombination the cosmos was smooth to one part in 100,000; today it is a vast web of galaxy filaments wrapped around enormous voids — the structure that surveys like the Rubin Observatory's LSST are now mapping across billions of galaxies. The bridge between those two states is gravity amplifying the primordial ripples, and its textbook model is the ZEL'DOVICH APPROXIMATION (1970): every parcel of matter simply coasts along a straight line set at the beginning, x = q + D(t)·ψ(q). Where those lines converge, matter piles into sheets ('Zel'dovich pancakes'), then filaments, then the glowing knots where clusters live; where they diverge, the voids empty. The sim clock runs in real gigayears — T+13.8 Gyr is today — and because dark energy freezes the growth factor, you can watch cosmic construction slow and STOP a few tens of Gyr from now: the web's final form.",
+    howItWorks:
+      "First-order Lagrangian perturbation theory, honestly implemented. A displacement potential is synthesised from a few dozen random plane-wave modes with power tilted toward the largest scales; its gradient gives each particle a fixed displacement vector ψ(q), and its divergence gives the local convergence −∇·ψ — the particle's DESTINY, computed analytically at build time: positive convergence means it will land on the web (coloured warm and bright), negative means it drains into a void (dim blue). The field is normalised so the rms convergence reaches ≈1.25 at D=1 — by today the 1σ regions have shell-crossed into caustics. Per frame only one scalar advances: the ΛCDM growth factor D(t), from the exact flat-universe scale factor a(t) ∝ sinh^{2/3}(t/t_Λ) and the Carroll–Press–Turner fit for D(a). Every particle then moves by a single multiply-add — 13.8 Gyr of cosmology at 60 fps, with dark energy's growth freeze built into the curve.",
+    equations: [
+      { label: "Zel'dovich approximation (straight-line coasting)", latex: '\\mathbf{x}(t) = \\mathbf{q} + D(t)\\,\\boldsymbol{\\psi}(\\mathbf{q})' },
+      { label: 'shell-crossing → caustics (the web)', latex: 'D\\,\\lvert\\nabla\\!\\cdot\\!\\boldsymbol{\\psi}\\rvert \\;\\gtrsim\\; 1' },
+      { label: 'flat ΛCDM scale factor', latex: 'a(t) = \\Big(\\tfrac{\\Omega_m}{\\Omega_\\Lambda}\\Big)^{1/3} \\sinh^{2/3}\\!\\big(t/t_\\Lambda\\big)' },
+      { label: 'linear growth (Carroll–Press–Turner)', latex: 'D(a) \\propto a\\,\\frac{\\tfrac{5}{2}\\Omega_m(a)}{\\Omega_m(a)^{4/7} - \\Omega_\\Lambda(a) + \\big(1+\\tfrac{\\Omega_m(a)}{2}\\big)\\big(1+\\tfrac{\\Omega_\\Lambda(a)}{70}\\big)}' },
+    ],
+    params: [
+      { key: 'largeScale', symbol: 'n_s', meaning: 'spectral tilt — how much of the power sits in the biggest waves (bigger sheets and voids)' },
+      { key: 'strength', symbol: '\\sigma', meaning: 'clustering amplitude — how far past shell-crossing the web collapses' },
+      { key: 'speed', symbol: '\\nu', meaning: 'cosmic time rate, in gigayears per second' },
+    ],
+    code: "// build once: displacement field + each particle's destiny (both analytic)\nfor (mode of MODES) { psi -= (k/|k|)*A*sin(k·q + χ);  conv += |k|*A*cos(k·q + χ); }\nnormalise(psi) so rms(conv) = 1.25 at D=1;    // today = a shell-crossed web\ncolour by conv: collapsing → warm bright, void-bound → dim blue\n// per frame: ONE scalar of cosmology, one multiply-add per particle\nconst a = cbrt(Om/Ol) * sinh(t/tL)**(2/3);     // ΛCDM expansion\nconst D = carrollPressTurner(a);                // growth (freezes under Λ)\nx = q + strength * D * psi;",
+    links: [
+      { label: "Zel'dovich approximation (Wikipedia)", url: 'https://en.wikipedia.org/wiki/Zeldovich_approximation' },
+      { label: 'Large-scale structure (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Observable_universe#Large-scale_structure' },
+      { label: 'Vera C. Rubin Observatory / LSST', url: 'https://en.wikipedia.org/wiki/Vera_C._Rubin_Observatory' },
+    ],
+  },
 };

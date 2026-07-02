@@ -41,6 +41,7 @@ import { lorenzSwarmFactory, attractorMenagerieFactory } from './attractorSwarm'
 import { solarCoronaFactory } from './solarCorona';
 import { spiralGalaxyFactory } from './spiralGalaxy';
 import { lightningFactory } from './lightning';
+import { structureFormationFactory } from './structureFormation';
 import { bioBayFactory } from './bioBay';
 import { combJellyFactory } from './combJelly';
 import { jellyfishFountainFactory } from './jellyfishFountain';
@@ -106,6 +107,7 @@ export function registerArchetypes(): void {
   register(solarCoronaFactory);
   register(spiralGalaxyFactory);
   register(lightningFactory);
+  register(structureFormationFactory);
   register(bioBayFactory);
   register(combJellyFactory);
   register(jellyfishFountainFactory);

@@ -444,6 +444,12 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
       camera.position.set(0, 0, 3.4);
       controls.update();
     }
+    // Structure formation is a comoving 3-D box — frame the whole cube from a 3/4 view (like the web).
+    if ($archetypeId.get() === 'structureFormation') {
+      controls.target.set(0, 0, 0);
+      camera.position.set(2.2, 1.5, 2.7);
+      controls.update();
+    }
     // The bio bay is a dark water plane — a kayaker's low 3/4 view so the glowing wake reads on the surface.
     if ($archetypeId.get() === 'bioBay') {
       controls.target.set(0, 0, 0);
@@ -553,7 +559,8 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
       clockModelT += (fi - clockPrevFrame) * ($global.get().dt || 1 / 60) * ($params.get().speed ?? 1);
     }
     clockPrevFrame = fi;
-    const wrapped = spec.cycle ? clockModelT % spec.cycle : clockModelT;
+    const total = clockModelT + (spec.offset ?? 0);
+    const wrapped = spec.cycle ? total % spec.cycle : total;
     const v = wrapped * spec.scale;
     $telemetry.setKey('simTime', `T + ${v >= 10 ? v.toFixed(1) : v.toFixed(2)} ${spec.unit}`);
   }
@@ -1045,6 +1052,7 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
           else if (id === 'spiralGalaxy') { controls.target.set(0, 0, 0); camera.position.set(0, 1.8, 2.9); }
           else if (id === 'galaxyCollision') { controls.target.set(0, 0, 0); camera.position.set(0, 1.9, 5.0); }
           else if (id === 'lightning') { controls.target.set(0, 0, 0); camera.position.set(0, 0, 3.4); }
+          else if (id === 'structureFormation') { controls.target.set(0, 0, 0); camera.position.set(2.2, 1.5, 2.7); }
           else if (id === 'bioBay') { controls.target.set(0, 0, 0); camera.position.set(0, 1.7, 2.5); }
           else if (id === 'combJelly') { controls.target.set(0, 0, 0); camera.position.set(0.7, 0.25, 2.3); }
           else if (id === 'jellyfishFountain') { controls.target.set(0, -0.05, 0); camera.position.set(0, 0.3, 3.4); }

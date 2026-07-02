@@ -18,6 +18,17 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    "version": "0.1.60",
+    "date": "2026-07-02",
+    "title": "Structure Formation — the movement of the entire universe",
+    "summary": "The cosmos assembling itself: matter drains out of the voids onto sheets, filaments and glowing knots as 13.8 billion years tick past on the sim clock — then dark energy freezes the web in place. The Zel'dovich approximation with a real ΛCDM growth history, honestly implemented.",
+    "newSystems": ["structureFormation"],
+    "notes": [
+      "Structure Formation (Cosmology): first-order Lagrangian perturbation theory — x = q + D(t)·ψ(q). Displacement field + each particle's destiny (web vs void) baked analytically; per frame only the ΛCDM growth factor advances (exact sinh scale factor + Carroll–Press–Turner D(a)), so cosmic history runs at 60 fps and growth genuinely freezes under dark-energy domination",
+      "The sim clock runs in absolute cosmic time: T+13.8 Gyr is today — inspired by what the Rubin Observatory is now mapping across billions of galaxies"
+    ]
+  },
+  {
     "version": "0.1.59",
     "date": "2026-07-02",
     "title": "Deep time — the sim clock",

@@ -99,7 +99,7 @@ export interface ArchetypeFactory {
   // Physical sim-clock: when present, the UI shows "T + <modelTime × scale> <unit>". modelTime is
   // accumulated in bootstrap as Σ(fixed-step dt × current speed param) — exactly how time-calibrated
   // archetypes advance their own t — and wraps at `cycle` (model units) for systems that replay.
-  readonly clock?: { scale: number; unit: string; cycle?: number };
+  readonly clock?: { scale: number; unit: string; cycle?: number; offset?: number }; // offset = model time the system starts at
   create(config: ArchetypeConfig): Archetype;
 }
 
