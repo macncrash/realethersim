@@ -8,6 +8,9 @@ import { FloatingOrigin } from '../render/floatingOrigin';
 import { createPointCloud, type PointCloud } from '../render/points';
 import { createTrailCloud, type TrailCloud } from '../render/trails';
 import { createRenderer } from '../render/renderer';
+import { PostProcessing } from 'three/webgpu';
+import { pass } from 'three/tsl';
+import { bloom } from 'three/addons/tsl/display/BloomNode.js';
 import { theme } from '../render/theme';
 import { buildSnapshot } from '../state/snapshot';
 import type { Snapshot, SnapshotCamera } from '../state/schema';
@@ -45,6 +48,43 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
   scene.background = theme.background;
   const { camera, controls } = createCamera(canvas);
   const floatingOrigin = new FloatingOrigin();
+
+  // --- HDR bloom post pass: the scene renders into an HDR pass target, bright regions bloom, and
+  // the composite draws to whatever render target is active — so the live view, screenshots, clips
+  // AND thumbnails all inherit it. Strength is a live uniform (per-system override via
+  // factory.bloom, applied on rebuild). `?bloom=0` is a debug kill switch; construction is guarded
+  // so an unsupported backend falls back to direct rendering. TSL nodes are dynamically typed (same
+  // convention as src/gpu/types.ts). ---
+  const BLOOM_DEFAULT = 0.4;
+  let post: PostProcessing | null = null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let bloomPass: any = null;
+  if (new URLSearchParams(location.search).get('bloom') !== '0') {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const scenePass: any = pass(scene, camera);
+      bloomPass = bloom(scenePass, BLOOM_DEFAULT, 0.4, 0.5); // strength, radius, threshold
+      post = new PostProcessing(renderer, scenePass.add(bloomPass));
+    } catch (e) {
+      console.warn('[bloom] post pass unavailable — falling back to direct render', e);
+      post = null;
+      bloomPass = null;
+    }
+  }
+  function renderFrame(): void {
+    if (post) {
+      // Outside the RAF loop (thumbnail / clip / screenshot captures drive rendering manually with
+      // setAnimationLoop(null)) three's Animation never bumps the node frameId, so FRAME-gated nodes
+      // (the scene pass) would silently reuse a stale texture — every capture comes out identical.
+      // Bump it ourselves; this mirrors exactly what three's Animation loop does each RAF tick.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const nodes = (renderer as any)._nodes;
+      if (nodes?.nodeFrame) nodes.nodeFrame.update();
+      post.render();
+    } else {
+      renderer.render(scene, camera);
+    }
+  }
 
   // --- smooth macro→micro focus tracking (NFR-2.2) ---
   // Log-space distance interpolation preserves the view direction while flying to frame a group.
@@ -288,6 +328,7 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
     teardownRaymarch(); // force a fresh raymarch pass (e.g. switching between 3D fractals)
     applyMode(); // re-establish raymarch vs GPU vs CPU
     updateGuides(); // refresh the overlay for the new system
+    if (bloomPass) bloomPass.strength.value = getFactory($archetypeId.get()).bloom ?? BLOOM_DEFAULT;
     // The Kármán field is a flat horizontal sheet — frame it near top-down (the classic CFD view).
     if ($archetypeId.get() === 'karman') {
       controls.target.set(0, 0, 0);
@@ -499,7 +540,7 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
     stepFrame(dt, timer.getElapsed());
     updateFocus(dt);
     controls.update();
-    renderer.render(scene, camera);
+    renderFrame();
 
     frames++;
     const now = timer.getElapsed();
@@ -569,10 +610,10 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
       const w = Math.max(1, sizeV.x | 0);
       const h = Math.max(1, sizeV.y | 0);
       const rt = new THREE.RenderTarget(w, h);
-      rt.texture.colorSpace = THREE.SRGBColorSpace;
+      if (!post) rt.texture.colorSpace = THREE.SRGBColorSpace; // post composite is already sRGB-encoded — an sRGB-tagged target would encode twice (washed-out lift)
       const prev = renderer.getRenderTarget();
       renderer.setRenderTarget(rt);
-      renderer.render(scene, camera); // enqueue synchronously; the async readback below awaits GPU completion
+      renderFrame(); // enqueue synchronously (bloom composite included); the async readback below awaits GPU completion
       const buf = (await renderer.readRenderTargetPixelsAsync(rt, 0, 0, w, h)) as Uint8Array;
       renderer.setRenderTarget(prev);
       rt.dispose();
@@ -663,7 +704,7 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
       const h = Math.max(2, (Math.round(sh * scale) >> 1) << 1);
 
       const rt = new THREE.RenderTarget(w, h); // render directly at the (small) clip resolution → fast readback
-      rt.texture.colorSpace = THREE.SRGBColorSpace;
+      if (!post) rt.texture.colorSpace = THREE.SRGBColorSpace; // post composite is already sRGB-encoded — an sRGB-tagged target would encode twice (washed-out lift)
       const mirror = document.createElement('canvas');
       mirror.width = w;
       mirror.height = h;
@@ -720,7 +761,7 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
             stepFrame(dt, elapsed); // advance the sim ourselves (live loop is paused)
             controls.update();
             renderer.setRenderTarget(rt);
-            renderer.render(scene, camera);
+            renderFrame();
             const buf = (await renderer.readRenderTargetPixelsAsync(rt, 0, 0, w, h)) as Uint8Array;
             renderer.setRenderTarget(prevTarget);
             const img = mctx.createImageData(w, h);
@@ -844,12 +885,12 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
       const w = Math.max(1, sizeV.x | 0);
       const h = Math.max(1, sizeV.y | 0);
       const rt = new THREE.RenderTarget(w, h);
-      rt.texture.colorSpace = THREE.SRGBColorSpace;
+      if (!post) rt.texture.colorSpace = THREE.SRGBColorSpace; // post composite is already sRGB-encoded — an sRGB-tagged target would encode twice (washed-out lift)
       const prev = renderer.getRenderTarget();
       let buf: Uint8Array;
       try {
         renderer.setRenderTarget(rt);
-        renderer.render(scene, camera); // enqueue synchronously; the async readback below awaits GPU completion
+        renderFrame(); // enqueue synchronously (bloom composite included); the async readback below awaits GPU completion
         buf = (await renderer.readRenderTargetPixelsAsync(rt, 0, 0, w, h)) as Uint8Array;
       } finally {
         renderer.setRenderTarget(prev); // always restore + free, even if render/readback threw

@@ -95,6 +95,7 @@ export interface ArchetypeFactory {
   readonly particleCountOptions?: number[]; // overrides the UI's default count choices (e.g. N-body caps lower)
   readonly defaultTrail?: number; // trail length applied on selection (0 for static systems — no motion)
   readonly guides?: () => GuideSpec; // optional static overlay geometry (render space); see GuideSpec
+  readonly bloom?: number; // optional HDR bloom strength override for this system (default in bootstrap)
   create(config: ArchetypeConfig): Archetype;
 }
 

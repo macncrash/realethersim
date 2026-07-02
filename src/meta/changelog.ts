@@ -18,6 +18,18 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    "version": "0.1.56",
+    "date": "2026-07-01",
+    "title": "HDR bloom — everything glows",
+    "summary": "A real HDR bloom post pass on the renderer: bright regions now bloom into soft halos, so every one of the 187 systems — and every screenshot, clip, and thumbnail — gets the luminous look of the reference art. The whole gallery has been re-rendered with it.",
+    "newSystems": [],
+    "notes": [
+      "HDR bloom post-processing (TSL BloomNode) on the WebGPU renderer — the live view, screenshots, clips AND thumbnails all composite through it; per-system strength is tunable and ?bloom=0 disables it",
+      "All 187 gallery thumbnails regenerated with the new look",
+      "Fixed a subtle capture bug: offscreen renders (thumbnails/clips) outside the animation loop reused a stale frame with post-processing active — the node frame is now advanced manually"
+    ]
+  },
+  {
     "version": "0.1.55",
     "date": "2026-06-30",
     "title": "Galaxy Collision — Milky Way × Andromeda",
