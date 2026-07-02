@@ -389,6 +389,12 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
       camera.position.set(0, 1.8, 2.9);
       controls.update();
     }
+    // The galaxy collision plays out around the barycentre — a 3/4 view catches the tidal tails + merger.
+    if ($archetypeId.get() === 'galaxyCollision') {
+      controls.target.set(0, 0, 0);
+      camera.position.set(0, 1.9, 5.0);
+      controls.update();
+    }
     scheduleLle();
   }
 
@@ -948,6 +954,7 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
           else if (id === 'lorenzSwarm' || id === 'attractorMenagerie') { controls.target.set(0, 0, 0); camera.position.set(0, 0, 4.4); }
           else if (id === 'solarCorona') { controls.target.set(0, 0, 0); camera.position.set(0, 0, 2.8); }
           else if (id === 'spiralGalaxy') { controls.target.set(0, 0, 0); camera.position.set(0, 1.8, 2.9); }
+          else if (id === 'galaxyCollision') { controls.target.set(0, 0, 0); camera.position.set(0, 1.9, 5.0); }
           else camera.position.set(2.4, 1.5, 4.4);
         }
         controls.update();
