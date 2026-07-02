@@ -18,6 +18,8 @@ import { gpuGrayScottField } from './gpuGrayScottField';
 import { gpuKuramoto } from './gpuKuramoto';
 import { gpuChimera } from './gpuChimera';
 import { gpuKarman } from './gpuKarman';
+// import { gpuGalaxyCollision } from './gpuGalaxyCollision'; // WIP GPU twin — renders black (silent WGSL
+//   compile issue not yet cracked); galaxyCollision runs on the working CPU archetype until it's fixed.
 
 // Registry of GPU-compute factories by archetype id (parallel to the CPU archetype registry).
 const GPU_FACTORIES: Record<string, GpuFactory> = {

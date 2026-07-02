@@ -18,6 +18,16 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    "version": "0.1.55",
+    "date": "2026-06-30",
+    "title": "Galaxy Collision — Milky Way × Andromeda",
+    "summary": "A real gravitational simulation of the Andromeda–Milky Way merger: two disks of stars swing past each other, throw out tidal tails and bridges, and spiral into a single elliptical — the Toomre restricted N-body model, integrated live.",
+    "newSystems": ["galaxyCollision"],
+    "notes": [
+      "Galaxy Collision (Cosmology): the classic Toomre & Toomre (1972) restricted N-body encounter — two massive cores orbit and merge (via dynamical friction) while clouds of test stars, feeling both cores, get flung into tidal tails and bridges. Live mass-ratio / pericenter / inclination / friction / speed. An actual integrated simulation, not a baked shape"
+    ]
+  },
+  {
     "version": "0.1.54",
     "date": "2026-06-30",
     "title": "Solar eruptions + a 3-D galaxy",

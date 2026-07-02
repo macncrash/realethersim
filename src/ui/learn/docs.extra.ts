@@ -2501,4 +2501,29 @@ o[1] = p.b * x[0];`,
       { label: 'Lin–Shu density wave theory', url: 'https://en.wikipedia.org/wiki/Lin%E2%80%93Shu_density_wave_theory' },
     ],
   },
+  galaxyCollision: {
+    title: 'Galaxy Collision',
+    about:
+      "The Milky Way and Andromeda (M31) are falling toward each other at about 110 km/s and will begin to merge in roughly 4–5 billion years, coalescing into a single elliptical galaxy sometimes nicknamed 'Milkomeda.' This is the classic way to simulate that encounter — the RESTRICTED N-body model Alar and Juri Toomre used in 1972 to explain the bizarre bridges and tails of interacting galaxies (the Antennae, the Mice). Two massive cores carry the galaxies; clouds of near-massless stars ride around them; and gravity does the rest, flinging out the great tidal tails and drawing bridges of stars between the two before they finally settle into one.",
+    howItWorks:
+      "Two point cores hold the mass and orbit each other on an elliptical encounter. Around each is a disk of test stars on near-circular orbits (softened Kepler speeds), the two disks tilted at different angles. Each star feels the gravity of BOTH cores but not of the other stars — that's the 'restricted' problem, and it's what makes it cheap: an O(N) force evaluation, integrated with a symplectic step. As the cores swing through pericenter, the differential tug across each disk is exactly a tidal force: the near side is pulled in, the far side flung out, drawing the long curved tidal tails and a bridge between the galaxies. A little dynamical friction drains the orbit so the cores spiral in and merge; then the encounter replays. Everything is recentred on the barycentre so it stays framed. Bounded (softened gravity, clamped kicks).",
+    equations: [
+      { label: 'a test star feels both cores (softened)', latex: '\\ddot{\\mathbf{r}} = \\sum_{k=1}^{2} G M_k \\frac{\\mathbf{R}_k - \\mathbf{r}}{\\big(\\lvert\\mathbf{R}_k - \\mathbf{r}\\rvert^{2} + \\varepsilon^{2}\\big)^{3/2}}' },
+      { label: 'the cores orbit each other', latex: '\\ddot{\\mathbf{R}}_1 = G M_2 \\frac{\\mathbf{R}_2-\\mathbf{R}_1}{\\lvert\\mathbf{R}_2-\\mathbf{R}_1\\rvert^{3}} - \\gamma\\,\\dot{\\mathbf{R}}_1 \\ \\text{(dynamical friction)}' },
+      { label: 'disk stars start on circular orbits', latex: 'v_c(r) = \\sqrt{\\tfrac{G M_k}{\\sqrt{r^{2}+\\varepsilon^{2}}}}' },
+    ],
+    params: [
+      { key: 'massRatio', symbol: 'M_2/M_1', meaning: 'Andromeda-to-Milky-Way mass ratio' },
+      { key: 'pericenter', symbol: 'r_p', meaning: 'closest approach of the two cores (smaller = a more violent, tail-throwing passage)' },
+      { key: 'inclination', symbol: 'i', meaning: 'tilt of Andromeda\'s disk relative to the orbit plane' },
+      { key: 'friction', symbol: '\\gamma', meaning: 'dynamical friction — how fast the orbit decays into the final merger' },
+      { key: 'speed', symbol: 's', meaning: 'playback speed of the multi-billion-year encounter' },
+    ],
+    code: "// restricted N-body: two cores orbit; each star feels both, integrated per frame\nfor (sub of substeps) {\n  integrateCores(sdt);                     // mutual gravity + dynamical-friction drag\n  for (star of stars) {\n    let a = grav(coreA, star) + grav(coreB, star);   // softened 1/r²\n    star.v += a * sdt;  star.x += star.v * sdt;      // symplectic Euler\n  }\n}\n// tidal tails + bridges emerge; friction spirals the cores together → merger",
+    links: [
+      { label: 'Andromeda–Milky Way collision (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Andromeda%E2%80%93Milky_Way_collision' },
+      { label: 'Toomre & Toomre 1972 (galactic bridges & tails)', url: 'https://ui.adsabs.harvard.edu/abs/1972ApJ...178..623T/abstract' },
+      { label: 'Interacting galaxy (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Interacting_galaxy' },
+    ],
+  },
 };
