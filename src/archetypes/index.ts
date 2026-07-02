@@ -40,6 +40,10 @@ import { dandelionFactory } from './dandelion';
 import { lorenzSwarmFactory, attractorMenagerieFactory } from './attractorSwarm';
 import { solarCoronaFactory } from './solarCorona';
 import { spiralGalaxyFactory } from './spiralGalaxy';
+import { lightningFactory } from './lightning';
+import { bioBayFactory } from './bioBay';
+import { combJellyFactory } from './combJelly';
+import { jellyfishFountainFactory } from './jellyfishFountain';
 import { galaxyCollisionFactory } from './galaxyCollision';
 import { makeParametricFactory, PARAMETRIC_SYSTEMS } from './parametric';
 import { makeRaymarchFactory, RAYMARCH_SYSTEMS } from './raymarchFractal';
@@ -101,6 +105,10 @@ export function registerArchetypes(): void {
   register(attractorMenagerieFactory);
   register(solarCoronaFactory);
   register(spiralGalaxyFactory);
+  register(lightningFactory);
+  register(bioBayFactory);
+  register(combJellyFactory);
+  register(jellyfishFountainFactory);
   register(galaxyCollisionFactory);
   for (const system of Object.values(PARAMETRIC_SYSTEMS)) {
     register(makeParametricFactory(system));

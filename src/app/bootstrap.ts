@@ -436,6 +436,30 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
       camera.position.set(0, 1.9, 5.0);
       controls.update();
     }
+    // Lightning strikes vertically between cloud and ground — face-on, storm-photographer framing.
+    if ($archetypeId.get() === 'lightning') {
+      controls.target.set(0, 0, 0);
+      camera.position.set(0, 0, 3.4);
+      controls.update();
+    }
+    // The bio bay is a dark water plane — a kayaker's low 3/4 view so the glowing wake reads on the surface.
+    if ($archetypeId.get() === 'bioBay') {
+      controls.target.set(0, 0, 0);
+      camera.position.set(0, 1.7, 2.5);
+      controls.update();
+    }
+    // The comb jelly drifts centred — a close 3/4 so the rainbow rows read.
+    if ($archetypeId.get() === 'combJelly') {
+      controls.target.set(0, 0, 0);
+      camera.position.set(0.7, 0.25, 2.3);
+      controls.update();
+    }
+    // The jellyfish fountain dangles below its crown — frame the whole dome.
+    if ($archetypeId.get() === 'jellyfishFountain') {
+      controls.target.set(0, -0.05, 0);
+      camera.position.set(0, 0.3, 3.4);
+      controls.update();
+    }
     scheduleLle();
   }
 
@@ -996,6 +1020,10 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
           else if (id === 'solarCorona') { controls.target.set(0, 0, 0); camera.position.set(0, 0, 2.8); }
           else if (id === 'spiralGalaxy') { controls.target.set(0, 0, 0); camera.position.set(0, 1.8, 2.9); }
           else if (id === 'galaxyCollision') { controls.target.set(0, 0, 0); camera.position.set(0, 1.9, 5.0); }
+          else if (id === 'lightning') { controls.target.set(0, 0, 0); camera.position.set(0, 0, 3.4); }
+          else if (id === 'bioBay') { controls.target.set(0, 0, 0); camera.position.set(0, 1.7, 2.5); }
+          else if (id === 'combJelly') { controls.target.set(0, 0, 0); camera.position.set(0.7, 0.25, 2.3); }
+          else if (id === 'jellyfishFountain') { controls.target.set(0, -0.05, 0); camera.position.set(0, 0.3, 3.4); }
           else camera.position.set(2.4, 1.5, 4.4);
         }
         controls.update();
