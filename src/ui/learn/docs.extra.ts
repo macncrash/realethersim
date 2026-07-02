@@ -2526,4 +2526,98 @@ o[1] = p.b * x[0];`,
       { label: 'Interacting galaxy (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Interacting_galaxy' },
     ],
   },
+  lightning: {
+    title: 'Lightning',
+    about:
+      "A cloud-to-ground strike is dielectric breakdown, and its shape is Laplacian growth — the same physics family as our DLA dendrite. A STEPPED LEADER crackles downward from the cloud in discrete stochastic steps, branching into a faint fractal tree (fractal dimension ≈ 1.7, per the dielectric-breakdown model of Niemeyer, Pietronero & Wiesmann). Then the part nobody sees coming: the flash you photograph is not the leader coming down but the RETURN STROKE going UP — the instant one branch attaches to ground, a white-hot surge races back up the winning channel at a third the speed of light, and the losing branches never brighten. Then it all decays, and the next strike grows a different tree.",
+    howItWorks:
+      "Each strike generates a fresh branching tree from a deterministic seed: a walker steps downward with momentum, a downward pull, and strong lateral wander (the jagged kinks), stochastically forking side branches; the first branch to reach the ground wins. Colours upload once, so the whole cycle is choreographed with POSITIONS: unborn channel points park inside the cloud clump (fattening its glow), then fly to their tree positions in birth order — the stepped leader. On attachment, a reservoir of white-hot points floods the MAIN CHANNEL from the ground up (the return stroke), jittering every frame so the channel crackles. In decay everything retracts into the cloud, a dark beat passes, and a new tree grows with the current branchiness/wander. The HDR bloom pass does the rest.",
+    equations: [
+      { label: 'dielectric-breakdown growth rule (DBM)', latex: 'p(\\text{site}) \\propto \\lvert\\nabla\\varphi\\rvert^{\\eta}, \\qquad \\nabla^2\\varphi = 0' },
+      { label: 'stepped leader: biased random walk', latex: '\\hat{\\mathbf{d}}_{k+1} = \\operatorname{norm}\\big(\\mu\\,\\hat{\\mathbf{d}}_k - \\beta\\,\\hat{\\mathbf{y}} + w\\,\\boldsymbol{\\xi}\\big)' },
+      { label: 'fractal dimension of the discharge', latex: 'D \\approx 1.7 \\ (\\eta = 1)' },
+      { label: 'return stroke: only the attached channel fires', latex: 'v_{\\text{return}} \\sim c/3, \\quad \\text{ground} \\to \\text{cloud}' },
+    ],
+    params: [
+      { key: 'branchiness', symbol: 'p_b', meaning: 'side-branch probability per step — how bushy the next strike grows' },
+      { key: 'wander', symbol: 'w', meaning: 'lateral randomness of the leader — how jagged the channel kinks' },
+      { key: 'speed', symbol: '\\nu', meaning: 'strike rate — how fast the grow → flash → decay cycle runs' },
+    ],
+    code: "// per strike: grow a branching leader tree (deterministic seed), find the grounded channel\nwhile (walkers) {\n  dir = norm(0.42*dir + down*(0.38+0.42*rnd) + wander*(rnd-0.5));\n  step(dir); if (rnd < branchiness) fork();\n  if (y <= GROUND) { mainChannel = backtrackParents(); break; }\n}\n// cycle (positions only — colours are baked):\n// GROW: reveal tree points in birth order (unborn park in the cloud)\n// FLASH: white-hot pool floods mainChannel ground→up, per-frame crackle jitter\n// DECAY: retract to cloud → dark beat → next strike",
+    links: [
+      { label: 'Lightning (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Lightning' },
+      { label: 'Dielectric breakdown model', url: 'https://en.wikipedia.org/wiki/Dielectric_breakdown_model' },
+      { label: 'Stepped leader & return stroke (NWS)', url: 'https://www.weather.gov/safety/lightning-science-return-stroke' },
+    ],
+  },
+  bioBay: {
+    title: 'Bioluminescent Bay',
+    about:
+      "In a handful of bays on Earth — Mosquito Bay in Vieques, Puerto Rico most famously — the water is so thick with dinoflagellates that it answers touch with light. Each single cell carries a luciferin flash triggered by MECHANICAL SHEAR: nothing glows until something moves, and then everything does. Put your hand in and the water lights around it; a paddle stroke, a fish, a wave — each trails a wake of cold blue fire that blooms and fades. The flash is thought to be a burglar alarm: startle the grazer, light it up for its own predators. This is that stimulus–response, simulated: invisible swimmers roam the dark surface, and the plankton answer.",
+    howItWorks:
+      "The bay is a dark plane of near-invisible plankton speckle with a gentle swell. Invisible swimmers roam bounded organic paths (two-tone Lissajous curves), each faintly aglow — coated, like anything moving in these bays, in flashing plankton. The wakes come from a pool of flash points on staggered recycle offsets: while a slot is lit it holds the exact spot the swimmer passed (its activation time stays fixed as the clock advances — the phase trick), rising with the flash and diffusing outward as it sinks; when its glow ends it parks in a deep scattered layer, where thousands of spent points thin into the bay's faint ambient sea-sparkle. Colours never change after upload — the entire flash-and-fade is choreographed with positions. Bounded ∀t.",
+    equations: [
+      { label: 'the flash is a shear response', latex: '\\text{flash} \\iff \\dot{\\gamma} > \\dot{\\gamma}_c \\quad \\text{(luciferin–luciferase, triggered mechanically)}' },
+      { label: 'swimmer path (bounded organic roam)', latex: '\\mathbf{s}(t) = \\big(a\\sin(\\omega_1 t{+}\\phi) + b\\sin(\\omega_2 t{+}\\phi\'),\\ \\dots\\big)' },
+      { label: 'a lit slot holds its wake spot', latex: '\\tau = (t + o_i) \\bmod T < g \\;\\Rightarrow\\; \\mathbf{x}_i = \\mathbf{s}(t - \\tau) \\ \\text{(constant while lit)}' },
+    ],
+    params: [
+      { key: 'swimmers', symbol: 'n', meaning: 'how many invisible bodies stir the bay' },
+      { key: 'glow', symbol: 'g', meaning: 'flash duration — how long each disturbed patch burns (wake length)' },
+      { key: 'stir', symbol: '\\nu', meaning: 'how fast the swimmers roam' },
+    ],
+    code: "// flash pool on staggered recycle: lit slots hold the swimmer's past position\nconst phase = (t + offset_i) % CYCLE;\nif (phase < glow) {\n  const wake = swimPos(t - phase);        // constant while this slot burns\n  const u = phase / glow;                  // 0 → 1 across the flash\n  pos = wake + jitter * (0.015 + 0.11*u*u);   // diffuse outward\n  pos.y = surface + rise(u) - sink(u);         // bloom up, settle down\n} else {\n  pos = deepPark_i;                        // spent → faint ambient sea-sparkle\n}",
+    links: [
+      { label: 'Mosquito Bay, Vieques (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Mosquito_Bay' },
+      { label: 'Dinoflagellate bioluminescence', url: 'https://en.wikipedia.org/wiki/Dinoflagellate#Bioluminescence' },
+      { label: 'Bioluminescence (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Bioluminescence' },
+    ],
+  },
+  combJelly: {
+    title: 'Comb Jelly',
+    about:
+      "The ctenophore's rainbow is one of the ocean's best misdirections: it is NOT bioluminescence. Eight meridional COMB ROWS of beating cilia — the largest cilia in the animal kingdom, fused into paddle-like plates — act as moving diffraction gratings. As metachronal waves of beating sweep down each row, the diffracted colour sweeps with them: shimmering rainbow bands travelling aft along a glassy, almost invisible body. Comb jellies are also among the oldest animal lineages on Earth — possibly the sister group to ALL other animals — drifting and shimmering for 700 million years.",
+    howItWorks:
+      "The body is a translucent prolate ellipsoid rendered as a sparse pale speckle (translucency by low point density), breathing gently and tumbling about a tilted axis. Each of the eight comb rows is a TRAIN of points on a meridian: colours are baked once, cycling through the spectrum three times along each row's slot order, and the whole train marches aft (u ← u + wave·t, wrapped) — so the rainbow bands physically travel down the row exactly as the metachronal wave does on the animal. Per-point tangential jitter gives the rows their comb-plate width; a slight outward lift keeps them riding just proud of the body. Bounded by construction.",
+    equations: [
+      { label: 'diffraction from the cilia grating', latex: 'd\\,\\sin\\theta_m = m\\,\\lambda \\quad \\text{(structural colour, not emission)}' },
+      { label: 'metachronal wave down each row', latex: 'u_i(t) = (u_i^0 + v\\,t) \\bmod 1, \\qquad \\theta = u\\,\\pi\\,u_{\\max}' },
+      { label: 'comb row on the ellipsoid meridian', latex: '\\mathbf{x} = \\big(a\\sin\\theta\\cos\\varphi_r,\\ b\\cos\\theta,\\ a\\sin\\theta\\sin\\varphi_r\\big), \\quad \\varphi_r = \\tfrac{2\\pi r}{8}' },
+    ],
+    params: [
+      { key: 'wave', symbol: 'v', meaning: 'metachronal wave speed — how fast the rainbow sweeps down the rows' },
+      { key: 'tumble', symbol: '\\nu', meaning: 'slow drift-tumble of the animal' },
+      { key: 'pulse', symbol: 'p', meaning: 'gentle body breathing' },
+    ],
+    code: "// each comb row: a rainbow train of points marching down the meridian\nconst u = (u0_i + t * wave) % 1;          // the train marches aft\nconst theta = u * PI * 0.86;               // pole → near the mouth\nconst phi = (row / 8) * TAU;               // eight rows\npos = ellipsoid(theta, phi) * (1 + lift_i);\n// colour was BAKED by slot order (3 spectral repeats per row) —\n// as the train moves, the rainbow bands travel: the diffraction wave",
+    links: [
+      { label: 'Ctenophora (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Ctenophora' },
+      { label: 'Metachronal rhythm (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Metachronal_rhythm' },
+      { label: 'Structural coloration (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Structural_coloration' },
+    ],
+  },
+  jellyfishFountain: {
+    title: 'Jellyfish Fountain',
+    about:
+      "A dome of luminous tendrils that beats like a jellyfish bell — every strand a real rope simulation, not a keyframed curve. This is ETHERSIM's first constraint-dynamics system: position-based Verlet ropes, the workhorse of cloth and hair in games, here grown into the 'jellyfish fountain' form beloved of the creative-coding world (Artem Korenevych's Atokirina seeds among them) — radial tendrils launched outward, arcing over, and dangling into a breathing dome.",
+    howItWorks:
+      "Each tendril is a chain of nodes integrated with VERLET dynamics: the velocity is implicit in the previous position (x ← x + (x−x_prev)·damping + a·dt²), which makes ropes unconditionally stable to constrain. After integration, a few constraint passes pull every segment back to its rest length — each pass moves both endpoints toward compliance, roots immovable. The roots pin to a crown ring that BEATS: a sharp bell-pulse envelope widens the ring and fires an outward 'ejection pressure' down the strands; the kick propagates through the constraints, gravity and damping settle the dome back between beats, and an ambient current sways everything. Render points are interpolated densely along the segments (a few dozen per rope segment), colour-graded once from warm crown to cyan tips. Bounded — pinned, damped, and a rope can never exceed its own length.",
+    equations: [
+      { label: 'Verlet step (velocity is implicit)', latex: '\\mathbf{x}\\leftarrow \\mathbf{x} + (\\mathbf{x} - \\mathbf{x}_{prev})\\,\\delta + \\mathbf{a}\\,dt^2' },
+      { label: 'distance constraint (per segment, iterated)', latex: '\\Delta = \\frac{\\lVert\\mathbf{x}_b - \\mathbf{x}_a\\rVert - L}{\\lVert\\mathbf{x}_b - \\mathbf{x}_a\\rVert}\\,(\\mathbf{x}_b - \\mathbf{x}_a), \\quad \\mathbf{x}_{a,b} \\mp\\!= \\tfrac{\\Delta}{2}' },
+      { label: 'bell beat (crown pulse envelope)', latex: 'B(t) = \\max\\big(0, \\sin(2\\pi\\nu t)\\big)^3' },
+    ],
+    params: [
+      { key: 'strands', symbol: 'S', meaning: 'number of tendrils around the crown (re-seeds the dome)' },
+      { key: 'pulse', symbol: '\\nu', meaning: 'bell beat rate — each pulse kicks the dome outward' },
+      { key: 'gravity', symbol: 'g', meaning: 'how hard the tendrils dangle' },
+      { key: 'sway', symbol: 'w', meaning: 'ambient water current' },
+    ],
+    code: "// per tendril: Verlet integrate, then constrain segment lengths (root pinned)\nfor (k in 1..K) {\n  const v = (x[k] - prev[k]) * 0.985;      // implicit velocity + damping\n  prev[k] = x[k];\n  x[k] += v + (g + ejection*beat + sway) * dt*dt;\n}\nx[0] = crownRing(beat);                     // pinned to the pulsing crown\nfor (iter of 3) for (k in 1..K)\n  enforce |x[k] - x[k-1]| = L;              // position-based rope\n// render: dozens of glow points lerped along each segment",
+    links: [
+      { label: 'Verlet integration (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Verlet_integration' },
+      { label: 'Position-based dynamics (Müller et al.)', url: 'https://matthias-research.github.io/pages/publications/posBasedDyn.pdf' },
+      { label: 'Atokirina — Artem Korenevych (@artcreativecode)', url: 'https://x.com/artcreativecode' },
+    ],
+  },
 };

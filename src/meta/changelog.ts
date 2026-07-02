@@ -18,6 +18,28 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    "version": "0.1.58",
+    "date": "2026-07-01",
+    "title": "Bioluminescence — the ocean answers",
+    "summary": "Three living-light systems: a bioluminescent bay where invisible swimmers trail wakes of flashing dinoflagellates, a ctenophore whose rainbow is diffraction (not glow), and a jellyfish fountain of real Verlet-rope tendrils — ETHERSIM's first constraint-dynamics system.",
+    "newSystems": ["bioBay", "combJelly", "jellyfishFountain"],
+    "notes": [
+      "Bioluminescent Bay (Life): dinoflagellate stimulus–response — invisible swimmers roam a dark bay and the water answers, wakes of cyan flashes blooming, diffusing and sinking into ambient sea-sparkle. After the bio bays of Vieques, Puerto Rico",
+      "Comb Jelly (Life): eight comb rows as travelling rainbow point-trains — the metachronal diffraction wave of a real ctenophore (structural colour, not bioluminescence), on a glassy tumbling body",
+      "Jellyfish Fountain (Life): a dome of tendrils, each a position-based Verlet rope pinned to a beating crown ring — pulses kick the dome outward and gravity settles it back"
+    ]
+  },
+  {
+    "version": "0.1.57",
+    "date": "2026-07-01",
+    "title": "Lightning — stepped leader & return stroke",
+    "summary": "A full lightning strike as a dynamical system: a branching stepped leader crackles down from the cloud, the first branch to touch ground fires a white-hot return stroke UP the winning channel, the bolt decays, and a fresh tree grows — every strike different.",
+    "newSystems": ["lightning"],
+    "notes": [
+      "Lightning (Plasma): dielectric-breakdown growth (the DLA family) with the real event cycle — stepped leader reveal, ground attachment, upward return stroke with per-frame crackle, decay, restrike. Live branchiness / wander / strike-rate; built to blaze under the new HDR bloom"
+    ]
+  },
+  {
     "version": "0.1.56",
     "date": "2026-07-01",
     "title": "HDR bloom — everything glows",
