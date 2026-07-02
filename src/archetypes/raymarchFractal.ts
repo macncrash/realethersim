@@ -71,6 +71,7 @@ export interface RaymarchSystem {
   sdf2?: 'plasmaOrb' | 'nebula' | 'voxelCloud'; // which density field the volumetric branch dispatches
   cells?: number; // voxelCloud only: cubic-lattice resolution (cells per q-unit), compile-time const
   lobes?: number; // inkBloom only: number of soft bloom lobes (compile-time const — TSL loop bound)
+  bloom?: number; // optional HDR-bloom strength override (raymarch family default is gentle: 0.1)
   occlude?: boolean; // volumetric only: front-to-back compositing (crisp solid voxels) vs additive emission
   sdf3?: 'mobius' | 'inverse' | 'square' | 'cexp' | 'joukowski'; // conformal only: which complex map f(z)
 }
@@ -415,7 +416,7 @@ export const RAYMARCH_SYSTEMS: Record<string, RaymarchSystem> = {
 
   jellyfishBloom: {
     id: 'jellyfishBloom', label: 'Jellyfish Bloom', sdf: 'jellyfishBloom', category: 'Bloom',
-    iters: 0, bound: 1, camDist: 1, maxSteps: 1, lobes: 6, // lobes = number of jellyfish in the swarm
+    iters: 0, bound: 1, camDist: 1, maxSteps: 1, lobes: 6, bloom: 0.3, // abyssal dark + glowing bells → strong glow; lobes = swarm size
     params: [
       { key: 'glow', label: 'glow', min: 0.4, max: 2.5, step: 0.05, default: 1.3 },
       { key: 'pulse', label: 'pulse', min: 0, max: 1, step: 0.02, default: 0.6 },
@@ -439,7 +440,7 @@ export const RAYMARCH_SYSTEMS: Record<string, RaymarchSystem> = {
 
   gravLens: {
     id: 'gravLens', label: 'Gravitational Lens', sdf: 'gravLens', category: 'Spacetime',
-    iters: 0, bound: 1, camDist: 1, maxSteps: 1,
+    iters: 0, bound: 1, camDist: 1, maxSteps: 1, bloom: 0.35, // dark sky + bright ring → full glow
     params: [
       { key: 'mass', label: 'Einstein radius', min: 0.15, max: 0.8, step: 0.01, default: 0.42 },
       { key: 'zoom', label: 'zoom', min: 0.4, max: 2.5, step: 0.05, default: 1.0 },
@@ -471,6 +472,9 @@ export function makeRaymarchFactory(s: RaymarchSystem): ArchetypeFactory {
     params: s.params,
     defaultParticleCount: 1, // inert; the NullDriver ignores it
     defaultDt: 0.016,
+    // Raymarch systems fill the screen with bright surfaces — the flow-system bloom default (0.4)
+    // washes their detail out, so the family defaults far gentler; per-system override via s.bloom.
+    bloom: s.bloom ?? 0.1,
     // Never called — bootstrap.makeDriver() routes raymarch ids to the raymarch renderer first.
     // Throwing documents the contract and guards against an accidental point-sim instantiation.
     create() {
