@@ -204,6 +204,7 @@ export interface Telemetry {
   lle: number;
   camPos: [number, number, number]; // camera world position (so a view is reproducible)
   camTarget: [number, number, number]; // orbit target
+  simTime: string; // physical sim-clock display (e.g. "T + 4.3 Gyr"); '' when the system declares no clock
 }
 
 export const $telemetry = map<Telemetry>({
@@ -214,6 +215,7 @@ export const $telemetry = map<Telemetry>({
   lle: NaN,
   camPos: [0, 0, 0],
   camTarget: [0, 0, 0],
+  simTime: '',
 });
 
 export const $engine = atom<Engine | null>(null);

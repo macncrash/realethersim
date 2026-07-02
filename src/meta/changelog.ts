@@ -18,6 +18,17 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    "version": "0.1.59",
+    "date": "2026-07-02",
+    "title": "Deep time — the sim clock",
+    "summary": "Simulations now carry a physical clock: the telemetry panel shows honest elapsed time in real units. The Galaxy Collision is calibrated to the published Andromeda timeline — watch 'T + 4.3 Gyr' tick past as the disks first graze — and its encounter now runs to completion (merger + billions of years of remnant relaxation) before replaying.",
+    "newSystems": [],
+    "notes": [
+      "Sim clock: any system can declare a physical time scale (factory.clock) and the telemetry panel shows 'sim time: T + … ' live — synced exactly to the integrator's fixed steps, pause- and speed-aware",
+      "Galaxy Collision: calibrated to real gigayears (first Milky Way–Andromeda passage anchored at ≈4.3 Gyr, per van der Marel et al.); the encounter arc extended through the merger and long post-merger relaxation before replay; default pacing slowed so the eons read as eons"
+    ]
+  },
+  {
     "version": "0.1.58",
     "date": "2026-07-01",
     "title": "Bioluminescence — the ocean answers",
