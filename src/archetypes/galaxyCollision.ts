@@ -19,7 +19,13 @@ import { mulberry32 } from '../state/rng';
 const G = 1;
 const SOFT2 = 0.12 * 0.12; // gravitational softening² (no singular kicks)
 const D0 = 2.6; // initial core separation
-const CYCLE = 40; // sim-time length of one encounter before it replays
+// One encounter runs 24 model units before replaying — through first passage, the merger, and a long
+// stretch of post-merger relaxation (shells + phase-mixing), so the story completes before it loops.
+// TIME CALIBRATION: the default orbit reaches first pericenter at t = π·√(a³/GM) ≈ 4.8 model units;
+// anchoring that to the published ≈4.3 Gyr for the real first Milky Way–Andromeda passage gives
+// 0.895 Gyr per model unit (the factory `clock` below) — so the UI can show honest billions of years.
+const CYCLE = 24;
+const GYR_PER_UNIT = 0.895;
 const TAU = Math.PI * 2;
 
 class GalaxyCollisionArchetype implements Archetype {
@@ -64,7 +70,7 @@ class GalaxyCollisionArchetype implements Archetype {
   // Set up the two galaxies + their encounter orbit, then bake the initial state for replay.
   private rebuild(p: ResolvedParams): void {
     this.friction = p.friction ?? 0.6;
-    this.speed = p.speed ?? 1.8;
+    this.speed = p.speed ?? 0.6;
     this.buildKey = this.keyOf(p);
     const rng = mulberry32((this.seed ^ 0x2545f491) >>> 0);
     const N = this.particleCount;
@@ -196,7 +202,7 @@ class GalaxyCollisionArchetype implements Archetype {
   step(dt: number, p: ResolvedParams): void {
     if (this.keyOf(p) !== this.buildKey) { this.rebuild(p); return; }
     this.friction = p.friction ?? 0.6;
-    this.speed = p.speed ?? 1.8;
+    this.speed = p.speed ?? 0.6;
     const nsub = 3;
     const sdt = (dt * this.speed) / nsub;
     for (let s = 0; s < nsub; s++) this.integrate(sdt);
@@ -234,11 +240,12 @@ export const galaxyCollisionFactory: ArchetypeFactory = {
     { key: 'pericenter', label: 'pericenter', min: 0.4, max: 1.6, step: 0.05, default: 0.8, rebuild: true }, // closest approach
     { key: 'inclination', label: 'inclination', min: 0, max: 1.6, step: 0.05, default: 0.9, rebuild: true }, // Andromeda disk tilt
     { key: 'friction', label: 'friction', min: 0, max: 1.5, step: 0.05, default: 0.6 }, // dynamical friction → merger speed
-    { key: 'speed', label: 'speed', min: 0.1, max: 3, step: 0.1, default: 1.8 }, // playback speed
+    { key: 'speed', label: 'speed', min: 0.1, max: 3, step: 0.1, default: 0.6 }, // playback (slow: eons should feel like eons)
   ],
   defaultParticleCount: 80_000,
   particleCountOptions: [40_000, 80_000, 160_000],
   defaultDt: 0.016,
   defaultTrail: 0, // the star streams (tidal tails) ARE the visual
+  clock: { scale: GYR_PER_UNIT, unit: 'Gyr', cycle: CYCLE }, // sim clock: "T + 4.3 Gyr" at first passage
   create: (config) => new GalaxyCollisionArchetype(config),
 };

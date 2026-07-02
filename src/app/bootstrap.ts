@@ -313,6 +313,8 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
     // Atomic swap (synchronous — the render loop cannot interleave here).
     driver = next;
     posArray = nextPos;
+    clockModelT = 0; // fresh system (or fresh params) → the sim clock restarts at T+0
+    clockPrevFrame = 0;
     cloud = nextCloud;
     trailCloud = makeTrailCloud();
     scene.remove(oldCloud.points);
@@ -534,6 +536,27 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
   let paused = false;
   let frames = 0;
   let windowStart = 0;
+  // Physical sim-clock (factory.clock): model time = Σ(fixed-step dt × speed param), accumulated from
+  // frameIndex deltas so it tracks the archetype's own t exactly (pausing, dt changes, and speed-slider
+  // moves all stay in sync). Reset on every rebuild; wraps at clock.cycle for systems that replay.
+  let clockModelT = 0;
+  let clockPrevFrame = 0;
+
+  function updateSimClock(): void {
+    const spec = getFactory($archetypeId.get()).clock;
+    if (!spec || gpuSim || raymarch) {
+      if ($telemetry.get().simTime !== '') $telemetry.setKey('simTime', '');
+      return;
+    }
+    const fi = driver.frameIndex();
+    if (fi > clockPrevFrame) {
+      clockModelT += (fi - clockPrevFrame) * ($global.get().dt || 1 / 60) * ($params.get().speed ?? 1);
+    }
+    clockPrevFrame = fi;
+    const wrapped = spec.cycle ? clockModelT % spec.cycle : clockModelT;
+    const v = wrapped * spec.scale;
+    $telemetry.setKey('simTime', `T + ${v >= 10 ? v.toFixed(1) : v.toFixed(2)} ${spec.unit}`);
+  }
 
   applyMode(); // establish CPU (default) or GPU path now that `paused` exists
 
@@ -574,6 +597,7 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
       $telemetry.setKey('substeps', gpuSim ? gpuSim.substeps : driver.substeps());
       $telemetry.setKey('camPos', [camera.position.x, camera.position.y, camera.position.z]);
       $telemetry.setKey('camTarget', [controls.target.x, controls.target.y, controls.target.z]);
+      updateSimClock();
       frames = 0;
       windowStart = now;
     }

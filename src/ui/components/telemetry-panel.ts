@@ -1,4 +1,4 @@
-import { LitElement, html, type TemplateResult } from 'lit';
+import { LitElement, html, nothing, type TemplateResult } from 'lit';
 import { StoreController } from '@nanostores/lit';
 import { $telemetry } from '../store';
 
@@ -18,6 +18,7 @@ export class TelemetryPanel extends LitElement {
     return html`
       <div class="section">
         <h4>Telemetry</h4>
+        ${t.simTime ? html`<div class="row"><span>sim time</span><span class="v">${t.simTime}</span></div>` : nothing}
         <div class="row"><span>fps</span><span class="v">${t.fps.toFixed(0)}</span></div>
         <div class="row"><span>particles</span><span class="v">${t.particles.toLocaleString()}</span></div>
         <div class="row"><span>substeps / frame</span><span class="v">${t.substeps}</span></div>
