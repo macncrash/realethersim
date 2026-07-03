@@ -2014,4 +2014,28 @@ const F = (x,y,z) => { const a=x*x,b=y*y,c=z*z, s=a+b+c-1;
       { label: 'Op art (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Op_art' },
     ],
   },
+  everlasting: {
+    "title": "Everlasting Flower",
+    "about": "A volumetric flower — feathery petals of glowing density rather than surfaces, in the spirit of the astonishing one-tweet GLSL blooms of Yohei Nishitsuji's つぶやきGLSL (tweet-shader) work. The trick behind that whole genre is turbulence in a LOG-SPHERICAL domain: replace the radius with its logarithm and the turbulence becomes self-similar layer upon layer, like petals nested inside petals. We grow our own everlasting (strawflower) with that idea — a combed field of thin petal vanes, cupped over green sepals around a cream heart — marched as an emissive volume and composited front-to-back so the petals have real silhouettes.",
+    "howItWorks": "Each ray steps through a density field built from three ingredients. (1) TURBULENCE: five octaves of the sin-dot-sin folding trick, Σ dot(sin(p.yzy·s), sin(p.xxz·s))/s, evaluated in log-spherical coordinates (log₂ r, polar, azimuth) so the detail is self-similar in radius — the feathering. (2) VANES: an azimuthal comb sin(petals·φ + …), pow-sharpened into thin radial sheets that lean with the polar angle and twist with log-radius; thin sheets survive the line integral where a soft angular blend would wash out into fog. The bloom's outer envelope extends where a vane runs, so petal tips break the silhouette. (3) COMPOSITING: front-to-back Beer–Lambert absorption (near petals occlude far ones — crisp edges), with the palette keyed by POSITION rather than density: cream at the heart, blush pink through the petals (hue-shiftable), green wrapping the outer sepals. The whole flower slowly turns with the marcher's domain churn.",
+    "equations": [
+      { "label": "sin-octave turbulence (the twigl fold)", "latex": "T(\\mathbf{p}) = \\sum_{s=2,4,\\dots,32} \\frac{\\sin(\\mathbf{p}_{yzy} s)\\cdot\\sin(\\mathbf{p}_{xxz} s)}{s}" },
+      { "label": "log-spherical domain (self-similar petals)", "latex": "\\mathbf{p} = \\big(\\log_2 r,\\ \\theta_{\\text{polar}},\\ \\varphi\\big)" },
+      { "label": "petal vanes (sharpened azimuthal comb)", "latex": "V = \\Big(\\tfrac{1}{2} + \\tfrac{1}{2}\\sin(n\\varphi + 3\\theta + cT)\\Big)^{6}" },
+      { "label": "front-to-back emission–absorption", "latex": "C \\mathrel{+}= \\text{pal}\\cdot\\alpha\\cdot T_r, \\quad T_r \\mathrel{*}= (1-\\alpha), \\quad \\alpha = 1 - e^{-\\rho k \\Delta s}" },
+    ],
+    "params": [
+      { "key": "petals", "symbol": "n", "meaning": "number of petal vanes around the bloom" },
+      { "key": "scale", "symbol": "k", "meaning": "field frequency — finer or coarser feathering" },
+      { "key": "absorb", "symbol": "\\rho k", "meaning": "petal opacity (front-to-back absorption)" },
+      { "key": "exposure", "symbol": "E", "meaning": "emission brightness" },
+      { "key": "colShift", "symbol": "\\phi", "meaning": "petal hue — blush pink toward peach/gold" },
+    ],
+    code: "// density at a march point p (log-spherical turbulence + sharpened vanes)\nconst lp = vec3(log2(r + .25)*3, polar*2.2, azimuth);\nlet T = 0; for (s of [2,4,8,16,32]) T += dot(sin(lp.yzy*s + t), sin(lp.xxz*s)) / s;\nconst vane = pow(.5 + .5*sin(petals*phi + 3*polar + 2.2*T + .7*lp.x), 6);\nconst rEdge = .68 + .38*vane;                 // tips break the silhouette\ne = pow(env(rEdge) * (vane*(0.8 + .4*T) + wisp), 1.3);\n// front-to-back: near petals occlude far — silhouettes, not fog",
+    links: [
+      { label: 'Yohei Nishitsuji — つぶやきGLSL (inspiration)', url: 'https://x.com/YoheiNishitsuji' },
+      { label: 'twigl (tweet-shader playground)', url: 'https://twigl.app/' },
+      { label: 'Volume ray casting (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Volume_ray_casting' },
+    ],
+  },
 };

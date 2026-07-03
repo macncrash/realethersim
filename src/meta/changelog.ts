@@ -18,6 +18,39 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    "version": "0.1.64",
+    "date": "2026-07-02",
+    "title": "System #200: the Gravity Well",
+    "summary": "ETHERSIM's two-hundredth system is the most famous image in physics — the Sun denting the sheet, the planets circling the slope — done as honestly as the rubber sheet can be done: the membrane IS the Newtonian potential, every planet drags its own dimple, the orbits obey Kepler, and the Learn panel tells you what the analogy hides.",
+    "newSystems": ["gravityWell"],
+    "notes": [
+      "Gravity Well (Orbital): membrane height = softened Newtonian potential of Sun + planets (each with a travelling dimple; a moon rides the blue planet's dimple around the funnel); real Kepler orbits (ω ∝ a^{-3/2}, inner worlds lap outer ones). The doc is candid about the analogy's limits — curved TIME, not the sheet, steers slow orbits",
+      "🎉 The catalog reaches 200 systems"
+    ]
+  },
+  {
+    "version": "0.1.63",
+    "date": "2026-07-02",
+    "title": "Pulsar, Relativistic Jet + Multi-Species Lenia",
+    "summary": "Three heavyweights: the lighthouse of a tilted pulsar magnetosphere, a black hole's kink-unstable jet, and a living dish of three competing Lenia species with ecological immigration.",
+    "newSystems": ["pulsar", "relativisticJet", "multiLenia"],
+    "notes": [
+      "Pulsar (Plasma): exact vacuum-dipole field lines (r=L·sin²θ) around a white-hot neutron star, polar beams streaming from the TILTED magnetic poles — two rotations per frame make the lighthouse sweep — plus an unwinding pulsar-wind spiral. Live tilt / spin / shells / wind",
+      "Relativistic Jet (Plasma): twin helical-field jets whose axis wobbles with a downstream-growing kink (m=1) instability, plasma streaming along opening helices (white spine → violet sheath, synchrotron-style) with bright knots racing outward. Live kink / twist / flow",
+      "Multi-Species Lenia (Life): three Lenia fields in one dish, coupled by local competition — territories, chases, rainbow membranes — kept alive by ecological 'immigration' (collapsed species receive drifting propagules and reinvade). Live niches / competition / kernel radius"
+    ]
+  },
+  {
+    "version": "0.1.62",
+    "date": "2026-07-02",
+    "title": "Everlasting Flower — a volumetric bloom",
+    "summary": "A flower made of glowing density instead of surfaces: feathery petal vanes grown from sin-octave turbulence in a log-spherical domain, composited front-to-back so the petals hold real silhouettes — in the spirit of Yohei Nishitsuji's one-tweet GLSL blooms.",
+    "newSystems": ["everlasting"],
+    "notes": [
+      "Everlasting Flower (Bloom): the volumetric marcher gains a 'flower' field — self-similar log-spherical turbulence, pow-sharpened petal vanes that scallop the silhouette, position-keyed palette (cream heart, blush petals, green sepals), Beer–Lambert occlusion. Live petals / detail / density / glow / hue"
+    ]
+  },
+  {
     "version": "0.1.61",
     "date": "2026-07-02",
     "title": "White Hole, Martian Clouds + Impact Fragmentation",
