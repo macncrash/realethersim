@@ -450,6 +450,24 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
       camera.position.set(2.2, 1.5, 2.7);
       controls.update();
     }
+    // The white hole is a funnel with an erupting throat — elevated 3/4, like the embedding diagrams.
+    if ($archetypeId.get() === 'whiteHole') {
+      controls.target.set(0, -0.1, 0);
+      camera.position.set(0, 1.7, 3.1);
+      controls.update();
+    }
+    // The Martian clouds are a high sheet over a horizon haze — look gently up from below.
+    if ($archetypeId.get() === 'marsClouds') {
+      controls.target.set(0, 0.25, 0);
+      camera.position.set(0, -0.15, 3.0);
+      controls.update();
+    }
+    // The fragmentation event is centred on the target body — a 3/4 view catches projectile + cascade.
+    if ($archetypeId.get() === 'impactFragmentation') {
+      controls.target.set(0, 0, 0);
+      camera.position.set(1.4, 1.0, 3.2);
+      controls.update();
+    }
     // The bio bay is a dark water plane — a kayaker's low 3/4 view so the glowing wake reads on the surface.
     if ($archetypeId.get() === 'bioBay') {
       controls.target.set(0, 0, 0);
@@ -1053,6 +1071,9 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
           else if (id === 'galaxyCollision') { controls.target.set(0, 0, 0); camera.position.set(0, 1.9, 5.0); }
           else if (id === 'lightning') { controls.target.set(0, 0, 0); camera.position.set(0, 0, 3.4); }
           else if (id === 'structureFormation') { controls.target.set(0, 0, 0); camera.position.set(2.2, 1.5, 2.7); }
+          else if (id === 'whiteHole') { controls.target.set(0, -0.1, 0); camera.position.set(0, 1.7, 3.1); }
+          else if (id === 'marsClouds') { controls.target.set(0, 0.25, 0); camera.position.set(0, -0.15, 3.0); }
+          else if (id === 'impactFragmentation') { controls.target.set(0, 0, 0); camera.position.set(1.4, 1.0, 3.2); }
           else if (id === 'bioBay') { controls.target.set(0, 0, 0); camera.position.set(0, 1.7, 2.5); }
           else if (id === 'combJelly') { controls.target.set(0, 0, 0); camera.position.set(0.7, 0.25, 2.3); }
           else if (id === 'jellyfishFountain') { controls.target.set(0, -0.05, 0); camera.position.set(0, 0.3, 3.4); }

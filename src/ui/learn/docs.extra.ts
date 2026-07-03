@@ -2644,4 +2644,76 @@ o[1] = p.b * x[0];`,
       { label: 'Vera C. Rubin Observatory / LSST', url: 'https://en.wikipedia.org/wiki/Vera_C._Rubin_Observatory' },
     ],
   },
+  whiteHole: {
+    title: 'White Hole',
+    about:
+      "The time-reverse of a black hole — and the other half of the same exact geometry. The full Schwarzschild solution of general relativity contains both: a region whose horizon everything can enter but nothing can leave, and its mirror, a region whose horizon everything can LEAVE but nothing can enter. A white hole doesn't pull the universe in; it pours itself out. Honesty first: no white hole has ever been observed, and it may be an idealised solution nature never builds (it requires a past singularity already in place). But the mathematics is exact — general relativity permits a horizon that only ejects — and this is that mathematics, drawn: Flamm's paraboloid for the spatial geometry, a molten ring at r = 2M, and matter erupting along exact time-reversed free-fall paths.",
+    howItWorks:
+      "The funnel is the true spatial cross-section of the Schwarzschild geometry — Flamm's paraboloid, w(r) = 2√(2M(r−2M)) — the same embedding our wormhole uses for its bridge, sampled as a faint gridded point mesh. The horizon sits at the throat lip, r_s = 2M, drawn as a dense molten ring (the bloom pass makes it blaze). The ejecta are the physics: radial free-fall REVERSED. Infalling 'rain-frame' matter obeys dr/dτ = −√(2M/r); flip the sign and the exact solution has r^{3/2} advancing linearly in proper time — so each particle's whole flight is analytic (no integration, no drift): it erupts through the horizon at escape speed and decelerates forever as it climbs, never able to return, exactly as an infalling particle could never have escaped. A little angular momentum fans the fountain into spirals that tighten near the throat; phase-staggered launches make the streams continuous.",
+    equations: [
+      { label: 'Schwarzschild metric (outside the horizon)', latex: 'ds^2 = -\\Big(1-\\tfrac{2M}{r}\\Big)dt^2 + \\Big(1-\\tfrac{2M}{r}\\Big)^{-1}dr^2 + r^2 d\\Omega^2' },
+      { label: 'the horizon (G = c = 1)', latex: 'r_s = 2M' },
+      { label: 'time-reversed rain-frame flight', latex: '\\frac{dr}{d\\tau} = +\\sqrt{\\tfrac{2M}{r}} \\;\\Rightarrow\\; r^{3/2}(\\tau) = r_s^{3/2} + \\tfrac{3}{2}\\sqrt{2M}\\,\\tau' },
+      { label: "Flamm's paraboloid (the funnel)", latex: 'w(r) = 2\\sqrt{2M\\,(r - 2M)}' },
+    ],
+    params: [
+      { key: 'mass', symbol: 'M', meaning: 'the mass — sets the horizon radius r_s = 2M and reshapes the funnel' },
+      { key: 'spin', symbol: 'L', meaning: 'angular momentum of the ejecta — fans the fountain into spirals' },
+      { key: 'speed', symbol: '\\nu', meaning: 'eruption rate (playback of the analytic flights)' },
+    ],
+    code: "// ejecta: EXACT time-reversed free-fall (no integrator — r^{3/2} is linear in τ)\nconst tau = (t*rate + phase_i) % 1;              // staggered, continuous streams\nconst r = (rs**1.5 + tau*(RMAX**1.5 - rs**1.5))**(2/3);  // erupts fast, climbs slow\nconst th = theta_i + spin*(1 - r/RMAX)*2.2;      // spirals tighten near the throat\ny = flamm(r);                                     // ride the embedding surface\n// horizon ring at r = 2M: dense molten points — the surface nothing re-enters",
+    links: [
+      { label: 'White hole (Wikipedia)', url: 'https://en.wikipedia.org/wiki/White_hole' },
+      { label: 'Schwarzschild metric (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Schwarzschild_metric' },
+      { label: "Flamm's paraboloid", url: 'https://en.wikipedia.org/wiki/Schwarzschild_metric#Flamm.27s_paraboloid' },
+    ],
+  },
+  marsClouds: {
+    title: 'Martian Clouds',
+    about:
+      "In 2021 the Curiosity rover looked up at twilight and photographed something wonderful: noctilucent 'mother-of-pearl' clouds shimmering in pastel bands, 60–80 km above a desert planet — some of them made of CO₂ ice, dry-ice clouds glowing after sunset. The iridescence is honest optics, the same physics as Earth's rare polar stratospheric clouds: in a young cloud all the droplets are nearly the SAME size, and each size diffracts sunlight into its own angle — so bands of uniform droplet size paint bands of soft colour. (The famous internet versions of this image tend to be oversaturated; the real thing is subtle pearl pinks, teals and golds, and that's what we model.) It opens ETHERSIM's Atmosphere family.",
+    howItWorks:
+      "A thin, patchy cloud sheet rides high over a dim rust horizon. Its undulation is a train of atmospheric GRAVITY WAVES — buoyancy oscillations, the wave-trains thin Martian air carries especially cleanly — implemented as a few coherent interfering waves that ripple the sheet while a steady wind advects it (with a seamless wrap). The iridescence is baked per cloud parcel, which is physically right: droplet size is a property of the parcel, so the colour bands ride the wind with the cloud. A slowly-varying droplet-size proxy across the sheet sets the hue (pearl teal ↔ pink ↔ gold), band cores — where sizes are most uniform — get the most saturation, and a patchy density field keeps the edges wispy and dim. Colours upload once; the waves and the wind do all the moving.",
+    equations: [
+      { label: 'iridescence: diffraction angle set by droplet size', latex: '\\theta_{\\text{scatter}} \\sim \\frac{\\lambda}{\\pi\\, d} \\;\\Rightarrow\\; \\text{uniform } d \\text{ → pure colour bands}' },
+      { label: 'gravity-wave train (buoyancy oscillations)', latex: 'y(x,z,t) = Y_0 + \\sum_i A_i \\sin(\\mathbf{k}_i\\!\\cdot\\!\\mathbf{x} \\mp \\omega_i t)' },
+      { label: 'wind advection (parcels carry their colour)', latex: 'x(t) = x_0 + v_w t \\ (\\text{mod } L)' },
+    ],
+    params: [
+      { key: 'bands', symbol: 'n_b', meaning: 'droplet-size band frequency — how many colour bands cross the sheet' },
+      { key: 'waviness', symbol: 'A', meaning: 'gravity-wave amplitude — how strongly the sheet undulates' },
+      { key: 'wind', symbol: 'v_w', meaning: 'drift speed of the cloud deck' },
+      { key: 'shimmer', symbol: '\\omega', meaning: 'wave speed — how fast the undulations travel' },
+    ],
+    code: "// per parcel (baked): droplet-size band → mother-of-pearl colour, patchy density → wisps\nconst b = (x*0.9 + z*0.55)*bands + 0.8*sin(1.7x − 2.4z);\nhue = 0.52 + 0.16·sin(b) + 0.09·sin(2.3b);      // teal ↔ pink ↔ gold pastels\nsat peaks at band cores (uniform droplets);  light ∝ density²\n// per frame: gravity waves + wind (colours ride the parcel)\nx = wrap(x0 + wind·t);\ny = Y0 + Σ A_i·sin(k_i·(x,z) ∓ ω_i·t);",
+    links: [
+      { label: 'Curiosity’s iridescent clouds (NASA)', url: 'https://www.nasa.gov/solar-system/nasas-curiosity-rover-captures-shining-clouds-on-mars/' },
+      { label: 'Noctilucent cloud (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Noctilucent_cloud' },
+      { label: 'Cloud iridescence (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Cloud_iridescence' },
+    ],
+  },
+  impactFragmentation: {
+    title: 'Impact Fragmentation',
+    about:
+      "What happens when something hits an asteroid hard enough to shatter it. This is the physics behind ASTEROID FAMILIES — whole clans of asteroids on similar orbits that are the shards of one ancient collision (the Karin cluster is a famous, datable example) — and behind NASA's DART mission, which deliberately rammed a moonlet to test the momentum transfer. The deep result is that fragmentation is CASCADING and statistical: the first break leaves big fragments laced with internal cracks that fail again, and again, so the final fragment sizes follow a power law, N(>s) ∝ s^(−α) — the Grady–Kipp / Turcotte picture that fits everything from crushed rock in a fault zone to the size spectrum of asteroid belts.",
+    howItWorks:
+      "Every impact is planned as a complete fragmentation TREE before it plays: Voronoi-style seeds partition the body into first-generation fragments; each gets a kick (mostly radial, plus a shove along the impact axis, strongest near the impact point — momentum share) and a random tumble; then, with probability set by 'fragility', fragments are scheduled to crack again a moment later into smaller children that inherit their parent's motion plus their own smaller kick. Because the whole tree is decided up front, every fragment's flight is CLOSED-FORM — piecewise-ballistic centres plus a rigid Rodrigues tumble — and each rock point simply follows its deepest-born ancestor. The projectile is a cluster of white-hot points that streaks in and, at the moment of contact, becomes the impact-ejecta fan (a cone of debris with a few fast and many slow grains). The cloud drifts, the cycle wraps, and a fresh impact is planned from a new seed.",
+    equations: [
+      { label: 'fragment-size distribution (fragmentation power law)', latex: 'N(>s) \\propto s^{-\\alpha}' },
+      { label: 'cascading failure: generations of re-fracture', latex: '\\text{gen}_0 \\to \\text{gen}_1 \\to \\text{gen}_2 \\quad (p_{\\text{split}} = \\text{fragility})' },
+      { label: 'piecewise-ballistic fragment flight + rigid tumble', latex: '\\mathbf{x}(t) = \\mathbf{c}_b + \\mathbf{v}\\,(t - t_b) + R_{\\hat{\\mathbf{k}}}\\big(\\omega (t-t_b)\\big)\\,\\mathbf{r}' },
+    ],
+    params: [
+      { key: 'fragility', symbol: 'p', meaning: 'probability each fragment cracks again — how deep the cascade runs' },
+      { key: 'power', symbol: 'E', meaning: 'impact energy — fragment kicks and ejecta speeds' },
+      { key: 'spin', symbol: '\\omega', meaning: 'fragment tumble rates' },
+      { key: 'speed', symbol: '\\nu', meaning: 'replay rate of the event cycle' },
+    ],
+    code: "// plan the whole event up front (deterministic per replay), then play it closed-form\nseeds = voronoiSeeds(body);                   // gen-1 fragments\nkick  = 0.6·radial + 0.4·awayFromImpact, ∝ 1/(0.35+d);  // momentum share\nif (rnd < fragility) schedule gen-2 split at t_b, kids inherit v + smaller kick\n// per frame: every point follows its deepest-born ancestor\nx = c_b + v·(t−t_b) + Rodrigues(axis, ω·(t−t_b))·offset;\n// projectile → ejecta fan at contact: cone of white-hot grains, few fast, many slow",
+    links: [
+      { label: 'Asteroid family (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Asteroid_family' },
+      { label: 'DART — Double Asteroid Redirection Test', url: 'https://en.wikipedia.org/wiki/Double_Asteroid_Redirection_Test' },
+      { label: 'Rubble pile (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Rubble_pile' },
+    ],
+  },
 };

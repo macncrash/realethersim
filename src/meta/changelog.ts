@@ -18,6 +18,19 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    "version": "0.1.61",
+    "date": "2026-07-02",
+    "title": "White Hole, Martian Clouds + Impact Fragmentation",
+    "summary": "Three new systems: a horizon that only ejects (the time-reversed Schwarzschild solution), the iridescent mother-of-pearl clouds Curiosity photographed over Mars (opening a new Atmosphere category), and an asteroid shattering through a cascading fragmentation tree.",
+    "newSystems": ["whiteHole", "marsClouds", "impactFragmentation"],
+    "notes": [
+      "White Hole (Spacetime): Flamm's-paraboloid funnel + molten horizon ring at r=2M + ejecta on ANALYTIC time-reversed rain-frame trajectories (r^{3/2} linear in proper time — no integrator, no drift). Completes the black hole / wormhole / white hole trilogy. Honestly labelled: never observed, possibly mathematics-only",
+      "Martian Clouds (Atmosphere): noctilucent CO₂-ice clouds at twilight — gravity-wave trains rippling a wind-blown sheet, iridescent droplet-size bands baked per parcel (real Curiosity phenomenon, kept subtle like the real thing)",
+      "Impact Fragmentation (Matter): an asteroid shattered by a projectile — a pre-planned cascading fragmentation tree (Grady–Kipp power-law sizes, generations of re-fracture), closed-form ballistic shards with rigid tumble, and a white-hot impact-ejecta fan. A fresh impact every replay",
+      "New 'Atmosphere' category — a home for clouds, storms and sky optics to come"
+    ]
+  },
+  {
     "version": "0.1.60",
     "date": "2026-07-02",
     "title": "Structure Formation — the movement of the entire universe",
