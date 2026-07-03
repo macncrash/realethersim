@@ -2716,4 +2716,100 @@ o[1] = p.b * x[0];`,
       { label: 'Rubble pile (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Rubble_pile' },
     ],
   },
+  pulsar: {
+    title: 'Pulsar',
+    about:
+      "A pulsar is a city-sized star heavier than the Sun, spinning up to hundreds of times a second, wrapped in a magnetic field a trillion times Earth's. Its radio beams pour from the MAGNETIC poles — and because the magnetic axis is tilted against the spin axis, the beams sweep space like a lighthouse. If one happens to cross Earth, we receive a metronome tick so regular that the first one found (Jocelyn Bell Burnell, 1967) was half-seriously labelled LGM-1 — 'little green men.' Pulsars are now used as galactic-scale clocks to hunt gravitational waves; and in the most magnetic ones, X-ray polarisation missions like IXPE are finding hints of true quantum-vacuum effects (vacuum birefringence) — quantum mechanics showing up in astrophysics for real.",
+    howItWorks:
+      "The magnetosphere is baked in the MAGNETIC frame and turned by two rotations per frame — first tilt (α, about z), then spin (Ωt, about the vertical): the sweep IS the physics. Field lines are the exact vacuum-dipole shape, r(θ) = L·sin²θ, sampled as points over several L-shells and two dozen meridian planes (the teal cage). The beams are cones of points streaming outward from the two magnetic poles, phase-cycled so they flow continuously; where the tilted beam axis sweeps past your viewpoint, you get the pulse. In the spin equator an Archimedean spiral of plasma unwinds — the pulsar wind, corotating at launch and trailing as it flies out, sprinkler-style. A dense white-hot ball marks the star (the bloom pass turns it into a beacon).",
+    equations: [
+      { label: 'dipole field line (L-shell)', latex: 'r(\\theta) = L\\,\\sin^2\\theta' },
+      { label: 'the lighthouse: beams along the tilted magnetic axis', latex: '\\hat{\\mathbf{m}}(t) = R_y(\\Omega t)\\, R_z(\\alpha)\\, \\hat{\\mathbf{y}}' },
+      { label: 'pulse period = spin period', latex: 'P = \\frac{2\\pi}{\\Omega}' },
+      { label: 'wind spiral (corotating at launch, trailing outward)', latex: '\\varphi(r) = \\varphi_0 + \\Omega t - k\\,(r - r_0)' },
+    ],
+    params: [
+      { key: 'tilt', symbol: '\\alpha', meaning: 'angle between the spin and magnetic axes — 0 = aligned (no pulses), large = wide lighthouse sweep' },
+      { key: 'spin', symbol: '\\Omega', meaning: 'rotation rate' },
+      { key: 'shells', symbol: 'L', meaning: 'how many dipole field-line shells are drawn' },
+      { key: 'wind', symbol: 'v_w', meaning: 'pulsar-wind outflow rate' },
+    ],
+    code: "// bake everything in the MAGNETIC frame; per frame: tilt about z, then spin about y\nplace(p_local):\n  p1 = Rz(tilt) · p_local        // magnetic axis leans by α\n  p  = Ry(spin·t) · p1           // the whole magnetosphere turns — the lighthouse\n// field lines: r(θ) = L·sin²θ per shell × 24 meridians (points, not lines)\n// beams: cones at the magnetic poles, points phase-cycling outward\n// wind: Archimedean spiral in the SPIN equator (sprinkler)",
+    links: [
+      { label: 'Pulsar (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Pulsar' },
+      { label: 'Jocelyn Bell Burnell & LGM-1', url: 'https://en.wikipedia.org/wiki/PSR_B1919%2B21' },
+      { label: 'IXPE — vacuum birefringence hints', url: 'https://en.wikipedia.org/wiki/Vacuum_birefringence' },
+    ],
+  },
+  relativisticJet: {
+    title: 'Relativistic Jet',
+    about:
+      "Accreting black holes don't only swallow — they launch. Twisted magnetic fields collimate infalling plasma into twin beams fired along the spin axis at nearly the speed of light; M87's jet stretches five thousand light-years and has been imaged from its launch point by the Event Horizon Telescope. Two pieces of real physics give jets their look: the HELICAL FIELD the rotation winds around the beam (plasma streams along it like thread on a screw), and the KINK INSTABILITY — a current-carrying magnetic column is unstable to a corkscrew (m=1) displacement that grows downstream, so the whole jet wiggles like a firehose. The bright blobs are internal shocks — knots like M87's HST-1 — racing outward.",
+    howItWorks:
+      "Each jet is a bundle of helical strands around a central axis. The AXIS itself is displaced by the kink mode: a helical offset whose amplitude grows as (distance)^1.5 and whose phase rides outward with the flow — the growing corkscrew wobble of the real instability. Each strand is a helix around that wobbling axis, its radius opening downstream (the jet decollimates slowly), its phase advancing with time so plasma visibly STREAMS. Colour is baked by strand radius like a synchrotron map: white-hot spine, orange mid-layers, violet sheath. Knots are coherent point-blobs that ride the same kinked axis faster than the ambient flow and swell as they travel. A white accretion blob marks the engine. Every motion is an analytic phase — no integration, bounded by construction.",
+    equations: [
+      { label: 'kink (m=1) displacement, growing downstream', latex: '\\boldsymbol{\\xi}(x) = A\\,x^{3/2}\\big(\\cos(kx - \\omega t),\\ \\sin(kx - \\omega t)\\big)' },
+      { label: 'helical field strands around the kinked axis', latex: '\\mathbf{r}(x) = \\boldsymbol{\\xi}(x) + \\rho(x)\\big(\\cos\\phi_h, \\sin\\phi_h\\big), \\quad \\phi_h = \\tau x + \\omega_h t' },
+      { label: 'opening angle: the sheath decollimates', latex: '\\rho(x) = \\rho_0 + \\rho_1 x' },
+    ],
+    params: [
+      { key: 'kink', symbol: 'A', meaning: 'amplitude of the kink instability — how hard the jet wiggles' },
+      { key: 'twist', symbol: '\\tau', meaning: 'helical winding of the field strands' },
+      { key: 'speed', symbol: 'v', meaning: 'flow speed of plasma and knots along the jet' },
+    ],
+    code: "// per strand point: stream along the kinked axis, wound on an opening helix\nconst a = (phase_i + t*0.11*speed) % 1;          // axial fraction (streams outward)\nconst [ky, kz] = kink * 0.34 * a^1.5 * [cos, sin](a·k − ω·t);   // growing corkscrew\nconst rh = (0.04 + 0.24a) * radiusClass_i;        // helix opens downstream\ny = ky + rh·cos(φ_i + twist·x + ω_h·t);  z = kz + rh·sin(…);\n// knots: coherent blobs riding the same axis, faster + swelling",
+    links: [
+      { label: 'Astrophysical jet (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Astrophysical_jet' },
+      { label: "M87's jet (Wikipedia)", url: 'https://en.wikipedia.org/wiki/Messier_87#Jet' },
+      { label: 'Kink instability (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Kink_instability' },
+    ],
+  },
+  multiLenia: {
+    title: 'Multi-Species Lenia',
+    about:
+      "Lenia is the continuous cellular automaton whose smooth dynamics grow startlingly lifelike cells. Run THREE Lenia fields in one dish — three species, each with its own growth niche — and couple them by local competition, and the dish becomes an ecosystem: territories form, organisms of different colours chase, absorb and displace one another, and where membranes overlap the colours blend. (Honest scoping: this is multi-species Lenia with pointwise competitive coupling — the pragmatic cousin of Bert Chan's full multi-channel Lenia, which couples species through cross-channel convolution kernels.) One more ecological ingredient keeps the dish alive: IMMIGRATION. Lenia survival is famously sensitive — a species that collapses would leave dead space forever — so a collapsed species occasionally receives a few drifting propagules, ecology's 'rescue effect', and reinvades.",
+    howItWorks:
+      "Each species is a full Lenia field: state in [0,1] on a shared toroidal grid, convolved each step with a smooth ring kernel to get a potential U, then nudged by a Gaussian growth G(U) centred on the species' own niche μₖ. The species interact through a pointwise competition term — each one's growth is suppressed in proportion to how dense the OTHERS are at that cell — which is what carves territories and drives the chases. Every ~24 steps each species' total mass is checked; a collapsed species gets a deterministic sprinkle of new propagule blobs. Rendering keeps the colours-bake-once rule: every grid cell owns three points (pure red, green, blue — one per species); a species' state LIFTS its point into the dish as relief, and where a species is absent its point parks in an off-camera reservoir. Overlapping membranes blend additively into the rainbow seams.",
+    equations: [
+      { label: 'Lenia update per species', latex: 'f_k \\leftarrow \\mathrm{clip}\\Big(f_k + r\\big[G_k(K * f_k) - c\\sum_{j\\ne k} f_j\\big]\\Big)' },
+      { label: 'ring kernel + Gaussian growth', latex: 'K(r) = e^{-\\frac{(r-0.5R)^2}{2(0.15R)^2}}, \\qquad G_k(u) = 2e^{-\\frac{(u-\\mu_k)^2}{2\\sigma_k^2}} - 1' },
+      { label: "immigration (ecology's rescue effect)", latex: '\\bar{f_k} < \\epsilon \\;\\Rightarrow\\; \\text{inject propagules}' },
+    ],
+    params: [
+      { key: 'mu', symbol: '\\mu', meaning: 'base growth niche (each species offsets it slightly)' },
+      { key: 'sigma', symbol: '\\sigma', meaning: 'niche width — tolerance around μ' },
+      { key: 'rate', symbol: 'r', meaning: 'update rate (time resolution of the dynamics)' },
+      { key: 'compete', symbol: 'c', meaning: 'cross-species suppression — 0 = peaceful coexistence, high = turf wars' },
+      { key: 'radius', symbol: 'R', meaning: 'kernel radius — the organisms’ characteristic size' },
+    ],
+    code: "// three Lenia fields on one torus, coupled by pointwise competition\nfor (k of species) {\n  U = ringKernel ⊛ f[k];                       // smooth neighbourhood potential\n  f[k] += rate * ( G(U; μ_k, σ_k) − compete·(f[j] + f[l]) );\n  clip f[k] to [0,1];\n}\nevery 24 steps: if mean(f[k]) < ε → inject propagule blobs (immigration)\n// display: cell (x,z) owns 3 points (R,G,B); y = state·relief, absent → parked off-camera",
+    links: [
+      { label: 'Lenia (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Lenia' },
+      { label: 'Bert Chan — Lenia and expanded universe', url: 'https://arxiv.org/abs/2005.03742' },
+      { label: 'Rescue effect (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Rescue_effect' },
+    ],
+  },
+  gravityWell: {
+    title: 'Gravity Well',
+    about:
+      "The most famous image in physics outreach: the Sun dents a stretched sheet, and the planets circle the slope. Let's be honest about it up front — it is an ANALOGY, and physicists love to point out its sins: it explains gravity using gravity (the ball 'falls' into the dent because of the very force being illustrated), and real planetary orbits owe far more to curved TIME than to curved space — clocks tick slower deeper in the well, and that gradient is what steers slow-moving bodies. But the picture also gets real things right, and this version does those right: the sheet's depth is the actual Newtonian potential, every planet digs its own little travelling dimple (watch the moon ride its planet's dimple around the Sun's funnel), and the orbits obey Kepler exactly — the inner worlds visibly lap the outer ones. ETHERSIM system #200.",
+    howItWorks:
+      "The membrane's height is the softened Newtonian potential of every body, y ∝ Φ = −Σ GMᵢ/rᵢ — so the Sun digs the deep funnel and the planets carve small moving dimples (amplified; at true scale they'd be invisible). The membrane is a jittered point grid with a woven brightness pattern for the lattice look, re-evaluated in closed form each frame under the moving bodies. Planets ride circular Kepler orbits with angular speed ω ∝ a^{−3/2} (the real third law), each drawn as a small shaded ball resting on the sheet; one moon circles the blue planet, tracing epicycles through the big well. The bloom pass turns the Sun into the glowing anchor of the whole picture.",
+    equations: [
+      { label: 'sheet height = (softened) Newtonian potential', latex: 'y(x,z) \\propto \\Phi = -\\sum_i \\frac{G M_i}{\\sqrt{r_i^2 + \\epsilon^2}}' },
+      { label: "Kepler's third law (the orbits are honest)", latex: '\\omega \\propto a^{-3/2}' },
+      { label: 'what the sheet hides: curved time steers slow orbits', latex: 'd\\tau \\approx dt\\sqrt{1 + \\tfrac{2\\Phi}{c^2}}' },
+    ],
+    params: [
+      { key: 'depth', symbol: '\\Phi_0', meaning: 'well depth — the potential scale of the membrane' },
+      { key: 'speed', symbol: '\\nu', meaning: 'orbital time rate' },
+      { key: 'planets', symbol: 'n', meaning: 'how many planets (each with its own dimple)' },
+    ],
+    code: "// membrane: closed-form potential under the moving bodies, every frame\ny(x,z) = -depth * ( 1/√(r_sun²+ε²) + Σ m_k·A/√(r_k²+ε′²) );\n// planets: real Kepler circles — inner worlds lap outer ones\nθ_k(t) = θ0_k + speed·t / a_k^{3/2};   planet rests ON the sheet at its own dimple\n// moon: circles the blue planet, riding its dimple around the big funnel",
+    links: [
+      { label: 'Gravity well (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Gravity_well' },
+      { label: 'The rubber-sheet analogy and its limits', url: 'https://en.wikipedia.org/wiki/Spacetime#Curvature_of_spacetime' },
+      { label: 'Gravitational time dilation (what really steers orbits)', url: 'https://en.wikipedia.org/wiki/Gravitational_time_dilation' },
+    ],
+  },
 };

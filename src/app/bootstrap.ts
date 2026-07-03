@@ -468,6 +468,30 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
       camera.position.set(1.4, 1.0, 3.2);
       controls.update();
     }
+    // The pulsar's beams sweep about the vertical spin axis — a side-on 3/4 shows dipole + lighthouse.
+    if ($archetypeId.get() === 'pulsar') {
+      controls.target.set(0, 0, 0);
+      camera.position.set(0.5, 1.1, 3.4);
+      controls.update();
+    }
+    // The twin jets run along ±x — view near-face-on so the kink wiggle and knots read.
+    if ($archetypeId.get() === 'relativisticJet') {
+      controls.target.set(0, 0, 0);
+      camera.position.set(0, 0.7, 3.6);
+      controls.update();
+    }
+    // The Lenia dish is a horizontal plate — near top-down, tilted enough for the relief to read.
+    if ($archetypeId.get() === 'multiLenia') {
+      controls.target.set(0, 0, 0);
+      camera.position.set(0, 2.5, 1.25);
+      controls.update();
+    }
+    // The gravity well is a dented membrane — a low sweeping 3/4, like every textbook picture.
+    if ($archetypeId.get() === 'gravityWell') {
+      controls.target.set(0, -0.35, 0);
+      camera.position.set(1.35, 0.6, 2.5);
+      controls.update();
+    }
     // The bio bay is a dark water plane — a kayaker's low 3/4 view so the glowing wake reads on the surface.
     if ($archetypeId.get() === 'bioBay') {
       controls.target.set(0, 0, 0);
@@ -1074,6 +1098,10 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
           else if (id === 'whiteHole') { controls.target.set(0, -0.1, 0); camera.position.set(0, 1.7, 3.1); }
           else if (id === 'marsClouds') { controls.target.set(0, 0.25, 0); camera.position.set(0, -0.15, 3.0); }
           else if (id === 'impactFragmentation') { controls.target.set(0, 0, 0); camera.position.set(1.4, 1.0, 3.2); }
+          else if (id === 'pulsar') { controls.target.set(0, 0, 0); camera.position.set(0.5, 1.1, 3.4); }
+          else if (id === 'relativisticJet') { controls.target.set(0, 0, 0); camera.position.set(0, 0.7, 3.6); }
+          else if (id === 'multiLenia') { controls.target.set(0, 0, 0); camera.position.set(0, 2.5, 1.25); }
+          else if (id === 'gravityWell') { controls.target.set(0, -0.35, 0); camera.position.set(1.35, 0.6, 2.5); }
           else if (id === 'bioBay') { controls.target.set(0, 0, 0); camera.position.set(0, 1.7, 2.5); }
           else if (id === 'combJelly') { controls.target.set(0, 0, 0); camera.position.set(0.7, 0.25, 2.3); }
           else if (id === 'jellyfishFountain') { controls.target.set(0, -0.05, 0); camera.position.set(0, 0.3, 3.4); }

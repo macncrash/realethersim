@@ -23,6 +23,7 @@ const {
   clamp,
   cos,
   log,
+  log2,
   max,
   min,
   mix,
@@ -1005,6 +1006,29 @@ export function createRaymarch(sys: RaymarchSystem, backend: 'webgpu' | 'webgl2'
             const edge = clamp(float(1).sub(edgeDist.div(0.1)), 0, 1).mul(u.edge).toVar();
             const filled = clamp(dens.mul(1e4), 0, 1).toVar();
             e.assign(clamp(dens.add(edge.mul(filled)), 0, 1));
+          } else if (sys.sdf2 === 'flower') {
+            // everlasting flower: sin-octave turbulence in a LOG-SPHERICAL domain (the つぶやきGLSL
+            // genre — feathery self-similar petal layers), combed into petals by an azimuthal ridge
+            // wave that leans with the polar angle (cupped petals), inside a rounded bloom envelope.
+            const rq = length(q).max(1e-4).toVar();
+            const phi = atan(q.z, q.x).toVar();
+            const pol = acos(clamp(q.y.div(rq), -1, 1)).toVar();
+            const lp = vec3(log2(rq.add(0.25)).mul(3.0), pol.mul(2.2), phi).toVar();
+            const turb = float(0).toVar();
+            for (let oc = 1; oc <= 5; oc++) {
+              const s = float(1 << oc); // 2,4,8,16,32 — fixed octaves (TSL loop bounds are compile-time)
+              turb.addAssign(dot(sin(lp.yzy.mul(s).add(uTime.mul(0.2))), sin(lp.xxz.mul(s))).div(s));
+            }
+            // petal VANES: thin azimuthal ridges (pow-sharpened) that twist with log-radius — thin
+            // radial sheets survive the line integral where a soft angular blend would fog out
+            const comb = sin(phi.mul(u.petals).add(pol.mul(3.0)).add(turb.mul(2.2)).add(lp.x.mul(0.7))).mul(0.5).add(0.5).toVar();
+            const vane = pow(comb, 6.0).toVar();
+            // scalloped silhouette: the envelope's outer edge extends where a vane runs, so petal
+            // TIPS break the outline instead of a smooth ball
+            const rEdge = float(0.68).add(vane.mul(0.38)).toVar();
+            const env = float(1).sub(smoothstep(rEdge.mul(0.62), rEdge, rq)).mul(smoothstep(float(0.02), float(0.22), rq)).toVar();
+            const wisp = max(turb.sub(0.55), 0).mul(0.3); // sparse turbulent fluff between vanes
+            e.assign(pow(clamp(env.mul(vane.mul(turb.mul(0.4).add(0.8)).add(wisp)).mul(2.2), 0, 1), 1.3));
           } else {
             // nebula: fbm cloud (full recursive warp) thresholded to wisps, with a radial falloff
             const cloud = warpFull(q.mul(0.9).add(vec3(uTime.mul(0.05), 0, 0))).toVar();
@@ -1012,11 +1036,23 @@ export function createRaymarch(sys: RaymarchSystem, backend: 'webgpu' | 'webgl2'
             e.assign(max(cloud.sub(0.45), 0).mul(2.0).mul(fall));
           }
           const ec = clamp(e, 0, 1).toVar();
-          // cosine palette keyed by density + live colShift (+ per-cell two-tone when occluding)
+          // cosine palette keyed by density + live colShift (+ per-cell two-tone when occluding);
+          // the flower instead keys its palette by POSITION — cream heart, blush petals, green sepals
           let aExpr = ec.mul(2.0).add(u.colShift.mul(6.2832)).add(0.3);
           if (occlude) aExpr = aExpr.add(toneOff);
           const a = aExpr.toVar();
-          const pal = vec3(cos(a), cos(a.add(2.1)), cos(a.add(4.2))).mul(0.5).add(0.5);
+          let pal;
+          if (sys.sdf2 === 'flower') {
+            // NOTE: the volumetric ray reconstruction displays world −y at screen-top (invisible in the
+            // y-symmetric plasma/nebula/blackhole fields; first seen here) — so "below the bloom" is +y.
+            const sep = smoothstep(float(0.05), float(0.5), pos.y).mul(smoothstep(float(0.3), float(0.6), r)).toVar(); // sepals wrap the outer shell, screen-bottom
+            const core = float(1).sub(smoothstep(float(0.08), float(0.3), r)).toVar(); // small cream heart
+            const shiftA = u.colShift.mul(6.2832);
+            const petal = vec3(float(1.02), cos(shiftA).mul(0.15).add(0.55), cos(shiftA.add(1.6)).mul(0.2).add(0.5));
+            pal = mix(mix(petal, vec3(0.28, 0.62, 0.2), sep), vec3(1.05, 0.98, 0.85), core);
+          } else {
+            pal = vec3(cos(a), cos(a.add(2.1)), cos(a.add(4.2))).mul(0.5).add(0.5);
+          }
           if (occlude) {
             // front-to-back emission–absorption: opacity this step (Beer–Lambert), emit·transmittance, attenuate
             const aStep = float(1).sub(exp(ec.mul(K).mul(STEP).negate())).toVar();

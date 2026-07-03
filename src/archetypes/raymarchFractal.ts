@@ -68,7 +68,7 @@ export interface RaymarchSystem {
   photonStep?: number; // adaptive-dt fraction in dt = clamp(photonStep·r, 0.02, 0.6)
   // Volumetric emission marcher only (sdf:'volumetric'); ignored by the other paths:
   volStep?: number; // fixed march step
-  sdf2?: 'plasmaOrb' | 'nebula' | 'voxelCloud'; // which density field the volumetric branch dispatches
+  sdf2?: 'plasmaOrb' | 'nebula' | 'voxelCloud' | 'flower'; // which density field the volumetric branch dispatches
   cells?: number; // voxelCloud only: cubic-lattice resolution (cells per q-unit), compile-time const
   lobes?: number; // inkBloom only: number of soft bloom lobes (compile-time const — TSL loop bound)
   bloom?: number; // optional HDR-bloom strength override (raymarch family default is gentle: 0.1)
@@ -293,6 +293,18 @@ export const RAYMARCH_SYSTEMS: Record<string, RaymarchSystem> = {
       { key: 'colShift', label: 'colour', min: 0, max: 1, step: 0.01, default: 0.3 }, // ≈ cyan/blue
     ],
   },
+  everlasting: {
+    id: 'everlasting', label: 'Everlasting Flower', sdf: 'volumetric', sdf2: 'flower', category: 'Bloom',
+    iters: 0, bound: 1.6, camDist: 2.6, maxSteps: 130, volStep: 0.04, occlude: true, bloom: 0.15, // solid feathered petals (front-to-back), gentle glow
+    params: [
+      { key: 'petals', label: 'petals', min: 4, max: 24, step: 1, default: 12 },
+      { key: 'scale', label: 'detail', min: 0.6, max: 2.2, step: 0.05, default: 1.15 },
+      { key: 'absorb', label: 'density', min: 2, max: 12, step: 0.1, default: 9.0 },
+      { key: 'exposure', label: 'glow', min: 0.3, max: 4, step: 0.05, default: 0.85 },
+      COL,
+    ],
+  },
+
   nebula: {
     id: 'nebula', label: 'Nebula', sdf: 'volumetric', sdf2: 'nebula', category: 'Volume',
     iters: 0, bound: 3.0, camDist: 5.2, maxSteps: 88, volStep: 0.07,
