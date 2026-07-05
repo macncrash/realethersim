@@ -2812,4 +2812,101 @@ o[1] = p.b * x[0];`,
       { label: 'Gravitational time dilation (what really steers orbits)', url: 'https://en.wikipedia.org/wiki/Gravitational_time_dilation' },
     ],
   },
+  bec: {
+    title: 'Bose–Einstein Condensate',
+    about:
+      "Schrödinger once wrote that the multiplicity of minds 'is only apparent; in truth there is only one mind.' Whatever you make of his philosophy, the equation that bears his name describes matter doing exactly that. Cool a trapped gas of bosonic atoms below a critical temperature and they stop being individuals: their wavefunctions overlap and a macroscopic fraction of the gas collapses into ONE quantum state — a single wavefunction, thousands of atoms wide, that you can photograph. Predicted by Bose and Einstein in 1924–25, first achieved by Cornell & Wieman and Ketterle in 1995 (Nobel 2001), and governed by the Gross–Pitaevskii equation — a nonlinear Schrödinger equation. The multiplicity was only apparent.",
+    howItWorks:
+      "The trap cycles: cool → hold → reheat → repeat. Above T_c every atom rides its own classical Lissajous orbit in a slightly anisotropic harmonic trap, with orbit sizes shrinking as √T while the gas cools. Below T_c the condensed fraction follows the REAL 3-D harmonic-trap law, N₀/N = 1 − (T/T_c)³ — implemented exactly: each atom carries a uniform threshold uᵢ and smoothly falls out of its thermal orbit into the ground-state Gaussian the moment the growing fraction sweeps past its number. And here is the point of the whole system: the condensed atoms breathe in perfect UNISON — one breathing phase shared by every atom in the core, because one wavefunction can only move as one thing — while the remaining thermal atoms still jitter independently around them. Then the trap reheats and the one dissolves back into the many. Colours bake once: ember-orange for the reluctant thermal halo, cyan-white for the coherent heart.",
+    equations: [
+      { label: 'condensed fraction (3-D harmonic trap — exact)', latex: '\\frac{N_0}{N} = 1 - \\Big(\\frac{T}{T_c}\\Big)^{3}' },
+      { label: 'the condensate wavefunction (Gross–Pitaevskii)', latex: 'i\\hbar\\,\\partial_t \\psi = \\Big(-\\tfrac{\\hbar^2}{2m}\\nabla^2 + V + g\\lvert\\psi\\rvert^2\\Big)\\psi' },
+      { label: 'thermal orbits shrink as the gas cools', latex: 'A_i \\propto \\sqrt{T}' },
+      { label: 'one state, one motion (the unison breathing)', latex: '\\psi(\\mathbf{r},t) = \\sqrt{N_0}\\,\\phi_0(\\mathbf{r})\\,e^{-i\\mu t/\\hbar}' },
+    ],
+    params: [
+      { key: 'cooling', symbol: '\\nu', meaning: 'speed of the cool → hold → reheat cycle' },
+      { key: 'trap', symbol: '\\omega', meaning: 'trap frequency — orbit and breathing rates' },
+      { key: 'coherence', symbol: 'A_b', meaning: 'amplitude of the condensate’s unison breathing mode' },
+    ],
+    code: "// per atom: a thermal orbit and a place in the one wavefunction — blended by the REAL law\nconst frac = T < Tc ? 1 − (T/Tc)³ : 0;             // condensed fraction\nthermal_i = A_i·√T · lissajous(ω, φ_i, t);          // individual jitter\ncore_i    = gaussianOffset_i * breathe(t);           // ONE breathing phase for all\nk = smoothstep((frac − u_i)/0.07);                   // falls in when the fraction passes u_i\nx_i = mix(thermal_i, core_i, k);                     // the many become the one",
+    links: [
+      { label: 'Bose–Einstein condensate (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Bose%E2%80%93Einstein_condensate' },
+      { label: 'Gross–Pitaevskii equation (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Gross%E2%80%93Pitaevskii_equation' },
+      { label: 'Schrödinger, Mind and Matter (1958)', url: 'https://en.wikipedia.org/wiki/Mind_and_Matter_(book)' },
+    ],
+  },
+  aurora: {
+    title: 'Aurora Borealis',
+    about:
+      "Stand under a polar night sky and the physics is written overhead in atomic spectra. Electrons from the solar wind, funnelled along Earth's magnetic field lines, crash into the upper atmosphere and light it up like a billboard for quantum mechanics: nitrogen ions paint the purple-magenta fringe along the lower border near 95 km, atomic oxygen's 557.7 nm line makes the emerald body of the curtain from 100 to 250 km, and above that oxygen's 'forbidden' 630 nm red line takes over — a transition so slow (110-second lifetime) that it only survives where the air is too thin to interrupt it with collisions. The rays you see ARE the field lines; the folds are waves travelling along the arc. Below, a still lake doubles the sky.",
+    howItWorks:
+      "The curtain is a sheet of ~110 field-aligned rays hanging along a sinuous arc. Each particle bakes a position along the arc, an altitude drawn heavily toward the bright lower border, and a colour set once by the altitude-dependent spectrum — purple fringe, emerald body, red crown — with brightness falling off exponentially above the lower border, just as real auroral luminosity profiles do. All motion is closed-form: two long travelling waves plus a fine ripple fold the arc (the drapery), a slight altitude-dependent lean tips the curtain, and each particle slides down its field line on a desynchronised sawtooth — the visible signature of electron precipitation. Half the cloud is the sky; the other half is its mirror below the waterline, dimmed, blue-shifted, and shimmered by a gentle ripple. Turn up 'activity' for a substorm; flatten 'curtain folds' for a quiet homogeneous arc.",
+    equations: [
+      { label: 'the green line — atomic oxygen (100–250 km)', latex: '\\mathrm{O}(^1S) \\rightarrow \\mathrm{O}(^1D) + h\\nu \\;(557.7\\,\\mathrm{nm})' },
+      { label: 'the red crown — forbidden, 110 s lifetime', latex: '\\mathrm{O}(^1D) \\rightarrow \\mathrm{O}(^3P) + h\\nu \\;(630.0\\,\\mathrm{nm})' },
+      { label: 'electrons spiral along field lines into the poles', latex: 'm\\,\\dot{\\mathbf{v}} = q\\,\\mathbf{v} \\times \\mathbf{B}' },
+      { label: 'luminosity falls off above the lower border', latex: 'I(h) \\propto e^{-h/H}' },
+    ],
+    params: [
+      { key: 'activity', symbol: '\\nu', meaning: 'substorm tempo — drift, folding, and precipitation rate' },
+      { key: 'folds', symbol: 'A_f', meaning: 'amplitude of the travelling folds in the curtain' },
+      { key: 'streamers', symbol: 's', meaning: 'depth of the downward precipitation streaming' },
+    ],
+    code: "// each atom of sky: a place on the arc, an altitude, a spectrum — then closed-form drapery\nz(s,t) = A_f·[0.5·sin(6.8s + 0.33t) + 0.28·sin(3.1s − 0.21t)] + ripple(s,t);  // folds\ny_i(t) = h_i·H − s·saw(φ_i + 0.14t);              // precipitation down the field line\ncolour(h): purple (N₂⁺, h<0.18) → emerald (O 557.7 nm) → red (O 630 nm, h>0.62);\nreflection: (x + ripple, −0.92·y, z) at 25% brightness — the lake",
+    links: [
+      { label: 'Aurora (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Aurora' },
+      { label: 'Forbidden lines & the 630 nm red (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Forbidden_mechanism' },
+      { label: 'Birkeland currents — the field-aligned circuit', url: 'https://en.wikipedia.org/wiki/Birkeland_current' },
+    ],
+  },
+  daphnis: {
+    title: 'Shepherd Moon',
+    about:
+      "Daphnis is eight kilometres across — a boulder, by planetary standards — yet it single-handedly holds open the 42-kilometre Keeler Gap in Saturn's A ring and sculpts waves along both edges, some standing more than a kilometre tall out of a ring that is elsewhere only ten metres thick. Cassini photographed the waves and, at Saturn's 2009 equinox, the long shadows they cast across the ring plane. Nothing here is exotic: it is Kepler's third law doing sculpture. Ring particles just inside the gap orbit faster than Daphnis, particles outside orbit slower, so the whole ring streams past the little moon and every particle receives one small gravitational kick per pass.",
+    howItWorks:
+      "Every particle rides an exact Kepler orbit (Ω ∝ a^{-3/2} — pure shear, no integrator). The kick each one receives at closest approach launches an epicycle, and because neighbouring streamlines drift apart at a rate set by their orbital separation, the epicycles organise into a stationary wake in the moon's frame: scalloped edge waves with the classic azimuthal wavelength 3π·Δa — one epicyclic bounce per synodic drift — trailing AHEAD of the moon on the inner (faster) edge and BEHIND it on the outer (slower) edge, and damping downstream as ring collisions thermalise the perturbation. Daphnis' slight orbital inclination pulls the inner-edge response out of the ring plane: those are the vertical walls whose equinox shadows Cassini caught. The ringlet banding is baked into the colours; raise 'moon mass' to deepen the scallops, 'inclination' to raise the walls.",
+    equations: [
+      { label: 'Kepler shear — inner faster, outer slower', latex: '\\Omega(a) \\propto a^{-3/2}' },
+      { label: 'edge-wave wavelength (radial distance sets the beat)', latex: '\\lambda = 3\\pi\\,\\Delta a' },
+      { label: 'each kick launches an epicycle at frequency \\kappa \\approx \\Omega', latex: '\\delta r = A\\,e^{-(d-g)/w}\\cos\\!\\big(\\tfrac{2\\chi a}{3\\Delta a}\\big)' },
+      { label: 'Hill radius — the moon\u2019s sphere of sculpting influence', latex: 'r_H = a\\big(\\tfrac{m}{3M}\\big)^{1/3}' },
+    ],
+    params: [
+      { key: 'mass', symbol: 'm', meaning: 'Daphnis\u2019 mass — sets the wave amplitude' },
+      { key: 'tilt', symbol: 'i', meaning: 'orbital inclination — height of the vertical walls' },
+      { key: 'speed', symbol: '\\Omega_0', meaning: 'orbital tempo of the whole ring' },
+    ],
+    code: "// stationary wake in the moon's frame — closed form, no integrator\n\u03b8_i(t) = \u03b8\u2080 + \u03a9\u2080 a^{-3/2} t;                    // Kepler shear\n\u03c7 = downstream angle since last moon encounter (sign flips across the gap);\namp = m\u00b7e^{-(d-g)/w} \u00b7 onset(\u03c7) \u00b7 e^{-0.32\u03c7};      // edge-peaked, damped downstream\nr = a + amp\u00b7cos(2\u03c7a/3\u0394a);  y = i\u00b7amp\u00b7sin(2\u03c7a/3\u0394a);  // scallops + walls",
+    links: [
+      { label: 'Daphnis (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Daphnis_(moon)' },
+      { label: 'Keeler Gap edge waves', url: 'https://en.wikipedia.org/wiki/Keeler_Gap' },
+      { label: 'Cassini: the wave-maker at equinox (NASA)', url: 'https://science.nasa.gov/resource/daphnis-and-its-waves/' },
+    ],
+  },
+  hyperbolicSphere: {
+    title: 'Hyperbolic Sphere',
+    about:
+      "Two geometries share one picture. Start in the hyperbolic plane — the Poincaré disk, where 'straight lines' are circular arcs meeting the boundary at right angles — and rule it with a square grid. Then push the whole thing through the stereographic projection onto a sphere. The grid's diagonal lines become LOXODROMES: the double-spiral families that wind from pole to pole crossing every meridian at the same angle (the rhumb lines a ship follows on a constant compass bearing). And here is the part worth staring at: sliding the grid along itself is an ISOMETRY of the hyperbolic plane, so on the sphere the whole pattern streams from one pole to the other forever without ever changing shape. That streaming is a loxodromic Möbius transformation — the same flow that classifies the dynamics of every conformal map of the sphere.",
+    howItWorks:
+      "Work in the band coordinates w = u + iv (the conformal logarithm of the half-plane, ζ = e^w): curves of constant u are true hyperbolic geodesics, and u → u + t is an exact one-parameter isometry — a dilation of the half-plane. The grid here is the two diagonal families u ± p·v = k·c; exponentiating gives logarithmic spirals in the plane, and the inverse stereographic projection (2ζ, |ζ|²−1)/(|ζ|²+1) wraps them onto the sphere as amber and blue loxodrome families with the poles as the flow's two fixed points. Each frame just evaluates the closed form with u shifted by the flow — the Möbius transformation IS the animation. Curves recycle pole-to-pole through a band wrap; the polar bunching you see is the honest metric distortion of the stereographic map. 'Spiral pitch' tilts the families toward meridians (pitch → 0) or tight coils; 'grid spacing' re-rules the hyperbolic plane live.",
+    equations: [
+      { label: 'band model — u-translation is an isometry', latex: 'w = u + iv, \\quad \\zeta = e^{w}, \\quad u \\mapsto u + t' },
+      { label: 'inverse stereographic projection onto the sphere', latex: 'P(\\zeta) = \\frac{(2\\,\\mathrm{Re}\\,\\zeta,\\; 2\\,\\mathrm{Im}\\,\\zeta,\\; |\\zeta|^2 - 1)}{|\\zeta|^2 + 1}' },
+      { label: 'the grid: two diagonal families \\to loxodromes', latex: 'u \\pm p\\,v = k\\,c' },
+      { label: 'the flow on the sphere: loxodromic M\u00f6bius', latex: 'z \\mapsto \\lambda z, \\quad \\lambda = e^{t}' },
+    ],
+    params: [
+      { key: 'flow', symbol: 't', meaning: 'speed of the M\u00f6bius flow from pole to pole' },
+      { key: 'pitch', symbol: 'p', meaning: 'loxodrome pitch — meridian-like to tightly coiled' },
+      { key: 'grid', symbol: 'c', meaning: 'spacing of the hyperbolic grid lines' },
+    ],
+    code: "// the animation IS a M\u00f6bius transformation — evaluate, never integrate\nu = k\u00b7c \u00b1 p\u00b7v + flow\u00b7t;          // slide the hyperbolic grid along itself\n\u03b6 = e^{u+iv};                      // band \u2192 plane: log-spirals\nP = (2Re\u03b6, |\u03b6|\u00b2\u22121, 2Im\u03b6)/(|\u03b6|\u00b2+1); // plane \u2192 sphere: loxodromes\n// amber family winds one way, blue the other; poles are the two fixed points",
+    links: [
+      { label: 'Poincar\u00e9 disk model (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Poincar%C3%A9_disk_model' },
+      { label: 'Loxodrome / rhumb line (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Rhumb_line' },
+      { label: 'M\u00f6bius transformations classified (Wikipedia)', url: 'https://en.wikipedia.org/wiki/M%C3%B6bius_transformation#Classification' },
+      { label: 'Inspired by KAZ+OO\u2019s p5.js sketch', url: 'https://openprocessing.org/user/489845' },
+    ],
+  },
 };

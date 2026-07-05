@@ -18,6 +18,46 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    "version": "0.1.68",
+    "date": "2026-07-04",
+    "title": "Hyperbolic Sphere \u2014 two geometries, one picture",
+    "summary": "A hyperbolic grid from the Poincar\u00e9 disk, pushed through the stereographic projection: the diagonals become pole-to-pole loxodrome spirals, and sliding the grid along itself \u2014 an isometry of hyperbolic space \u2014 becomes the M\u00f6bius flow of the sphere. The pattern streams forever without changing shape.",
+    "newSystems": ["hyperbolicSphere"],
+    "notes": [
+      "Hyperbolic Sphere (Conformal): band-model grid u \u00b1 p\u00b7v = k\u00b7c \u2192 log-spirals \u2192 loxodromes via inverse stereographic projection; the animation is a genuine loxodromic M\u00f6bius transformation with the poles as fixed points. Amber and blue families like KAZ+OO\u2019s p5.js original, which is credited in the docs"
+    ]
+  },
+  {
+    "version": "0.1.67",
+    "date": "2026-07-04",
+    "title": "Shepherd Moon \u2014 Daphnis and the Keeler Gap",
+    "summary": "An 8-km moon holds open a 42-km gap in Saturn\u2019s A ring and raises kilometre-high waves on its edges \u2014 the ones whose shadows Cassini photographed at equinox. Pure Kepler shear doing sculpture: inner particles overtake, outer particles lag, and every pass past the moon leaves a scalloped wake.",
+    "newSystems": ["daphnis"],
+    "notes": [
+      "Shepherd Moon (Orbital): exact Kepler orbits (\u03a9 \u221d a^{-3/2}), stationary wake in the moon\u2019s frame with the classic 3\u03c0\u00b7\u0394a edge-wave wavelength, trailing ahead on the inner edge and behind on the outer; inclination pulls the inner-edge waves into kilometre-high vertical walls; baked ringlet banding, 160k particles"
+    ]
+  },
+  {
+    "version": "0.1.66",
+    "date": "2026-07-03",
+    "title": "Aurora Borealis — stand under the polar night",
+    "summary": "Solar-wind electrons crash down Earth's field lines and the upper atmosphere answers in atomic spectra: nitrogen's purple fringe, oxygen's emerald body, the forbidden red crown. A folded curtain of 110 field-aligned rays, doubled in a still lake below.",
+    "newSystems": ["aurora"],
+    "notes": [
+      "Aurora Borealis (Plasma): ~110 field-aligned rays along a sinuous arc with travelling drapery folds; colours baked by the real altitude spectrum (N\u2082\u207a purple \u2192 O 557.7 nm green \u2192 O 630 nm red) with exponential luminosity falloff; desynchronised sawtooth precipitation down each ray; the whole sky mirrored in a rippling lake at 25% brightness"
+    ]
+  },
+  {
+    "version": "0.1.65",
+    "date": "2026-07-02",
+    "title": "One mind — the Bose–Einstein Condensate",
+    "summary": "Schrödinger wrote that the multiplicity of minds 'is only apparent; in truth there is only one mind' — and the equation bearing his name describes matter doing exactly that. Cool the cloud and watch thousands of individual atoms fall into a single wavefunction that breathes as one thing.",
+    "newSystems": ["bec"],
+    "notes": [
+      "Bose–Einstein Condensate (Matter): a full cooling cycle — thermal Lissajous cloud → atoms fall into the coherent core following the exact 3-D-trap law N₀/N = 1−(T/T_c)³ → the condensate breathes in perfect unison (one wavefunction, one motion) while stragglers still jitter → reheat and dissolve back into the many. Doc pairs the Schrödinger quote with the Gross–Pitaevskii equation"
+    ]
+  },
+  {
     "version": "0.1.64",
     "date": "2026-07-02",
     "title": "System #200: the Gravity Well",
