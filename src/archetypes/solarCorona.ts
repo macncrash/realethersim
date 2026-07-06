@@ -67,11 +67,12 @@ class SolarCoronaArchetype implements Archetype {
     const N = this.particleCount;
     const col = this.colors;
 
-    const nEject = Math.floor(N * 0.16); // erupting plasma (prominences + CMEs)
+    const nEject = Math.floor(N * 0.09); // erupting plasma (prominences + CMEs)
+    const nFlare = Math.floor(N * 0.06); // compact flare kernels (X-class brightening)
     const nLoop = Math.floor(N * clamp01(activity)); // coronal loops
-    const nPlume = Math.floor(N * 0.05); // polar plumes
-    const nHalo = Math.floor(N * 0.06); // soft corona halo (limb glow + extension)
-    const nSurf = N - nLoop - nPlume - nHalo - nEject; // granular surface shell
+    const nPlume = Math.floor(N * 0.04); // polar plumes
+    const nHalo = Math.floor(N * 0.09); // soft corona halo (limb glow + extension)
+    const nSurf = N - nLoop - nPlume - nHalo - nEject - nFlare; // granular surface shell
 
     let idx = 0;
     const put = (x: number, y: number, z: number, r: number, g: number, b: number): void => {
@@ -93,13 +94,13 @@ class SolarCoronaArchetype implements Archetype {
       const rad = R + (rng() - 0.5) * jit;
       // granulation: cheap value noise from a few hashed sinusoids
       const gran = 0.5 + 0.5 * Math.sin(nx * 47 + ny * 31) * Math.sin(nz * 53 - ny * 29) * Math.sin(nx * 23 + nz * 41);
-      const v = 0.55 + 0.6 * gran * gran;
-      put(nx * rad, ny * rad, nz * rad, v * 0.24, v * 0.9, v * 1.12);
+      const v = 0.62 + 0.85 * gran * gran;
+      put(nx * rad, ny * rad, nz * rad, v * 0.22, v * 0.88, v * 1.1);
     }
 
     // ── active regions: each a bundle of magnetic loops between two footpoints in the ±[10°,42°] bands ──
     const perRegion = Math.max(1, Math.floor(nLoop / regions));
-    const loopsPerRegion = 26;
+    const loopsPerRegion = 30;
     const arcPts = Math.max(2, Math.floor(perRegion / loopsPerRegion));
     for (let rgn = 0; rgn < regions; rgn++) {
       // region centre C in a sunspot latitude band, random longitude, random hemisphere
@@ -119,18 +120,41 @@ class SolarCoronaArchetype implements Archetype {
         const cs = Math.cos(sep), sn = Math.sin(sep);
         const fpx = cx * cs + dx * sn, fpy = cy * cs + dy * sn, fpz = cz * cs + dz * sn; // +footpoint
         const fmx = cx * cs - dx * sn, fmy = cy * cs - dy * sn, fmz = cz * cs - dz * sn; // −footpoint
-        const H = loopH * (0.25 + 0.9 * rng()) * (0.6 + 0.7 * sep / 0.17); // taller loops for wider feet
+        const H = loopH * (0.2 + 0.7 * rng()) * (0.55 + 0.6 * sep / 0.17); // taller loops for wider feet
         for (let a = 0; a < arcPts; a++) {
           const s = arcPts === 1 ? 0.5 : a / (arcPts - 1);
           const [ux, uy, uz] = slerp(fpx, fpy, fpz, fmx, fmy, fmz, s);
           const rad = R + H * Math.sin(Math.PI * s) + (rng() - 0.5) * 0.004;
           const foot = Math.max(smooth01(s, 0.0, 0.14), smooth01(1 - s, 0.0, 0.14)); // bright near feet
-          const b = strength * (0.75 + 0.5 * Math.sin(Math.PI * s)) * 1.4; // brighter along the arc crown
-          const r0 = (0.3 + 0.65 * foot) * b; // white-hot footpoints
+          const b = strength * (0.55 + 0.4 * Math.sin(Math.PI * s)) * 1.05; // brighter along the arc crown
+          const r0 = (0.35 + 0.78 * foot) * b; // white-hot footpoints
           const g0 = (0.9 + 0.1 * foot) * b;
           const b0 = 1.1 * b;
           put(ux * rad, uy * rad, uz * rad, r0, g0, b0);
         }
+      }
+    }
+
+    // ── flare kernels: a couple of active regions host a blindingly bright, compact core — an
+    //    X-class flare brightening — ringed by a low, intense post-flare loop crown ──
+    const nFlareSites = Math.min(2, regions);
+    const perFlare = Math.max(1, Math.floor(nFlare / Math.max(1, nFlareSites)));
+    for (let fs = 0; fs < nFlareSites; fs++) {
+      const lat = (12 + 28 * rng()) * (Math.PI / 180) * (rng() < 0.5 ? 1 : -1);
+      const lon = rng() * TAU;
+      const cx = Math.cos(lat) * Math.cos(lon), cy = Math.sin(lat), cz = Math.cos(lat) * Math.sin(lon);
+      const [f1x, f1y, f1z, f2x, f2y, f2z] = tangentBasis(cx, cy, cz);
+      for (let i = 0; i < perFlare; i++) {
+        const kern = rng() < 0.68; // most points pile into the tight white-hot kernel
+        const rr = kern ? 0.022 * Math.sqrt(rng()) : 0.05 + 0.06 * rng();
+        const aa = rng() * TAU, ca = Math.cos(aa), sa = Math.sin(aa);
+        let dx = cx + (f1x * ca + f2x * sa) * rr;
+        let dy = cy + (f1y * ca + f2y * sa) * rr;
+        let dz = cz + (f1z * ca + f2z * sa) * rr;
+        const l = Math.hypot(dx, dy, dz) || 1; dx /= l; dy /= l; dz /= l;
+        const rad = R + (kern ? 0.004 : 0.055 * Math.sin(Math.PI * rng()));
+        const b = kern ? 2.0 + 1.0 * rng() : 1.1 + 0.5 * rng(); // the kernel blows out to white
+        put(dx * rad, dy * rad, dz * rad, b * 0.85, b * 0.95, b * 1.0);
       }
     }
 
@@ -155,8 +179,8 @@ class SolarCoronaArchetype implements Archetype {
       const nx = rr * Math.cos(phi), ny = yk, nz = rr * Math.sin(phi);
       const h = Math.pow(rng(), 2.2) * 0.35; // dense at the surface, thinning out
       const rad = R + 0.008 + h;
-      const v = (1 - h / 0.35) * 0.5; // brightest at the limb
-      put(nx * rad, ny * rad, nz * rad, v * 0.18, v * 0.6, v * 0.8);
+      const v = (1 - h / 0.35) * 0.78; // brightest at the limb
+      put(nx * rad, ny * rad, nz * rad, v * 0.2, v * 0.7, v * 0.92);
     }
 
     // ── erupting plasma: prominences (rise & fall) and CMEs (escape) launched from a few active sites,
@@ -194,12 +218,12 @@ class SolarCoronaArchetype implements Archetype {
       this.ejTan[k * 3 + 1] = S[4] * Math.cos(ta) + S[7] * Math.sin(ta);
       this.ejTan[k * 3 + 2] = S[5] * Math.cos(ta) + S[8] * Math.sin(ta);
       this.ejAnchor[k * 3] = ax; this.ejAnchor[k * 3 + 1] = ay; this.ejAnchor[k * 3 + 2] = az;
-      const esc = rng() < 0.35;
+      const esc = rng() < 0.22;
       this.ejEsc[k] = esc ? 1 : 0;
-      this.ejS[k] = esc ? 0.8 + 1.0 * rng() : 0.3 + 0.5 * rng(); // CMEs fly higher than confined prominences
+      this.ejS[k] = esc ? 0.5 + 0.6 * rng() : 0.25 + 0.38 * rng(); // CMEs fly higher than confined prominences
       this.ejPh[k] = S[9] + (rng() - 0.5) * 0.12; // share the site's phase (erupt together), slight jitter
-      const bri = 1.1 + 0.5 * rng();
-      put(ax * R, ay * R, az * R, 0.55 * bri, 0.92 * bri, 1.0 * bri); // hot cyan-white plasma
+      const bri = 0.7 + 0.4 * rng();
+      put(ax * R, ay * R, az * R, 0.5 * bri, 0.9 * bri, 1.0 * bri); // hot cyan-white plasma
     }
 
     // any leftover slots (rounding) → dim surface points at the origin-safe shell
@@ -270,7 +294,7 @@ class SolarCoronaArchetype implements Archetype {
     return [{ id: 'root', parentId: null, label: 'Solar corona (EUV)', stateOffset: 0, stateLength: 1 }];
   }
   renderHint(): RenderHint {
-    return { geometry: 'points', pointSize: 0.013 };
+    return { geometry: 'points', pointSize: 0.015 };
   }
   dispose(): void {
     /* buffers GC with the instance */
@@ -319,8 +343,8 @@ export const solarCoronaFactory: ArchetypeFactory = {
   kind: 'flow',
   params: [
     { key: 'regions', label: 'active regions', min: 1, max: 12, step: 1, default: 6, rebuild: true },
-    { key: 'loopHeight', label: 'loop height', min: 0.1, max: 0.6, step: 0.02, default: 0.32, rebuild: true },
-    { key: 'activity', label: 'activity', min: 0.3, max: 0.8, step: 0.02, default: 0.5, rebuild: true }, // loops vs surface
+    { key: 'loopHeight', label: 'loop height', min: 0.08, max: 0.5, step: 0.02, default: 0.2, rebuild: true },
+    { key: 'activity', label: 'activity', min: 0.3, max: 0.8, step: 0.02, default: 0.46, rebuild: true }, // loops vs surface
     { key: 'eruptions', label: 'eruptions', min: 0, max: 0.8, step: 0.02, default: 0.28 }, // prominence/CME cycle rate
     { key: 'spin', label: 'rotation', min: 0, max: 1, step: 0.02, default: 0.15 },
   ],
@@ -328,5 +352,6 @@ export const solarCoronaFactory: ArchetypeFactory = {
   particleCountOptions: [120_000, 220_000, 350_000],
   defaultDt: 0.016,
   defaultTrail: 0, // the corona structure IS the visual
+  bloom: 0.55, // flare kernels and limb should bloom
   create: (config) => new SolarCoronaArchetype(config),
 };

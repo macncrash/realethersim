@@ -57,6 +57,7 @@ import { dnaSupercoilFactory } from './dnaSupercoil';
 import { trigMapFactory } from './trigMap';
 import { newtonFlowFactory } from './newtonFlow';
 import { auroraOrbitFactory } from './auroraOrbit';
+import { firefliesFactory } from './fireflies';
 import { bioBayFactory } from './bioBay';
 import { combJellyFactory } from './combJelly';
 import { jellyfishFountainFactory } from './jellyfishFountain';
@@ -138,6 +139,7 @@ export function registerArchetypes(): void {
   register(trigMapFactory);
   register(newtonFlowFactory);
   register(auroraOrbitFactory);
+  register(firefliesFactory);
   register(bioBayFactory);
   register(combJellyFactory);
   register(jellyfishFountainFactory);
