@@ -18,6 +18,46 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    "version": "0.1.72",
+    "date": "2026-07-05",
+    "title": "Aurora from Orbit \u2014 the ISS view",
+    "summary": "The same aurora, seen from 400 km up: the auroral oval as a luminous ribbon following the curve of the planet, rays reaching up toward you, over a dark cloud-mottled night side with a razor-thin airglow limb and stars beyond. Chris Hadfield flew right through the upper tendrils.",
+    "newSystems": ["auroraOrbit"],
+    "notes": [
+      "Aurora from Orbit (Atmosphere): the oval draped on a sphere with rays rising along the local outward normal so they lean over the limb; same altitude spectrum as the ground aurora (violet base \u2192 emerald body \u2192 red crown) with sawtooth precipitation; dim cloud-mottled night cap, a thin red-orange airglow limb, and a starfield beyond"
+    ]
+  },
+  {
+    "version": "0.1.71",
+    "date": "2026-07-05",
+    "title": "Newton Flow \u2014 the root-finder as a fluid",
+    "summary": "Newton's method hides a fractal: colour each point by the root it converges to and the plane shatters into interlocking basins. Let the roots DRIFT and the basins come alive \u2014 fixed basin colours dragged into interleaving filaments as a softened, tanh-limited Newton correction sprays every particle toward its moving root.",
+    "newSystems": ["newtonFlow"],
+    "notes": [
+      "Newton Flow (Field): P_t(z) = \u220f(z\u2212r_j(t)) with drifting roots; softened correction (\u03c3 keeps the step finite at the critical seams) and a tanh magnitude-limiter (the bounded 'explosion'); colour baked from the starting basin, respawn on arrival at a root. Live degree / drift / gain / softening"
+    ]
+  },
+  {
+    "version": "0.1.70",
+    "date": "2026-07-05",
+    "title": "Trigonometric Map \u2014 z\u00b2, folded through sine",
+    "summary": "Two lines of arithmetic \u2014 x\u2032 = sin(x\u00b2\u2212y\u00b2+a), y\u2032 = cos(2xy+b) \u2014 whose arguments are the real and imaginary parts of z\u00b2. Bounded forever by sin and cos, every orbit settles onto a lacy attractor whose shape the two phases dial through an endless family of blooms. After Simone Conradi's density studies.",
+    "newSystems": ["trigMap"],
+    "notes": [
+      "Trigonometric Map (Map): a complex square folded through sin/cos, iterated once per frame so the cloud samples the attractor's invariant density; the two phases drift so the figure continuously blooms and reforms; seed-angle hue wheel stains the dense regions. Live phase a / phase b / morph rate / zoom"
+    ]
+  },
+  {
+    "version": "0.1.69",
+    "date": "2026-07-05",
+    "title": "DNA Supercoiling \u2014 topology you can watch",
+    "summary": "A closed double helix cannot change its linking number \u2014 only an enzyme cutting a strand can. White's theorem, Lk = Tw + Wr, means over-winding has nowhere to go but writhe: the axis buckles into a supercoil, and the base-pair twist slows to keep the total fixed. Two metres of DNA fold into every cell by exactly this rule.",
+    "newSystems": ["dnaSupercoil"],
+    "notes": [
+      "DNA Supercoiling (Parametric): a closed superhelix wound n times on a torus, always genuinely closed so Lk stays an integer; an imposed strain cycles the coil amplitude, writhe rises from the coil geometry, and the base-pair twist takes up the remainder (Tw = Lk \u2212 Wr) \u2014 White's theorem made literal. Antiparallel amber backbones, red A\u00b7T and blue G\u00b7C rungs"
+    ]
+  },
+  {
     "version": "0.1.68",
     "date": "2026-07-04",
     "title": "Hyperbolic Sphere \u2014 two geometries, one picture",

@@ -509,6 +509,28 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
       camera.position.set(0.4, 0.55, 2.9);
       controls.update();
     }
+    // A 3/4 view of the coiled ring so the ladder and the supercoil buckle both read.
+    if ($archetypeId.get() === 'dnaSupercoil') {
+      controls.target.set(0, 0, 0);
+      camera.position.set(1.4, 0.95, 1.95);
+      controls.update();
+    }
+    if ($archetypeId.get() === 'trigMap') {
+      controls.target.set(0, 0, 0);
+      camera.position.set(0, 0, 3.0);
+      controls.update();
+    }
+    if ($archetypeId.get() === 'newtonFlow') {
+      controls.target.set(0, 0, 0);
+      camera.position.set(0.2, 0.15, 2.9);
+      controls.update();
+    }
+    // The ISS view: low over the curved limb, looking out along the auroral oval.
+    if ($archetypeId.get() === 'auroraOrbit') {
+      controls.target.set(0, 0.3, -1.4);
+      camera.position.set(0.2, 1.5, 3.6);
+      controls.update();
+    }
     if ($archetypeId.get() === 'aurora') {
       controls.target.set(0, 0.5, -0.4);
       camera.position.set(0, 0.3, 3.9);
@@ -1128,6 +1150,10 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
           else if (id === 'aurora') { controls.target.set(0, 0.5, -0.4); camera.position.set(0, 0.3, 3.9); }
           else if (id === 'daphnis') { controls.target.set(0.7, 0, 0.7); camera.position.set(1.3, 0.3, 1.62); }
           else if (id === 'hyperbolicSphere') { controls.target.set(0, 0, 0); camera.position.set(0.4, 0.55, 2.9); }
+          else if (id === 'dnaSupercoil') { controls.target.set(0, 0, 0); camera.position.set(1.4, 0.95, 1.95); }
+          else if (id === 'trigMap') { controls.target.set(0, 0, 0); camera.position.set(0, 0, 3.0); }
+          else if (id === 'newtonFlow') { controls.target.set(0, 0, 0); camera.position.set(0.2, 0.15, 2.9); }
+          else if (id === 'auroraOrbit') { controls.target.set(0, 0.3, -1.4); camera.position.set(0.2, 1.5, 3.6); }
           else if (id === 'bioBay') { controls.target.set(0, 0, 0); camera.position.set(0, 1.7, 2.5); }
           else if (id === 'combJelly') { controls.target.set(0, 0, 0); camera.position.set(0.7, 0.25, 2.3); }
           else if (id === 'jellyfishFountain') { controls.target.set(0, -0.05, 0); camera.position.set(0, 0.3, 3.4); }
