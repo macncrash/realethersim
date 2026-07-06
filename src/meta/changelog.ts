@@ -18,6 +18,26 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    "version": "0.1.74",
+    "date": "2026-07-06",
+    "title": "Solar Corona \u2014 flares wake up",
+    "summary": "The Sun has been throwing X-class flares across several active regions. Solar Corona gets a matching overhaul: blindingly bright, compact flare kernels erupt at active-region cores, the coronal loop arcades hug the disk, the limb glows brighter, and the old spray of prominences is calmed to let the flares dominate.",
+    "newSystems": [],
+    "notes": [
+      "Solar Corona overhaul: added compact white-hot flare kernels (X-class brightening) at a couple of active regions; denser, lower coronal-loop arcades that hug the surface; a brighter limb; tamed prominence/CME eruptions; closer default framing so the disk fills the view"
+    ]
+  },
+  {
+    "version": "0.1.73",
+    "date": "2026-07-06",
+    "title": "Firefly Synchronization \u2014 a forest finding one pulse",
+    "summary": "Thousands of fireflies arrive flashing at random and, over seconds, pull into perfect unison \u2014 no leader, just each nudging its rhythm toward the others. The Kuramoto model made literal: the emergence of sync you can watch, a companion to the abstract Kuramoto phase portrait.",
+    "newSystems": ["fireflies"],
+    "notes": [
+      "Firefly Synchronization (Life): mean-field Kuramoto \u2014 each firefly's phase pulls toward the population's order parameter; above the critical coupling the swarm locks into one collective flash. Each firefly gathers into a bright luciferase-green blob when it flashes and parks out of sight when dark. The embodied twin of the abstract Kuramoto Sync system. Live coupling / freq spread / flash rate"
+    ]
+  },
+  {
     "version": "0.1.72",
     "date": "2026-07-05",
     "title": "Aurora from Orbit \u2014 the ISS view",

@@ -2455,7 +2455,7 @@ o[1] = p.b * x[0];`,
     about:
       "The Sun in extreme ultraviolet — the way space telescopes like SDO watch it storm. What glows isn't fire but million-degree plasma trapped on MAGNETIC FIELD LINES. Each active region is a pair of opposite-polarity sunspots (magnetic footpoints), and coronal loops arch between them along the field, brightening when the region flares. Scattered across the disk in the ±30° latitude bands where sunspots emerge, with a mottled granular surface, a glowing limb, and plumes at the poles where the field opens to the solar wind. Lit in the teal of the 171 Å channel.",
     howItWorks:
-      "Rather than simulate the plasma fluid, we build the magnetic structure it rides. A Fibonacci-sphere shell of points makes the granular surface (limb-brightened for free by additive density where the line of sight grazes the shell). Active regions are placed at sunspot latitudes; each is a fan of coronal loops, and every loop is a semicircular arc between two footpoints — a great-circle path (slerp) lifted to a height that grows with the footpoint separation, brightest and whitest at the feet. A handful of active sites also ERUPT: on a staggered cycle they fling out hot plasma along a height envelope — a rise-and-fall arc for confined prominences, or an ever-rising escape for a coronal mass ejection — drifting tangentially into a curved jet. Near the poles, short near-radial streamers stand in for open-field plumes; a faint outer shell gives the corona its glow; and the whole disk turns with the ~25-day rotation. Bounded by construction.",
+      "Rather than simulate the plasma fluid, we build the magnetic structure it rides. A Fibonacci-sphere shell of points makes the granular surface (limb-brightened for free by additive density where the line of sight grazes the shell). Active regions are placed at sunspot latitudes; each is a fan of coronal loops, and every loop is a semicircular arc between two footpoints — a great-circle path (slerp) lifted to a height that grows with the footpoint separation, brightest and whitest at the feet. A couple of regions host a FLARE KERNEL — a compact, blindingly white-hot core standing in for an X-class flare brightening, ringed by a low, intense post-flare loop crown. A handful of active sites also ERUPT: on a staggered cycle they fling out hot plasma along a height envelope — a rise-and-fall arc for confined prominences, or an ever-rising escape for a coronal mass ejection — drifting tangentially into a curved jet. Near the poles, short near-radial streamers stand in for open-field plumes; a faint outer shell gives the corona its glow; and the whole disk turns with the ~25-day rotation. Bounded by construction.",
     equations: [
       { label: 'coronal loop = arc between magnetic footpoints', latex: '\\mathbf{r}(s) = \\big(R + H\\sin\\pi s\\big)\\,\\operatorname{slerp}(\\mathbf{f}_+, \\mathbf{f}_-, s), \\quad s \\in [0,1]' },
       { label: 'footpoints straddle the region centre', latex: '\\mathbf{f}_\\pm = \\mathbf{c}\\cos\\delta \\pm \\hat{\\mathbf{d}}\\sin\\delta' },
@@ -3003,6 +3003,30 @@ o[1] = p.b * x[0];`,
       { label: 'Aurora from the ISS (NASA)', url: 'https://www.nasa.gov/image-feature/aurora-from-the-space-station' },
       { label: 'Airglow (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Airglow' },
       { label: 'Auroral oval (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Aurora#Auroral_oval' },
+    ],
+  },
+  fireflies: {
+    title: 'Firefly Synchronization',
+    about:
+      "In the forests of Southeast Asia \u2014 and a few valleys in Tennessee \u2014 thousands of fireflies flash in perfect unison: a wave of light, then dark, then light, night after night, with no leader and no signal but each other's glow. It is one of nature's clearest demonstrations of spontaneous synchronization. Each firefly is an oscillator that nudges its own rhythm a little toward the flashes it sees; below a threshold of coupling they blink at random, but above it the whole population locks into one shared pulse. The same mathematics governs pacemaker cells, clapping audiences, coupled metronomes and power grids \u2014 it is the Kuramoto model, and this is its most literal face.",
+    howItWorks:
+      "Every firefly carries a phase \u03b8 advancing at its own natural frequency \u03c9, plus a pull toward the population's mean phase \u2014 the Kuramoto mean-field coupling. The order parameter r (how aligned the phases are) starts near zero: they arrive out of step, a scatter of random sparks. As the coupling K does its work, r climbs toward one and the flashes gather into a single collective pulse. Each firefly is drawn as a small cluster of points that gathers into a bright blob at the instant it flashes (\u03b8 near 0) and is parked out of sight while dark, so brightness is written in presence, not colour; the glow is the ~560 nm yellow-green of luciferase, baked once. This is the same law the abstract Kuramoto Sync system draws as a phase portrait on a cylinder \u2014 here it is the swarm itself. Raise 'coupling' past the transition to lock them; widen 'freq spread' to make sync harder.",
+    equations: [
+      { label: 'Kuramoto mean-field coupling', latex: '\\dot{\\theta}_i = \\omega_i + \\frac{K}{N}\\sum_j \\sin(\\theta_j - \\theta_i)' },
+      { label: 'order parameter (0 = incoherent, 1 = locked)', latex: 'r\\,e^{i\\psi} = \\frac{1}{N}\\sum_j e^{i\\theta_j}' },
+      { label: 'so each firefly feels the mean field', latex: '\\dot{\\theta}_i = \\omega_i + K\\,r\\,\\sin(\\psi - \\theta_i)' },
+      { label: 'synchronization above a critical coupling', latex: 'K > K_c \\;\\Rightarrow\\; r \\to 1' },
+    ],
+    params: [
+      { key: 'coupling', symbol: 'K', meaning: 'how strongly each firefly is pulled toward the others' },
+      { key: 'spread', symbol: '\\sigma_\\omega', meaning: 'spread of natural flash frequencies (heterogeneity)' },
+      { key: 'rate', symbol: '\\omega_0', meaning: 'overall flash tempo' },
+    ],
+    code: "// mean-field Kuramoto: each firefly pulls toward the population's mean phase\n(m_c, m_s) = mean(cos\u03b8, sin\u03b8);            // the order parameter\n\u03b8_i += dt\u00b7(\u03c9_i + K\u00b7(m_s\u00b7cos\u03b8_i \u2212 m_c\u00b7sin\u03b8_i));  // = \u03c9_i + K\u00b7r\u00b7sin(\u03c8\u2212\u03b8_i)\nflash = exp(\u22122.6\u00b7(1\u2212cos\u03b8_i));           // bright only near \u03b8 = 0 \u2014 gather the blob, else park it",
+    links: [
+      { label: 'Firefly synchronization (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Firefly#Synchronization' },
+      { label: 'Kuramoto model (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Kuramoto_model' },
+      { label: 'Strogatz & Mirollo: pulse-coupled oscillators', url: 'https://en.wikipedia.org/wiki/Synchronization_of_chaos' },
     ],
   },
 };

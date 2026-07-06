@@ -423,7 +423,7 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
     // The solar corona is a sphere — frame it face-on, filling the frame like the SDO disk.
     if ($archetypeId.get() === 'solarCorona') {
       controls.target.set(0, 0, 0);
-      camera.position.set(0, 0, 2.8);
+      camera.position.set(0, 0, 2.1);
       controls.update();
     }
     // The spiral galaxy is a flat disk — view it near face-on with a slight tilt so the arms + bar read.
@@ -529,6 +529,11 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
     if ($archetypeId.get() === 'auroraOrbit') {
       controls.target.set(0, 0.3, -1.4);
       camera.position.set(0.2, 1.5, 3.6);
+      controls.update();
+    }
+    if ($archetypeId.get() === 'fireflies') {
+      controls.target.set(0, 0, 0);
+      camera.position.set(0, 0.2, 4.4);
       controls.update();
     }
     if ($archetypeId.get() === 'aurora') {
@@ -1134,7 +1139,7 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
           else if (id === 'crossedDiffraction') { controls.target.set(0, 0, 0); camera.position.set(0, 0, 3.4); }
           else if (id === 'dandelion') { controls.target.set(0, 0, 0); camera.position.set(0.6, 0.4, 3.1); }
           else if (id === 'lorenzSwarm' || id === 'attractorMenagerie') { controls.target.set(0, 0, 0); camera.position.set(0, 0, 4.4); }
-          else if (id === 'solarCorona') { controls.target.set(0, 0, 0); camera.position.set(0, 0, 2.8); }
+          else if (id === 'solarCorona') { controls.target.set(0, 0, 0); camera.position.set(0, 0, 2.1); }
           else if (id === 'spiralGalaxy') { controls.target.set(0, 0, 0); camera.position.set(0, 1.8, 2.9); }
           else if (id === 'galaxyCollision') { controls.target.set(0, 0, 0); camera.position.set(0, 1.9, 5.0); }
           else if (id === 'lightning') { controls.target.set(0, 0, 0); camera.position.set(0, 0, 3.4); }
@@ -1154,6 +1159,7 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
           else if (id === 'trigMap') { controls.target.set(0, 0, 0); camera.position.set(0, 0, 3.0); }
           else if (id === 'newtonFlow') { controls.target.set(0, 0, 0); camera.position.set(0.2, 0.15, 2.9); }
           else if (id === 'auroraOrbit') { controls.target.set(0, 0.3, -1.4); camera.position.set(0.2, 1.5, 3.6); }
+          else if (id === 'fireflies') { controls.target.set(0, 0, 0); camera.position.set(0, 0.2, 4.4); }
           else if (id === 'bioBay') { controls.target.set(0, 0, 0); camera.position.set(0, 1.7, 2.5); }
           else if (id === 'combJelly') { controls.target.set(0, 0, 0); camera.position.set(0.7, 0.25, 2.3); }
           else if (id === 'jellyfishFountain') { controls.target.set(0, -0.05, 0); camera.position.set(0, 0.3, 3.4); }
