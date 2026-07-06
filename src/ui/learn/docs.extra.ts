@@ -2909,4 +2909,100 @@ o[1] = p.b * x[0];`,
       { label: 'Inspired by KAZ+OO\u2019s p5.js sketch', url: 'https://openprocessing.org/user/489845' },
     ],
   },
+  dnaSupercoil: {
+    title: 'DNA Supercoiling',
+    about:
+      "Two metres of DNA fold into every one of your cells, and the folding is governed by a theorem. A closed double helix has a linking number Lk — how many times the two strands wind around each other — and Lk is a TOPOLOGICAL invariant: you cannot change it by bending, coiling, or stretching the molecule; only an enzyme that cuts a strand (a topoisomerase) can. White's theorem then splits that fixed integer into two geometric parts that trade freely: Lk = Tw + Wr, the twist of the strands about the axis plus the writhe of the axis coiling through space. Over- or under-wind the helix and the strain has nowhere to go but writhe — the axis buckles into a supercoil. It is the same instability you feel overtwisting a phone cord, and it is how the genome packs, unpacks, and reads itself.",
+    howItWorks:
+      "The helix axis is modelled as a closed superhelix wound n times on a torus, so the loop is always genuinely closed (Lk stays an integer, as topology demands). An imposed strain cycles the coil amplitude ρ from zero — a flat ring, where every bit of the linking is TWIST and the base-pair ladder winds fast — up to a fully buckled supercoil, where the geometric writhe of the coiled axis absorbs much of the linking and the base-pair twist visibly SLOWS to keep Lk = Tw + Wr fixed — then relaxes back. The writhe is read straight from the coil geometry; the twist is whatever is left over, exactly as White's theorem requires. Two amber sugar-phosphate backbones spiral in antiparallel, with red A·T and blue G·C rungs bridging them. Raise 'strain' to drive it deeper into supercoil; 'linking number' sets Lk; 'super-turns' rebuilds the coil with more windings.",
+    equations: [
+      { label: 'the topological invariant (White / C\u0103lug\u0103reanu\u2013Fuller)', latex: 'Lk = Tw + Wr' },
+      { label: 'Lk is fixed for a closed molecule', latex: '\\Delta Lk = 0 \\;\\Rightarrow\\; \\Delta Tw = -\\Delta Wr' },
+      { label: 'strain drives twist into writhe as the axis buckles', latex: 'Wr(\\rho) = \\frac{n\\,x}{1+x}, \\quad x = \\frac{n\\rho}{R}' },
+      { label: 'base-pair twist takes up the remainder', latex: 'Tw = Lk - Wr(\\rho)' },
+    ],
+    params: [
+      { key: 'supercoil', symbol: '\\rho', meaning: 'imposed strain \u2014 how deep into supercoil the axis buckles' },
+      { key: 'linking', symbol: 'Lk', meaning: 'linking number \u2014 the conserved topological integer' },
+      { key: 'coils', symbol: 'n', meaning: 'super-turns of the coiled axis (rebuild)' },
+      { key: 'relax', symbol: '\\nu', meaning: 'rate of the strain\u2013relaxation cycle' },
+    ],
+    code: "// White's theorem, made literal: hold Lk fixed, let twist give way to writhe\n\u03c1(t) = strain \u00b7 (1 \u2212 cos \u03bd t)/2;          // imposed strain cycles the coil amplitude\nWr = n\u00b7x/(1+x),  x = n\u03c1/R;                 // writhe read from the coiled-axis geometry\nTw = Lk \u2212 Wr;                              // whatever linking writhe doesn't absorb stays twist\naxis = superhelix(n, \u03c1);  ladder winds at rate Tw around it;  // base pairs slow as the coil grows",
+    links: [
+      { label: 'DNA supercoil (Wikipedia)', url: 'https://en.wikipedia.org/wiki/DNA_supercoil' },
+      { label: 'Linking number & White\u2019s theorem', url: 'https://en.wikipedia.org/wiki/Linking_number' },
+      { label: 'Writhe (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Writhe' },
+      { label: 'Topoisomerase \u2014 the enzymes that change Lk', url: 'https://en.wikipedia.org/wiki/Topoisomerase' },
+    ],
+  },
+  trigMap: {
+    title: 'Trigonometric Map',
+    about:
+      "Some of the richest pictures in mathematics come from the simplest rules, iterated. This is a two-line map on the plane: take a point (x, y), and replace it with (sin(x²\u2212y²+a), cos(2xy+b)). Its two arguments, x²\u2212y² and 2xy, are precisely the real and imaginary parts of z² \u2014 so this is a complex squaring folded through sine and cosine. Because sin and cos never leave [\u22121, 1], every orbit is trapped forever in the unit square, and the endlessly folded trajectory settles onto an invariant density: a lacy attractor whose entire shape is dialled by the two phases a and b. It is a cousin of the classic Clifford and de Jong attractors, and (after Simone Conradi's numpy density studies) an inexhaustible source of form.",
+    howItWorks:
+      "Every particle is one orbit of the map, iterated once per frame; together the cloud samples the attractor's invariant measure, brightest where the density piles up. The two phases a and b drift slowly, so the whole attractor continuously blooms, tears and reforms \u2014 no two moments are the same figure. Each particle's colour is baked from the angle of its seed, a hue wheel that mixes as distant orbits are folded together, staining the dense regions. Set 'phase a' and 'phase b' to explore the family by hand, 'morph rate' to speed or freeze the drift, 'zoom' to fill the frame.",
+    equations: [
+      { label: 'the map (a complex square, folded through sin/cos)', latex: 'x_{n+1} = \\sin(x_n^2 - y_n^2 + a), \\quad y_{n+1} = \\cos(2 x_n y_n + b)' },
+      { label: 'the arguments are Re and Im of z\u00b2', latex: 'z^2 = (x^2 - y^2) + i\\,(2xy)' },
+      { label: 'bounded forever \u2014 the trap', latex: '|x_n| \\le 1, \\;\, |y_n| \\le 1 \\;\\; \\forall n' },
+    ],
+    params: [
+      { key: 'phaseA', symbol: 'a', meaning: 'first phase \u2014 reshapes the attractor' },
+      { key: 'phaseB', symbol: 'b', meaning: 'second phase \u2014 reshapes the attractor' },
+      { key: 'morph', symbol: '\\nu', meaning: 'rate the phases drift and the figure morphs' },
+      { key: 'zoom', symbol: 's', meaning: 'scale of the attractor in the frame' },
+    ],
+    code: "// one map, iterated \u2014 the cloud becomes the attractor's density\na = a\u2080 + 0.08\u00b7sin(0.05\u03bd t);  b = b\u2080 + 0.08\u00b7cos(0.041\u03bd t);  // gentle drift\nx' = sin(x\u00b2 \u2212 y\u00b2 + a);   y' = cos(2xy + b);              // z\u00b2, folded\n// colour baked by seed angle; density = brightness under additive blending",
+    links: [
+      { label: 'List of chaotic maps (Wikipedia)', url: 'https://en.wikipedia.org/wiki/List_of_chaotic_maps' },
+      { label: 'Clifford & de Jong attractors', url: 'http://paulbourke.net/fractals/clifford/' },
+      { label: 'Simone Conradi (@S_Conradi)', url: 'https://twitter.com/S_Conradi' },
+    ],
+  },
+  newtonFlow: {
+    title: 'Newton Flow',
+    about:
+      "Newton's method \u2014 the schoolbook root-finder, z \u2192 z \u2212 P(z)/P\u2032(z) \u2014 hides a fractal. Colour every starting point in the complex plane by which root it eventually lands on, and the plane shatters into interlocking basins whose boundary is a Julia set: infinitely detailed, and where three or more basins always meet, all of them meet at once. Here the polynomial's roots are not fixed \u2014 they DRIFT, P_t(z) = \u220f(z \u2212 r_j(t)) \u2014 so the basins are alive, their boundaries rippling as the roots wander. It is the frontier where a tame algorithm turns chaotic.",
+    howItWorks:
+      "Each particle flows continuously along a softened Newton correction toward whichever moving root currently captures it. Two safeguards tame the raw iteration: a softening term \u03c3 keeps the step finite near the critical points where P\u2032 vanishes (the seams between basins), and a tanh limiter caps each step's length \u2014 the 'explosion', a bounded spray instead of a divergent leap. A particle's colour is baked from the root it belonged to at the start, so as the roots migrate the fixed basin colours are dragged into interleaving filaments; when a particle reaches a root (or is flung past the edge) it respawns in the plane, feeding the flow. Raise 'roots' for a higher-degree polynomial (rebuild), 'root drift' to stir the basins, 'step gain' and 'softening' to sharpen or smear the flow.",
+    equations: [
+      { label: 'the moving polynomial', latex: 'P_t(z) = \\prod_j \\big(z - r_j(t)\\big)' },
+      { label: 'softened Newton correction (finite at critical points)', latex: '\\xi = z - \\zeta\\,\\frac{P(z)\\,\\overline{P\\,\\prime(z)}}{|P\\,\\prime(z)|^2 + \\sigma^2}' },
+      { label: 'magnitude-limited step (the bounded spray)', latex: 'z_{n+1} = z_n + \\tanh(|u|)\\,\\frac{u}{|u| + \\varepsilon}, \\quad u = \\xi - z_n' },
+    ],
+    params: [
+      { key: 'roots', symbol: 'd', meaning: 'number of roots \u2014 polynomial degree (rebuild)' },
+      { key: 'drift', symbol: '\\omega', meaning: 'how fast the roots wander' },
+      { key: 'gain', symbol: '\\zeta', meaning: 'Newton step gain' },
+      { key: 'soften', symbol: '\\sigma', meaning: 'softening at the basin seams' },
+    ],
+    code: "// P and P\u2032 by product accumulation, then a softened, magnitude-limited Newton step\nfor each root r_j:  dP = dP\u00b7(z\u2212r_j) + P;  P = P\u00b7(z\u2212r_j);\nu = \u03b6\u00b7P\u00b7conj(P\u2032)/(|P\u2032|\u00b2 + \u03c3\u00b2);         // finite even where P\u2032 = 0\nz \u2212= u \u00b7 tanh(|u|)/(|u| + \u03b5);              // bounded spray toward the moving root\n// colour baked from the starting basin; respawn on arrival",
+    links: [
+      { label: 'Newton fractal (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Newton_fractal' },
+      { label: "Newton's method (Wikipedia)", url: 'https://en.wikipedia.org/wiki/Newton%27s_method' },
+      { label: 'Julia set (the basin boundary)', url: 'https://en.wikipedia.org/wiki/Julia_set' },
+    ],
+  },
+  auroraOrbit: {
+    title: 'Aurora from Orbit',
+    about:
+      "The same aurora, seen from 400 kilometres up. From the ISS you look down and outward along the curve of the planet, and the auroral oval \u2014 the ring of light around the magnetic pole \u2014 becomes a luminous ribbon following the horizon, its rays reaching UP toward you. Chris Hadfield described flying right through the upper tendrils. Below is the dark, cloud-mottled night side; along the very edge of the world, a razor-thin band of red-orange airglow (the hydroxyl layer near 90 km, glowing whether or not the aurora is out); above it, the black of space and the stars.",
+    howItWorks:
+      "The scene is built on a sphere: the auroral oval is a sinuous curve draped on the planet's surface, and its field-aligned rays rise along the local outward normal \u2014 so seen from just outside the sphere they lean over the limb exactly as the real curtain does. The rays carry the same altitude spectrum as the ground-level aurora (violet nitrogen base \u2192 emerald oxygen body \u2192 the slow red 630 nm crown) and stream downward on a desynchronised sawtooth \u2014 the precipitation of electrons. The night side is a dim, cloud-mottled cap; a thin arc of red-orange airglow rides the visible limb; stars sit on a far shell. All colours bake once; the oval's drape and the rays' fall live in positions. 'Activity' drives the substorm tempo, 'oval folds' the meander of the ribbon.",
+    equations: [
+      { label: 'the oval drapes on the planet (sphere cap)', latex: 'y(x,z) = -R_p + \\sqrt{R_p^2 - x^2 - z^2}' },
+      { label: 'rays rise along the local outward normal', latex: '\\hat{\\mathbf{n}} = (\\mathbf{P} - \\mathbf{C})/R_p' },
+      { label: 'the same green line \u2014 atomic oxygen', latex: '\\mathrm{O}(^1S)\\to\\mathrm{O}(^1D) + h\\nu\\;(557.7\\,\\mathrm{nm})' },
+    ],
+    params: [
+      { key: 'activity', symbol: '\\nu', meaning: 'substorm tempo \u2014 drift and precipitation rate' },
+      { key: 'folds', symbol: 'A_f', meaning: 'meander of the auroral oval along the limb' },
+    ],
+    code: "// oval draped on the sphere; rays climb the outward normal over the limb\nbase = surface(x, z) on the planet cap;  n = (base \u2212 centre)/R_p;\nray  = base + n\u00b7(h \u2212 precip\u00b7saw(\u03c6 + 0.14t));   // violet base \u2192 green \u2192 red crown\n+ dim cloud-mottled night cap, a thin red-orange airglow limb, and stars",
+    links: [
+      { label: 'Aurora from the ISS (NASA)', url: 'https://www.nasa.gov/image-feature/aurora-from-the-space-station' },
+      { label: 'Airglow (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Airglow' },
+      { label: 'Auroral oval (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Aurora#Auroral_oval' },
+    ],
+  },
 };
