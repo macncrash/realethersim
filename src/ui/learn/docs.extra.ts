@@ -3029,4 +3029,50 @@ o[1] = p.b * x[0];`,
       { label: 'Strogatz & Mirollo: pulse-coupled oscillators', url: 'https://en.wikipedia.org/wiki/Synchronization_of_chaos' },
     ],
   },
+  giganticJet: {
+    title: 'Gigantic Jet',
+    about:
+      "Lightning mostly goes down. But a whole hidden family of discharges \u2014 sprites, blue jets, ELVES, and the rarest of all, GIGANTIC JETS \u2014 fire UPWARD from the tops of thunderstorms into the near-space above. A gigantic jet is the tallest: a blue-white leader punches out of the storm around 20 km and races all the way to the ionosphere near 90 km in a few milliseconds, fanning into red-tinged tendrils where it reaches the charged upper atmosphere. In 2025 astronaut Nichole Ayers caught the clearest photo of one ever taken from space \u2014 which is the vantage here: the curved night limb, city lights and lightning glinting in the cloud deck, stars overhead, and the jet leaping toward you.",
+    howItWorks:
+      "The scene is built on a planet-sphere like our Aurora from Orbit: a dim cloud-mottled night surface studded with warm sodium-orange city clusters, a thin red-orange airglow limb, and a starfield beyond. The jet itself is an EVENT, animated the way our Lightning is \u2014 a cycle of grow \u2192 flash \u2192 fade \u2192 dark: a leader climbs the outward normal from the storm top, wandering slightly, and above two-thirds height it splays into a crown of tendrils at the ionosphere. Its colour bakes by altitude \u2014 blue-white at the leader, blue up the column, violet-to-red at the crown \u2014 while a flickering blue-white storm glow marks the base. Raise 'strike rate' for more frequent jets, 'crown spread' to widen the ionospheric fan.",
+    equations: [
+      { label: 'a transient luminous event bridging storm-top to ionosphere', latex: '\\sim 20\\,\\text{km} \\;\\longrightarrow\\; \\sim 90\\,\\text{km}, \\quad \\Delta t \\sim \\text{ms}' },
+      { label: 'colour by altitude (leader \u2192 crown)', latex: '\\text{blue-white} \\to \\text{blue} \\to \\text{violet/red}' },
+      { label: 'event cycle (as in Lightning)', latex: '\\text{grow} \\to \\text{flash} \\to \\text{fade} \\to \\text{dark}' },
+    ],
+    params: [
+      { key: 'rate', symbol: 'f', meaning: 'how often the jet fires' },
+      { key: 'branch', symbol: 'A_c', meaning: 'spread of the ionospheric crown tendrils' },
+    ],
+    code: "// an upward discharge as an event cycle, over the orbital night limb\nfront = grow/flash/fade envelope(t);          // the leader climbs, holds, then fades\nif (s <= front) climb along the outward normal from the storm top;\nif (s > 0.6) splay into a crown of tendrils at the ionosphere;\ncolour bakes by altitude: blue-white leader \u2192 blue column \u2192 violet/red crown",
+    links: [
+      { label: 'Upper-atmospheric lightning (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Upper-atmospheric_lightning' },
+      { label: 'Gigantic jet', url: 'https://en.wikipedia.org/wiki/Gigantic_jet' },
+      { label: 'Transient luminous events (NASA)', url: 'https://science.nasa.gov/science-research/earth-science/transient-luminous-events/' },
+    ],
+  },
+  ringdown: {
+    title: 'Black Hole Ringdown',
+    about:
+      "Strike a bell and it rings in fading tones. Merge two black holes and the newborn horizon does the same: it RINGS DOWN, shedding its distortion as gravitational waves in a handful of decaying tones called quasinormal modes \u2014 damped sinusoids A\u00b7e^{\u2212t/\u03c4}\u00b7cos(\u03c9t). The remarkable part is that the frequencies \u03c9 and decay times \u03c4 depend on NOTHING but the remnant's final mass and spin, so reading them off a LIGO signal tells you exactly what merged \u2014 physicists call it black-hole spectroscopy. When spacetime strikes a black hole, the black hole answers with its own gravitational sound.",
+    howItWorks:
+      "Spacetime is drawn as a membrane \u2014 a wireframe lattice with a shallow central well for the remnant and a warm accretion glow in the throat. Each cycle the centre is struck, and the dominant \u2113=2 quadrupole mode radiates outward as a damped sinusoid, carried on RETARDED time (the disturbance at radius r is delayed by r/c, so nothing outruns the wavefront) \u2014 an expanding, two-lobed ripple that fades as it goes, plus a faster-decaying overtone. The ring damps toward a quiescent sheet and is struck again. The height is pure closed form, re-evaluated each frame. 'Ring amplitude' sets how hard it is struck, 'decay time' the \u03c4 of the tones, 'well depth' the throat, 're-strike' the cadence.",
+    equations: [
+      { label: 'a quasinormal tone \u2014 a damped sinusoid', latex: 'h(t) = A\\,e^{-t/\\tau}\\cos(\\omega t + \\phi)' },
+      { label: 'the dominant \u2113=2 quadrupole, radiating out (retarded time)', latex: 'h(r,\\theta,t) \\propto e^{-t_r/\\tau}\\cos(\\omega t_r)\\cos 2\\theta, \\quad t_r = t - r/c' },
+      { label: '\u03c9 and \u03c4 depend only on final mass and spin', latex: '(\\omega, \\tau) = F(M_f, a_f)' },
+    ],
+    params: [
+      { key: 'ringing', symbol: 'A', meaning: 'amplitude the horizon is struck with' },
+      { key: 'decay', symbol: '\\tau', meaning: 'decay time of the quasinormal tones' },
+      { key: 'depth', symbol: 'M_f', meaning: 'depth of the remnant\u2019s throat' },
+      { key: 'period', symbol: 'T', meaning: 'cadence of re-striking the bell' },
+    ],
+    code: "// a spacetime membrane ringing in its quasinormal modes\nwell = \u2212depth / \u221a(r\u00b2 + a);                       // the remnant's shallow throat\nt_r  = t \u2212 r/c;                                 // retarded time \u2014 waves obey the light cone\nring = A\u00b7e^{\u2212t_r/\u03c4}\u00b7env(r)\u00b7cos(\u03c9\u00b7t_r)\u00b7cos(2\u03b8);      // \u2113=2 quadrupole, radiating out\nheight = well + ring;                           // re-struck each cycle, damping to quiescence",
+    links: [
+      { label: 'Quasinormal mode (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Quasinormal_mode' },
+      { label: 'Black-hole spectroscopy (ringdown)', url: 'https://en.wikipedia.org/wiki/Tests_of_general_relativity#Ringdown' },
+      { label: 'What LIGO hears in a merger', url: 'https://www.ligo.caltech.edu/page/what-is-lw' },
+    ],
+  },
 };
