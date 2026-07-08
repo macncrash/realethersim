@@ -18,6 +18,16 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    "version": "0.1.77",
+    "date": "2026-07-08",
+    "title": "Perihelion Precession \u2014 the orbit that never closes",
+    "summary": "In Newton's gravity a bound orbit is a closed ellipse. In Einstein's it isn't: the ellipse slowly turns with every pass, tracing a rosette \u2014 the 43\u2033/century of Mercury that was General Relativity's first triumph, and the visible payoff of Gravity Well's caveat that curved TIME steers the slow orbit.",
+    "newSystems": ["precession"],
+    "notes": [
+      "Perihelion Precession (Spacetime): exact Schwarzschild geodesics r(\u03c6) = p/(1 + e\u00b7cos k\u03c6) with k = \u221a(1\u22126M/p), so periapsis advances \u0394\u03d6 = 2\u03c0(1/k\u22121) per orbit and the path fills a rosette; bodies climb at the Kepler areal rate (fast at periapsis) past a bright photon ring at 3M. Live compactness / eccentricity / bodies / speed"
+    ]
+  },
+  {
     "version": "0.1.76",
     "date": "2026-07-07",
     "title": "Black Hole Ringdown \u2014 spacetime rings like a bell",
