@@ -536,6 +536,18 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
       camera.position.set(0, 0.2, 4.4);
       controls.update();
     }
+    // Oblique 3/4 of the ringing membrane so the outgoing quadrupole waves and the throat read.
+    if ($archetypeId.get() === 'ringdown') {
+      controls.target.set(0, -0.2, 0);
+      camera.position.set(1.5, 1.6, 2.3);
+      controls.update();
+    }
+    // ISS view: over the curved night limb, the jet leaping up toward the camera.
+    if ($archetypeId.get() === 'giganticJet') {
+      controls.target.set(0, 0.7, -0.4);
+      camera.position.set(0.3, 1.3, 3.3);
+      controls.update();
+    }
     if ($archetypeId.get() === 'aurora') {
       controls.target.set(0, 0.5, -0.4);
       camera.position.set(0, 0.3, 3.9);
@@ -1160,6 +1172,8 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
           else if (id === 'newtonFlow') { controls.target.set(0, 0, 0); camera.position.set(0.2, 0.15, 2.9); }
           else if (id === 'auroraOrbit') { controls.target.set(0, 0.3, -1.4); camera.position.set(0.2, 1.5, 3.6); }
           else if (id === 'fireflies') { controls.target.set(0, 0, 0); camera.position.set(0, 0.2, 4.4); }
+          else if (id === 'ringdown') { controls.target.set(0, -0.2, 0); camera.position.set(1.5, 1.6, 2.3); }
+          else if (id === 'giganticJet') { controls.target.set(0, 0.7, -0.4); camera.position.set(0.3, 1.3, 3.3); }
           else if (id === 'bioBay') { controls.target.set(0, 0, 0); camera.position.set(0, 1.7, 2.5); }
           else if (id === 'combJelly') { controls.target.set(0, 0, 0); camera.position.set(0.7, 0.25, 2.3); }
           else if (id === 'jellyfishFountain') { controls.target.set(0, -0.05, 0); camera.position.set(0, 0.3, 3.4); }

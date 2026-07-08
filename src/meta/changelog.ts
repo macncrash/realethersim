@@ -18,6 +18,26 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    "version": "0.1.76",
+    "date": "2026-07-07",
+    "title": "Black Hole Ringdown \u2014 spacetime rings like a bell",
+    "summary": "Merge two black holes and the newborn horizon rings down, shedding gravitational waves in fading quasinormal tones whose pitch and decay encode only its final mass and spin. A spacetime membrane, struck at the centre, radiating a damped \u2113=2 quadrupole wave outward on retarded time.",
+    "newSystems": ["ringdown"],
+    "notes": [
+      "Black Hole Ringdown (Spacetime): a wireframe membrane with a shallow throat; the dominant \u2113=2 quadrupole quasinormal mode radiates outward as a damped sinusoid A\u00b7e^{\u2212t/\u03c4}\u00b7cos(\u03c9t)\u00b7cos 2\u03b8 on retarded time (nothing outruns the wavefront), re-struck each cycle. Sim-clock reads the ringdown in milliseconds. Live ring amplitude / decay time / well depth / re-strike"
+    ]
+  },
+  {
+    "version": "0.1.75",
+    "date": "2026-07-07",
+    "title": "Gigantic Jet \u2014 lightning that fires into space",
+    "summary": "The rarest transient luminous event: a blue-white leader punches out of a thunderstorm top and races to the ionosphere 90 km up in milliseconds, fanning into red tendrils \u2014 the shot astronaut Nichole Ayers caught from the ISS. Seen over the curved night limb with city lights, airglow and stars.",
+    "newSystems": ["giganticJet"],
+    "notes": [
+      "Gigantic Jet (Atmosphere): an upward discharge as an event cycle (grow \u2192 flash \u2192 fade \u2192 dark) climbing the outward normal from a storm top to a fanned ionospheric crown; altitude-baked colour (blue-white leader \u2192 blue column \u2192 violet/red crown) over the orbital night limb with sodium-orange city lights, a red airglow band and stars. Live strike rate / crown spread"
+    ]
+  },
+  {
     "version": "0.1.74",
     "date": "2026-07-06",
     "title": "Solar Corona \u2014 flares wake up",
