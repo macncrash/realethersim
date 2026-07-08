@@ -3075,4 +3075,29 @@ o[1] = p.b * x[0];`,
       { label: 'What LIGO hears in a merger', url: 'https://www.ligo.caltech.edu/page/what-is-lw' },
     ],
   },
+  precession: {
+    title: 'Perihelion Precession',
+    about:
+      "In Newton's gravity a bound orbit is a closed ellipse: the planet returns to periapsis and retraces the exact same path forever. In Einstein's, it does not. Near a mass the orbit still looks elliptical, but the ellipse's long axis slowly TURNS with each pass, so the path never closes \u2014 it fills out a rosette. Mercury does this by an anomalous 43 arcseconds per century, a discrepancy Newton could not explain and General Relativity nailed exactly in 1915: it was Einstein's first triumph. It is also the visible payoff of the honest caveat under our Gravity Well ([[gravityWell]]) \u2014 it is curved TIME, not a dented rubber sheet, that steers the slow orbit.",
+    howItWorks:
+      "Each body follows an exact Schwarzschild geodesic, whose shape has a beautifully simple closed form: r(\u03c6) = p/(1 + e\u00b7cos k\u03c6), the same conic as Kepler's but with the true anomaly running at rate k = \u221a(1 \u2212 6M/p) < 1. Because k is a hair below one, the radial cycle (periapsis to periapsis) takes slightly MORE than a full turn, so periapsis advances by \u0394\u03d6 = 2\u03c0(1/k \u2212 1) every orbit \u2014 and the orbit traces a rosette instead of closing. Each body's whole rosette is baked as a trail, with a bright marker climbing it at the real Kepler areal rate (fast at periapsis, slow at apoapsis); a bright photon ring at 3M marks the light-bending edge of the dark hole. Push 'compactness' to bring the orbits closer to the hole (dramatically more precession); stable bound orbits need p > 6 + 2e.",
+    equations: [
+      { label: 'the Schwarzschild orbit \u2014 a conic with a slow anomaly', latex: 'r(\\varphi) = \\frac{p}{1 + e\\cos(k\\varphi)}, \\quad k = \\sqrt{1 - 6M/p}' },
+      { label: 'periapsis advances every revolution', latex: '\\Delta\\varpi = 2\\pi\\Big(\\tfrac{1}{k} - 1\\Big)' },
+      { label: 'Mercury \u2014 GR\u2019s first triumph', latex: '43\\,\\text{arcsec}/\\text{century}' },
+      { label: 'stable bound orbits only', latex: 'p > 6 + 2e' },
+    ],
+    params: [
+      { key: 'compact', symbol: 'p', meaning: 'compactness \u2014 closer to the hole means far more precession' },
+      { key: 'ecc', symbol: 'e', meaning: 'orbital eccentricity' },
+      { key: 'orbits', symbol: 'n', meaning: 'number of test bodies (rebuild)' },
+      { key: 'speed', symbol: 'v', meaning: 'orbital pace' },
+    ],
+    code: "// an exact Schwarzschild geodesic \u2014 a conic whose anomaly runs slow, so it never closes\nk = \u221a(1 \u2212 6M/p);                      // the relativistic factor, just below 1\nr(\u03c6) = p / (1 + e\u00b7cos(k\u03c6));          // Kepler's conic, but precessing\n\u0394\u03d6 = 2\u03c0(1/k \u2212 1) per orbit;            // periapsis advances \u2192 a rosette\nmarker climbs at d\u03c6/dt \u221d \u221ap / r\u00b2       // Kepler areal speed: fast at periapsis",
+    links: [
+      { label: 'Apsidal / perihelion precession (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Apsidal_precession' },
+      { label: 'Tests of GR: Mercury\u2019s perihelion', url: 'https://en.wikipedia.org/wiki/Tests_of_general_relativity#Perihelion_precession_of_Mercury' },
+      { label: 'Schwarzschild geodesics', url: 'https://en.wikipedia.org/wiki/Schwarzschild_geodesics' },
+    ],
+  },
 };

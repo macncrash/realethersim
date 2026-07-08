@@ -60,6 +60,7 @@ import { auroraOrbitFactory } from './auroraOrbit';
 import { firefliesFactory } from './fireflies';
 import { ringdownFactory } from './ringdown';
 import { giganticJetFactory } from './giganticJet';
+import { precessionFactory } from './precession';
 import { bioBayFactory } from './bioBay';
 import { combJellyFactory } from './combJelly';
 import { jellyfishFountainFactory } from './jellyfishFountain';
@@ -144,6 +145,7 @@ export function registerArchetypes(): void {
   register(firefliesFactory);
   register(ringdownFactory);
   register(giganticJetFactory);
+  register(precessionFactory);
   register(bioBayFactory);
   register(combJellyFactory);
   register(jellyfishFountainFactory);
