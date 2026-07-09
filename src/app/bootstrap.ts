@@ -554,6 +554,12 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
       camera.position.set(0.4, 2.9, 1.9);
       controls.update();
     }
+    // Face-on: the random-walk fan and the LIL walls read as a 2-D plot.
+    if ($archetypeId.get() === 'iteratedLog') {
+      controls.target.set(0, 0, 0);
+      camera.position.set(0, 0, 3.0);
+      controls.update();
+    }
     if ($archetypeId.get() === 'aurora') {
       controls.target.set(0, 0.5, -0.4);
       camera.position.set(0, 0.3, 3.9);
@@ -1181,6 +1187,7 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
           else if (id === 'ringdown') { controls.target.set(0, -0.2, 0); camera.position.set(1.5, 1.6, 2.3); }
           else if (id === 'giganticJet') { controls.target.set(0, 0.7, -0.4); camera.position.set(0.3, 1.3, 3.3); }
           else if (id === 'precession') { controls.target.set(0, 0, 0); camera.position.set(0.4, 2.9, 1.9); }
+          else if (id === 'iteratedLog') { controls.target.set(0, 0, 0); camera.position.set(0, 0, 3.0); }
           else if (id === 'bioBay') { controls.target.set(0, 0, 0); camera.position.set(0, 1.7, 2.5); }
           else if (id === 'combJelly') { controls.target.set(0, 0, 0); camera.position.set(0.7, 0.25, 2.3); }
           else if (id === 'jellyfishFountain') { controls.target.set(0, -0.05, 0); camera.position.set(0, 0.3, 3.4); }

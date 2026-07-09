@@ -18,6 +18,16 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    "version": "0.1.78",
+    "date": "2026-07-08",
+    "title": "Iterated Logarithm \u2014 the wall randomness never breaks",
+    "summary": "A random walk spreads like \u221an on average \u2014 but its almost-sure record is bounded by the sharper \u00b1\u221a(2n log log n), Khinchin's law of the iterated logarithm, a wall it kisses infinitely often yet never permanently crosses. An ensemble of walks fans out against it, record-setters flaring orange at the boundary.",
+    "newSystems": ["iteratedLog"],
+    "notes": [
+      "Iterated Logarithm (Sampler): our first stochastic-process system \u2014 an ensemble of Gaussian random walks whose density fills the Central-Limit \u221an bulk while the two LIL walls \u00b1\u221a(2n log log n) open above and below; a sweeping front traces the walks out in n, and paths that reach the wall flare orange. Live ensemble size / step variance / sweep rate"
+    ]
+  },
+  {
     "version": "0.1.77",
     "date": "2026-07-08",
     "title": "Perihelion Precession \u2014 the orbit that never closes",
