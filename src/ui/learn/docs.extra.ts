@@ -3100,4 +3100,27 @@ o[1] = p.b * x[0];`,
       { label: 'Schwarzschild geodesics', url: 'https://en.wikipedia.org/wiki/Schwarzschild_geodesics' },
     ],
   },
+  iteratedLog: {
+    title: 'Iterated Logarithm',
+    about:
+      "How far can pure randomness wander before it hits a wall? Add up independent coin-flips \u2014 a centered random walk S\u2099 = X\u2081 + \u2026 + X\u2099 with mean 0 and variance 1 \u2014 and on average it spreads like \u221an (the Central Limit Theorem). But that is only its typical width. Khinchin's Law of the Iterated Logarithm pins down its ALMOST-SURE record: the walk's running extreme is bounded by \u00b1\u221a(2n log log n), a curve it touches infinitely often yet never permanently crosses. The doubly-nested logarithm grows so achingly slowly that the wall is barely wider than \u221an, and yet it is exact \u2014 one of the most delicate results in probability.",
+    howItWorks:
+      "An ensemble of independent random walks fans out from the origin, each a running sum of Gaussian increments (baked once, so the whole picture is deterministic). Their density fills the middle as the Central-Limit Gaussian (the faint \u221an reference), while the two bright LIL walls \u00b1\u221a(2n log log n) open above and below. A sweeping front traces the walks out in n; wherever a path reaches up and kisses the wall it flares orange \u2014 a momentary record-setter, exactly the rare excursions the law is about. Raise 'ensemble' for more walks, 'step variance' to widen every increment, 'sweep rate' to trace them faster.",
+    equations: [
+      { label: 'the walk and its typical (CLT) width', latex: 'S_n = \\sum_{i=1}^{n} X_i, \\qquad S_n \\sim \\sqrt{n}' },
+      { label: 'Khinchin\u2019s law of the iterated logarithm', latex: '\\limsup_{n\\to\\infty} \\frac{S_n}{\\sqrt{2n\\log\\log n}} = +1' },
+      { label: '\u2026 and symmetrically below', latex: '\\liminf_{n\\to\\infty} \\frac{S_n}{\\sqrt{2n\\log\\log n}} = -1' },
+    ],
+    params: [
+      { key: 'walks', symbol: 'K', meaning: 'size of the random-walk ensemble' },
+      { key: 'diffuse', symbol: '\\sigma^2', meaning: 'variance of each step' },
+      { key: 'speed', symbol: 'v', meaning: 'rate the sweeping front traces the walks' },
+    ],
+    code: "// an ensemble of random walks against the almost-sure wall\nfor each walk: S += \u03c3\u00b7gaussian();               // running sum of increments\nwall(n) = \u221a(2n\u00b7log(log n));                  // the LIL envelope\nif (|S| > 0.82\u00b7wall) flare orange;             // a record-setter kissing the wall\nfront sweeps in n \u2192 the fan is traced out left to right",
+    links: [
+      { label: 'Law of the iterated logarithm (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Law_of_the_iterated_logarithm' },
+      { label: 'Aleksandr Khinchin', url: 'https://en.wikipedia.org/wiki/Aleksandr_Khinchin' },
+      { label: 'Random walk (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Random_walk' },
+    ],
+  },
 };
