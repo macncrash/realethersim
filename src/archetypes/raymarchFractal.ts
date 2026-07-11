@@ -44,6 +44,7 @@ export type RaymarchKind =
   | 'inkBloom'
   | 'moire'
   | 'gravLens'
+  | 'opticalVortex'
   | 'jellyfishBloom'
   | 'kaleidoTunnel';
 
@@ -71,6 +72,7 @@ export interface RaymarchSystem {
   sdf2?: 'plasmaOrb' | 'nebula' | 'voxelCloud' | 'flower'; // which density field the volumetric branch dispatches
   cells?: number; // voxelCloud only: cubic-lattice resolution (cells per q-unit), compile-time const
   lobes?: number; // inkBloom only: number of soft bloom lobes (compile-time const — TSL loop bound)
+  beams?: number; // opticalVortex only: number of interfering vortex beams (compile-time const)
   bloom?: number; // optional HDR-bloom strength override (raymarch family default is gentle: 0.1)
   occlude?: boolean; // volumetric only: front-to-back compositing (crisp solid voxels) vs additive emission
   sdf3?: 'mobius' | 'inverse' | 'square' | 'cexp' | 'joukowski'; // conformal only: which complex map f(z)
@@ -450,6 +452,17 @@ export const RAYMARCH_SYSTEMS: Record<string, RaymarchSystem> = {
     ],
   },
 
+  opticalVortex: {
+    id: 'opticalVortex', label: 'Optical Vortices', sdf: 'opticalVortex', category: 'Spectral',
+    iters: 0, bound: 1, camDist: 1, maxSteps: 1, beams: 5, bloom: 0.5, // interference fringes glow
+    params: [
+      { key: 'zoom', label: 'field of view', min: 0.6, max: 2, step: 0.02, default: 1.1 },
+      { key: 'drift', label: 'aperture drift', min: 0, max: 2.5, step: 0.05, default: 1 },
+      { key: 'twist', label: 'phase spin', min: 0, max: 3, step: 0.05, default: 1 },
+      { key: 'width', label: 'beam width', min: 0.5, max: 1.6, step: 0.05, default: 1 },
+      { key: 'gain', label: 'intensity', min: 0.2, max: 3, step: 0.05, default: 1 },
+    ],
+  },
   gravLens: {
     id: 'gravLens', label: 'Gravitational Lens', sdf: 'gravLens', category: 'Spacetime',
     iters: 0, bound: 1, camDist: 1, maxSteps: 1, bloom: 0.35, // dark sky + bright ring → full glow
