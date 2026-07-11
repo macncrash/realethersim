@@ -18,6 +18,36 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    "version": "0.1.81",
+    "date": "2026-07-11",
+    "title": "Self-Organizing Map \u2014 a neural sheet finds the shape of data",
+    "summary": "A flat grid of neurons that knows nothing teaches itself the shape of the data: each sample pulls its best-matching neuron and its grid neighbours closer, and as the neighbourhood shrinks the sheet folds onto a sphere like an orange peel \u2014 order emerging from thousands of local nudges. Our first machine-learning system (Kohonen, 1982).",
+    "newSystems": ["som"],
+    "notes": [
+      "Self-Organizing Map (Life): competitive learning \u2014 best-matching-unit search + a shrinking Gaussian neighbourhood kernel on the flat grid, learning rate and radius annealing down, so a tiny flat patch of neurons unfolds to drape a sphere of samples. Drawn as a live wireframe mesh over the data cloud. Live learning pace"
+    ]
+  },
+  {
+    "version": "0.1.80",
+    "date": "2026-07-11",
+    "title": "Spiral Whirl \u2014 a whole animation in one tweet",
+    "summary": "A faithful port of a tsubuyaki-Processing one-liner by KAZ+OO: four thousand points on nested spirals, wound by a = i+t and swirled off-centre, turning into a lace of interleaved arcs. A reminder that a few lines of closed-form trig can hold a lot of motion.",
+    "newSystems": ["spiralWhirl"],
+    "notes": [
+      "Spiral Whirl (Parametric): r = (i mod 200) + 99\u00b7sin(i\u00b2+t), angle a = i+t, a swirl offset 80\u00b7(sin(i+t), cos(3i+t)); densely sampled (the i\u00b2 wobble bucketed per integer so arcs stay crisp), white-to-pink. Faithfully after KAZ+OO (@KAZOOOps), credited in the docs. Live wind speed / swirl offset"
+    ]
+  },
+  {
+    "version": "0.1.79",
+    "date": "2026-07-11",
+    "title": "Optical Vortices \u2014 threads of darkness, rebuilt as a real field",
+    "summary": "A phase vortex is a point where the wave winds a full turn and the amplitude must vanish. Interfere several with a tilted reference and the fringes FORK at every vortex core \u2014 the hologram signature of a phase singularity. Rebuilt as a full-screen shader that computes the genuine |\u03a3E|\u00b2, not a point cloud.",
+    "newSystems": ["opticalVortex"],
+    "notes": [
+      "Optical Vortices (Spectral): a full-screen field shader \u2014 several drifting Laguerre\u2013Gauss vortex beams plus a tilted reference wave, showing I = |\u03a3E|\u00b2 per pixel, so the carrier fringes fork at every phase singularity (order = topological charge). Computes the real interference rather than dithering points. Live vortices / phase spin / drift / width / intensity"
+    ]
+  },
+  {
     "version": "0.1.78",
     "date": "2026-07-08",
     "title": "Iterated Logarithm \u2014 the wall randomness never breaks",

@@ -905,6 +905,51 @@ export function createRaymarch(sys: RaymarchSystem, backend: 'webgpu' | 'webgl2'
       const disk = smoothstep(float(1.0), float(0.82), r); // circular figure, soft edge
       const calm = smoothstep(float(0.04), float(0.16), r); // tame the centre singularity
       col.assign(vec3(moire.mul(disk).mul(calm)));
+    } else if (sys.sdf === 'opticalVortex') {
+      // ── Spectral: interfering optical vortices. Several Laguerre–Gauss vortex beams (helical phase
+      //    e^{iℓθ}, amplitude zero at the core) drift on ellipses; their COMPLEX amplitudes add and the
+      //    screen shows the intensity I = |ΣE_k|². Where windings disagree the fringes tear into the
+      //    tell-tale FORKS of a phase singularity. Rendered as a true field (not points), so the
+      //    interference is exact. Inferno-ish palette; this branch owns col. ──
+      const t = uTime.mul(u.drift).mul(0.5);
+      const spin = uTime.mul(u.twist).mul(0.8);
+      const f = vec2(ndc.x, ndc.y).mul(u.zoom).mul(1.5).toVar();
+      const w = u.width.mul(0.55).toVar();
+      const inv2w2 = float(1).div(w.mul(w).mul(2)).toVar();
+      const er = float(0).toVar();
+      const ei = float(0).toVar();
+      const K = sys.beams ?? 5;
+      Loop(K, ({ i }: { i: Node }) => {
+        const fi = float(i);
+        const a = fi.div(float(K)).mul(6.2831853).toVar();
+        // beam centre: a base ring position plus a slow elliptical drift
+        const cx = cos(a).mul(0.26).add(cos(t.add(fi.mul(1.7))).mul(0.14));
+        const cy = sin(a).mul(0.26).add(sin(t.mul(1.1).add(fi.mul(2.3))).mul(0.14));
+        const dx = f.x.sub(cx).toVar();
+        const dy = f.y.sub(cy).toVar();
+        const rho = sqrt(dx.mul(dx).add(dy.mul(dy))).add(1e-4).toVar();
+        // topological charge ℓ: magnitude 1 or 2 (fract parity), sign ±1 ((−1)^i via cos(iπ))
+        const mag = fract(fi.mul(0.5)).mul(2).add(1).toVar(); // 1,2,1,2,…
+        const sign = cos(fi.mul(3.14159265)).toVar(); // +1,−1,+1,−1,…
+        const l = sign.mul(mag).toVar();
+        // Laguerre–Gauss-like amplitude: (ρ/w)^|ℓ|·exp(−ρ²/2w²), zero at the core
+        const amp = pow(rho.div(w), mag).mul(exp(rho.mul(rho).mul(inv2w2).mul(-1))).toVar();
+        const ph = l.mul(atan(dy, dx)).add(spin.mul(sign)).toVar();
+        er.addAssign(amp.mul(cos(ph)));
+        ei.addAssign(amp.mul(sin(ph)));
+      });
+      // a tilted reference plane wave — its fine carrier fringes are FORKED by each vortex core,
+      // exactly as in a computer-generated hologram of an optical vortex
+      const carrier = f.x.mul(32).add(f.y.mul(13)).add(spin.mul(1.5)).toVar();
+      er.addAssign(cos(carrier).mul(0.7));
+      ei.addAssign(sin(carrier).mul(0.7));
+      const I = er.mul(er).add(ei.mul(ei)).mul(u.gain.mul(u.gain).mul(0.16)).toVar();
+      const inten = clamp(I, 0, 1).toVar();
+      // inferno-ish: black → violet → orange → white, background faded to black
+      const c = mix(vec3(0.10, 0.04, 0.22), vec3(1.0, 0.5, 0.08), smoothstep(float(0.06), float(0.55), inten)).toVar();
+      c.assign(mix(c, vec3(1.0, 0.95, 0.8), smoothstep(float(0.55), float(1.0), inten)));
+      c.assign(c.mul(smoothstep(float(0.015), float(0.13), inten)));
+      col.assign(c);
     } else if (sys.sdf === 'jellyfishBloom') {
       // ── Bloom: a drifting swarm of bioluminescent jellyfish. Each is a pulsing translucent bell (a
       //    glowing elliptical membrane + soft inner light) trailing wavy tentacles, in cool living-light

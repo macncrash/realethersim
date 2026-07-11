@@ -3123,4 +3123,72 @@ o[1] = p.b * x[0];`,
       { label: 'Random walk (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Random_walk' },
     ],
   },
+  som: {
+    title: 'Self-Organizing Map',
+    about:
+      "A self-organizing map begins as a blank sheet of neurons \u2014 a 2-D grid of weight vectors that know nothing about the data around them. Feed it samples and it teaches itself their shape: for each sample it finds the single best-matching neuron, then pulls that neuron AND its grid neighbours a little closer. As the neighbourhood of influence slowly shrinks, the sheet bends and folds until it drapes over the hidden geometry of the data \u2014 all while keeping neurons that were neighbours on the flat grid neighbours in space. It is one of the most elegant examples of competitive learning: global order emerging, with no supervisor, from thousands of tiny local nudges. Invented by the Finnish scientist Teuvo Kohonen in 1982.",
+    howItWorks:
+      "A grid of neurons starts as a tiny flat patch and learns to wrap a sphere of sample points. Each training step draws a few samples; for each, the best-matching unit c = argminᵢ‖x \u2212 wᵢ‖ is found by a nearest-weight search, and every neuron is moved wᵢ \u2190 wᵢ + \u03b7\u00b7h_{ci}\u00b7(x \u2212 wᵢ), where the neighbourhood kernel h_{ci} = exp(\u2212\u2016gridᵢ \u2212 grid_c\u2016\u00b2 / 2\u03c3\u00b2) falls off with distance ON THE GRID (not in space). The radius \u03c3 and the learning rate \u03b7 both anneal downward over training, so the sheet first unfolds coarsely and then refines \u2014 draping over the sphere like an orange peel, folds and all. It renders as a live wireframe (points strung along the grid edges) over a faint cloud of the data being learned. Nudge 'learning pace' to speed or slow the training.",
+    equations: [
+      { label: 'best-matching unit for a sample', latex: 'c = \\arg\\min_i \\lVert x - w_i \\rVert' },
+      { label: 'update the winner and its grid neighbours', latex: 'w_i \\leftarrow w_i + \\eta(t)\\,h_{ci}(t)\\,(x - w_i)' },
+      { label: 'the neighbourhood kernel (distance ON the grid)', latex: 'h_{ci} = \\exp\\!\\Big(-\\tfrac{\\lVert r_i - r_c\\rVert^2}{2\\sigma(t)^2}\\Big)' },
+      { label: '\u2026 with \u03c3 and \u03b7 annealing over training', latex: '\\sigma(t)\\downarrow, \\quad \\eta(t)\\downarrow' },
+    ],
+    params: [
+      { key: 'rate', symbol: '\u03bd', meaning: 'pace of the training (samples per frame)' },
+    ],
+    code: "// competitive learning: find the winner, pull it + its grid neighbours toward the sample\nc = argmin_i |x \u2212 w_i|;                    // best-matching neuron (nearest weight)\nh = exp(\u2212|grid_i \u2212 grid_c|\u00b2 / 2\u03c3\u00b2);          // neighbourhood on the FLAT grid\nw_i += \u03b7\u00b7h\u00b7(x \u2212 w_i);                        // move winner + neighbours; \u03c3, \u03b7 anneal down\n// the flat sheet folds onto the data's shape while keeping its neighbourhood order",
+    links: [
+      { label: 'Self-organizing map (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Self-organizing_map' },
+      { label: 'Teuvo Kohonen', url: 'https://en.wikipedia.org/wiki/Teuvo_Kohonen' },
+      { label: 'Competitive learning', url: 'https://en.wikipedia.org/wiki/Competitive_learning' },
+    ],
+  },
+  opticalVortex: {
+    title: 'Optical Vortices',
+    about:
+      "A phase vortex is a thread of pure darkness in a beam of light: a point where the wave's phase winds a whole number of turns, e^{i\u2113\u03b8}, and at the centre \u2014 where every phase meets at once \u2014 the amplitude must vanish. That is a doughnut of light carrying orbital angular momentum \u2113\u0127 per photon. Interfere such a beam with a tilted reference wave and its fine fringes SPLIT into forks at each vortex \u2014 the branch points that betray a phase singularity, and the very pattern a computer-generated hologram uses to MAKE a vortex beam. This one computes the real thing: several drifting vortex beams plus a reference wave, and the screen shows the intensity of their sum.",
+    howItWorks:
+      "Rendered not as particles but as a true field \u2014 a full-screen shader evaluates the light itself at every pixel. Several Laguerre\u2013Gauss-like vortex beams (amplitude (\u03c1/w)^{|\u2113|}\u00b7e^{\u2212\u03c1\u00b2/2w\u00b2}, helical phase \u2113\u03b8) drift on ellipses; a tilted plane-wave reference is added; and the pixel shows I = |\u03a3E|\u00b2. Because the reference lays down a fine carrier of parallel fringes, each vortex FORKS them \u2014 a fringe splits into two exactly where a phase singularity threads the field, its order equal to the topological charge. Warm inferno tones for the bright fringes over a violet ground. Add or remove 'vortices', spin their phase, drift the apertures, or widen the beams.",
+    equations: [
+      { label: 'a vortex beam \u2014 dark core, helical phase', latex: 'E_\\ell(\\rho,\\theta) = \\Big(\\tfrac{\\rho}{w}\\Big)^{|\\ell|} e^{-\\rho^2/2w^2}\\,e^{i\\ell\\theta}' },
+      { label: 'interfere with a tilted reference and show the intensity', latex: 'I = \\big|\\,\\textstyle\\sum_k E_k + e^{i\\mathbf{k}\\cdot\\mathbf{r}}\\big|^2' },
+      { label: 'each photon carries orbital angular momentum', latex: 'L_z = \\ell\\hbar' },
+    ],
+    params: [
+      { key: 'zoom', symbol: 'z', meaning: 'field of view into the beam plane' },
+      { key: 'drift', symbol: 'v', meaning: 'speed the vortex apertures drift' },
+      { key: 'twist', symbol: '\\dot\\phi', meaning: 'rate the beams\u2019 phase spins' },
+      { key: 'width', symbol: 'w', meaning: 'beam width' },
+      { key: 'gain', symbol: 'g', meaning: 'intensity / contrast' },
+    ],
+    code: "// a full-screen field, not points: evaluate |\u03a3E|\u00b2 at every pixel\nfor each beam k:  E += (\u03c1/w)^{|\u2113|}\u00b7e^{\u2212\u03c1\u00b2/2w\u00b2}\u00b7(cos, sin)(\u2113\u00b7atan2 + \u03c6_k);\nE += (cos, sin)(k\u00b7r);        // tilted reference wave \u2014 its fringes get FORKED\nI = |E|\u00b2;                    // forks appear at every vortex core",
+    links: [
+      { label: 'Optical vortex (Wikipedia)', url: 'https://en.wikipedia.org/wiki/Optical_vortex' },
+      { label: 'Orbital angular momentum of light', url: 'https://en.wikipedia.org/wiki/Orbital_angular_momentum_of_light' },
+      { label: 'Fork holograms for vortex beams', url: 'https://en.wikipedia.org/wiki/Computer-generated_holography' },
+    ],
+  },
+  spiralWhirl: {
+    title: 'Spiral Whirl',
+    about:
+      "A whole animation in a single tweet. This is a faithful port of a \u201ctsubuyaki Processing\u201d (\u3064\u3076\u3084\u304dProcessing \u2014 \u2018murmur\u2019 code, short enough to fit in a post) sketch by KAZ+OO (@KAZOOOps): four thousand points, each riding a nested spiral. It is nothing but a for-loop and a little trigonometry, yet it turns and pulses into a lace of interleaved arcs \u2014 a reminder that a few lines of closed-form math can hold a surprising amount of motion.",
+    howItWorks:
+      "Every point is indexed by i. Its radius is a sawtooth r = i mod 200 (twenty nested rings) plus a breathing wobble 99\u00b7sin(i\u00b2 + t); its angle a = i + t winds it around; and a second offset 80\u00b7(sin(i+t), cos(3i+t)) swirls the whole bloom off-centre. That is the entire system \u2014 no state, just the closed form re-evaluated each frame as t advances. We sample densely along the same index range for a finer cloud (bucketing the i\u00b2 wobble per integer so each arc stays crisp), and bake the white-to-pink colour once. 'Wind speed' sets how fast t runs; 'swirl offset' scales the off-centre drift.",
+    equations: [
+      { label: 'radius: nested sawtooth + a breathing wobble', latex: 'r = (i \\bmod 200) + 99\\sin(i^2 + t)' },
+      { label: 'position: wound by a = i + t, swirled off-centre', latex: '(x,y) = r(\\sin a, \\cos a) + 80(\\sin(i{+}t),\\, \\cos(3i{+}t))' },
+    ],
+    params: [
+      { key: 'speed', symbol: '\\dot t', meaning: 'how fast the whirl winds' },
+      { key: 'swirl', symbol: 's', meaning: 'scale of the off-centre swirl offset' },
+    ],
+    code: "// a tweet-sized sketch, ported faithfully — one loop, pure trig\nr = (i mod 200) + 99\u00b7sin(i\u00b2 + t);          // twenty nested rings + a breathing wobble\na = i + t;                                 // wind it around\n(x, y) = r\u00b7(sin a, cos a) + 80\u00b7(sin(i+t), cos(3i+t)); // swirl the bloom off-centre",
+    links: [
+      { label: 'Original sketch \u2014 KAZ+OO (@KAZOOOps)', url: 'https://twitter.com/KAZOOOps' },
+      { label: 'tsubuyaki Processing (\u3064\u3076\u3084\u304dProcessing)', url: 'https://twitter.com/hashtag/%E3%81%A4%E3%81%B6%E3%82%84%E3%81%8DProcessing' },
+      { label: 'p5.js', url: 'https://p5js.org/' },
+    ],
+  },
 };
