@@ -3213,4 +3213,27 @@ o[1] = p.b * x[0];`,
       { label: 'Vortex clustering imaged in a BEC (2019)', url: 'https://en.wikipedia.org/wiki/Quantum_vortex' },
     ],
   },
+  screenedVortexGas: {
+    title: 'Screened Vortex Gas',
+    about:
+      "The same point-vortex gas as Onsager, but given a memory of scale. In a rotating, stratified fluid — the atmosphere, the ocean — a vortex cannot stir the whole world: beyond the deformation radius R_d (where rotation balances buoyancy) its influence is screened away. This is the quasi-geostrophic, or equivalent-barotropic, model, and it is the workhorse of geophysical fluid dynamics: it explains why Jupiter organizes into banded jets and long-lived spots, and why the ocean is full of mesoscale eddies. With finite reach, only neighbours interact — so instead of one global condensate you get a living turbulent field of rotating islands and drifting pairs. It begins as a gas and ends up looking like weather.",
+    howItWorks:
+      "Each vortex deposits a blob of potential vorticity q = Σ Γᵢ Gₐ(r−rᵢ). The streamfunction is recovered not from Poisson's equation but from a SCREENED one, (−∇² + R_d⁻²)ψ = q — the extra R_d⁻² term is the whole story. Its Green's function is a Bessel K₀(r/R_d): like 1/r up close, but decaying exponentially past R_d, so distant vortices are muted (we approximate it as a 1/r kernel times e^{−r/R_d}). The velocity u = (∂ᵧψ, −∂ₓψ) advects both the vortices and a cloud of passive tracers, drawn by line-integral convolution into the fine threads that record the flow's stretching and folding. Same-sign vortices bind into co-rotating islands; opposite signs pair up and translate. Two potential-vorticity signs carry two shades each — jade↔emerald and crimson↔copper. 'Deformation radius' sets how local the turbulence is (small = many tight cells; large → back toward Onsager's global reach).",
+    equations: [
+      { label: 'potential-vorticity carriers (Gaussian cores)', latex: 'q(\\mathbf{r},t) = \\sum_i \\Gamma_i\\, G_a(\\mathbf{r}-\\mathbf{r}_i(t))' },
+      { label: 'screened streamfunction (finite deformation radius)', latex: '\\left(-\\nabla^2 + R_d^{-2}\\right)\\psi = q, \\qquad \\mathbf{u} = (\\partial_y\\psi,\\, -\\partial_x\\psi)' },
+    ],
+    params: [
+      { key: 'zoom', symbol: 'z', meaning: 'field of view over the vortex gas' },
+      { key: 'speed', symbol: '\\dot t', meaning: 'how fast the islands drift and spin' },
+      { key: 'screen', symbol: 'R_d', meaning: 'deformation radius — the screening length' },
+      { key: 'gain', symbol: 'g', meaning: 'tracer-thread contrast' },
+    ],
+    code: "// screened Biot-Savart: 1/r kernel, cut off past the deformation radius R_d\nu = (0,0);\nfor each vortex k:  d = p - r_k;  w = exp(-|d|/R_d) / |d|²;\n                    u += Γ_k · (-d.y, d.x) · w;\n// same-sign vortices bind into islands; LIC-trace the passive threads\nq = Σ Γ_k·G(p - r_k);  colour = (q > 0) ? jade : copper;",
+    links: [
+      { label: 'Quasi-geostrophic dynamics', url: 'https://en.wikipedia.org/wiki/Quasi-geostrophic_equations' },
+      { label: 'Rossby radius of deformation', url: 'https://en.wikipedia.org/wiki/Rossby_radius_of_deformation' },
+      { label: 'Two-dimensional / geostrophic turbulence', url: 'https://en.wikipedia.org/wiki/Two-dimensional_turbulence' },
+    ],
+  },
 };

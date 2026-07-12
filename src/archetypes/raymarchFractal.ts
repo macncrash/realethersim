@@ -46,6 +46,7 @@ export type RaymarchKind =
   | 'gravLens'
   | 'opticalVortex'
   | 'onsagerFlow'
+  | 'screenedVortex'
   | 'jellyfishBloom'
   | 'kaleidoTunnel';
 
@@ -459,6 +460,16 @@ export const RAYMARCH_SYSTEMS: Record<string, RaymarchSystem> = {
     params: [
       { key: 'zoom', label: 'field of view', min: 0.6, max: 2, step: 0.02, default: 1.05 },
       { key: 'speed', label: 'flow rate', min: 0.1, max: 2.5, step: 0.05, default: 1 },
+      { key: 'gain', label: 'contrast', min: 0.4, max: 2, step: 0.05, default: 1 },
+    ],
+  },
+  screenedVortexGas: {
+    id: 'screenedVortexGas', label: 'Screened Vortex Gas', sdf: 'screenedVortex', category: 'Fluid',
+    iters: 0, bound: 1, camDist: 1, maxSteps: 1, beams: 48, bloom: 0.35, // vortex count (compile-time)
+    params: [
+      { key: 'zoom', label: 'field of view', min: 0.6, max: 2, step: 0.02, default: 1 },
+      { key: 'speed', label: 'drift rate', min: 0.1, max: 2.5, step: 0.05, default: 1 },
+      { key: 'screen', label: 'deformation radius', min: 0.15, max: 0.8, step: 0.01, default: 0.32 },
       { key: 'gain', label: 'contrast', min: 0.4, max: 2, step: 0.05, default: 1 },
     ],
   },

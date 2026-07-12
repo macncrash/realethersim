@@ -1050,6 +1050,99 @@ export function createRaymarch(sys: RaymarchSystem, backend: 'webgpu' | 'webgl2'
       cc.addAssign(hue.mul(sat).mul(0.14)); // faint domain glow so the two colours read even in slack flow
       cc.addAssign(vec3(1.0, 0.96, 0.88).mul(clamp(core, 0, 1).mul(1.4))); // white-hot cores
       col.assign(clamp(cc, 0, 1.5));
+    } else if (sys.sdf === 'screenedVortex') {
+      // ── Fluid: a SCREENED (quasi-geostrophic / equivalent-barotropic) point-vortex gas — the model
+      //    behind real geophysical turbulence (Jupiter's bands, ocean eddies). Unlike Onsager's
+      //    unscreened 1/r vortices, here the streamfunction obeys (−∇²+R_d⁻²)ψ=q, so each vortex's pull
+      //    is cut off exponentially beyond the deformation radius R_d (Yukawa/Bessel-K₀ screening,
+      //    approximated as a 1/r kernel × e^{−r/R_d}). Only neighbours interact → many small rotating
+      //    islands + translating opposite-sign pairs bind into a full-frame turbulent weave that
+      //    "begins as a gas and resembles weather". Two PV signs, two shades each (jade↔emerald /
+      //    crimson↔copper); the LIC threads are passive tracers stretched by the flow. Owns col. ──
+      const t = uTime.mul(u.speed).mul(0.3);
+      const f = vec2(ndc.x, ndc.y).mul(u.zoom).mul(1.4).toVar();
+      const K = sys.beams ?? 36;
+      const a2 = float(0.004);
+      const invRd = float(1).div(u.screen).toVar(); // 1/R_d screening rate
+      // ── LIC: march a tracer forward + backward along the screened velocity, average a fine noise ──
+      const pf = f.toVar();
+      const pb = f.toVar();
+      const lic = float(0).toVar();
+      const licN = float(0).toVar();
+      Loop(8, () => {
+        const vfx = float(0).toVar();
+        const vfy = float(0).toVar();
+        const vbx = float(0).toVar();
+        const vby = float(0).toVar();
+        Loop(K, ({ i: j }: { i: Node }) => {
+          const fj = float(j);
+          const grp = floor(fj.mul(0.16667)).toVar(); // 6 same-sign vortices per island → they bind & co-rotate
+          const gph = fract(sin(grp.mul(93.719)).mul(17231.1)).mul(6.2831853).toVar();
+          const sgn = select(fract(sin(grp.mul(39.425)).mul(24634.6)).lessThan(0.5), float(-1), float(1)).toVar();
+          const gcx = fract(sin(grp.mul(12.9898)).mul(43758.5453)).sub(0.5).mul(2.4).add(sin(t.mul(0.4).add(gph)).mul(0.16)).toVar(); // island translates
+          const gcy = fract(sin(grp.mul(78.233)).mul(43758.5453)).sub(0.5).mul(2.4).add(cos(t.mul(0.33).add(gph)).mul(0.16)).toVar();
+          const jr = fract(sin(fj.mul(45.13)).mul(9812.3)).mul(0.17).add(0.05).toVar(); // member orbit radius (spread so dots separate)
+          const jph = fract(sin(fj.mul(77.17)).mul(5123.4)).mul(6.2831853).toVar();
+          const rkx = gcx.add(cos(jph.add(t.mul(0.9))).mul(jr)).toVar(); // members orbit the island centre
+          const rky = gcy.add(sin(jph.add(t.mul(0.9))).mul(jr)).toVar();
+          const dfx = pf.x.sub(rkx);
+          const dfy = pf.y.sub(rky);
+          const rf2 = dfx.mul(dfx).add(dfy.mul(dfy)).add(a2).toVar();
+          const wf = exp(sqrt(rf2).mul(invRd).mul(-1)).div(rf2).toVar(); // screened Biot–Savart weight
+          vfx.addAssign(sgn.mul(dfy).mul(-1).mul(wf));
+          vfy.addAssign(sgn.mul(dfx).mul(wf));
+          const dbx = pb.x.sub(rkx);
+          const dby = pb.y.sub(rky);
+          const rb2 = dbx.mul(dbx).add(dby.mul(dby)).add(a2).toVar();
+          const wb = exp(sqrt(rb2).mul(invRd).mul(-1)).div(rb2).toVar();
+          vbx.addAssign(sgn.mul(dby).mul(-1).mul(wb));
+          vby.addAssign(sgn.mul(dbx).mul(wb));
+        });
+        const vfl = sqrt(vfx.mul(vfx).add(vfy.mul(vfy))).add(1e-4);
+        const vbl = sqrt(vbx.mul(vbx).add(vby.mul(vby))).add(1e-4);
+        pf.addAssign(vec2(vfx.div(vfl), vfy.div(vfl)).mul(0.016));
+        pb.subAssign(vec2(vbx.div(vbl), vby.div(vbl)).mul(0.016));
+        lic.addAssign(vnoise2(pf.mul(80)));
+        lic.addAssign(vnoise2(pb.mul(80)));
+        licN.addAssign(2);
+      });
+      lic.assign(lic.div(licN));
+      // ── local PV sign (for the two-tone weave) + sign-separated core glows (the bright clusters) ──
+      const omega = float(0).toVar();
+      const coreP = float(0).toVar();
+      const coreN = float(0).toVar();
+      Loop(K, ({ i: j }: { i: Node }) => {
+        const fj = float(j);
+        const grp = floor(fj.mul(0.16667)).toVar();
+        const gph = fract(sin(grp.mul(93.719)).mul(17231.1)).mul(6.2831853).toVar();
+        const sgn = select(fract(sin(grp.mul(39.425)).mul(24634.6)).lessThan(0.5), float(-1), float(1)).toVar();
+        const gcx = fract(sin(grp.mul(12.9898)).mul(43758.5453)).sub(0.5).mul(2.4).add(sin(t.mul(0.4).add(gph)).mul(0.16)).toVar();
+        const gcy = fract(sin(grp.mul(78.233)).mul(43758.5453)).sub(0.5).mul(2.4).add(cos(t.mul(0.33).add(gph)).mul(0.16)).toVar();
+        const jr = fract(sin(fj.mul(45.13)).mul(9812.3)).mul(0.17).add(0.05).toVar();
+        const jph = fract(sin(fj.mul(77.17)).mul(5123.4)).mul(6.2831853).toVar();
+        const rkx = gcx.add(cos(jph.add(t.mul(0.9))).mul(jr)).toVar();
+        const rky = gcy.add(sin(jph.add(t.mul(0.9))).mul(jr)).toVar();
+        const dx = f.x.sub(rkx);
+        const dy = f.y.sub(rky);
+        const d2 = dx.mul(dx).add(dy.mul(dy)).toVar();
+        omega.addAssign(sgn.mul(exp(d2.mul(invRd).mul(invRd).mul(-1)))); // screened vorticity footprint
+        const glow = exp(d2.mul(-620)).toVar();
+        coreP.addAssign(select(sgn.greaterThan(0), glow, float(0)));
+        coreN.addAssign(select(sgn.greaterThan(0), float(0), glow));
+      });
+      // colour: PV sign picks jade vs copper family; a low-frequency noise slides each between its two
+      // shades (jade↔emerald / crimson↔copper); the LIC threads light the woven mid-tone background;
+      // the vortex cores burn bright mint (⊕) or warm amber (⊖) — the glowing point clusters.
+      const dom = smoothstep(float(-0.14), float(0.14), omega).toVar();
+      const shade = vnoise2(f.mul(1.7).add(t.mul(0.08))).toVar();
+      const jade = mix(vec3(0.16, 0.30, 0.15), vec3(0.42, 0.60, 0.30), shade).toVar(); // emerald → jade (olive)
+      const copper = mix(vec3(0.40, 0.22, 0.10), vec3(0.66, 0.44, 0.22), shade).toVar(); // crimson → copper (tan)
+      const hue = mix(copper, jade, dom).toVar();
+      const streak = pow(clamp(lic, 0, 1), float(1.7)).mul(u.gain).toVar(); // finer, higher-contrast threads
+      const cc = hue.mul(streak.mul(0.9).add(0.34)).toVar(); // woven mid-tone stays visible
+      cc.addAssign(vec3(0.55, 1.0, 0.75).mul(clamp(coreP, 0, 1).mul(1.3))); // mint ⊕ cores
+      cc.addAssign(vec3(1.0, 0.62, 0.24).mul(clamp(coreN, 0, 1).mul(1.3))); // amber ⊖ cores
+      col.assign(clamp(cc, 0, 1.6));
     } else if (sys.sdf === 'jellyfishBloom') {
       // ── Bloom: a drifting swarm of bioluminescent jellyfish. Each is a pulsing translucent bell (a
       //    glowing elliptical membrane + soft inner light) trailing wavy tentacles, in cool living-light
