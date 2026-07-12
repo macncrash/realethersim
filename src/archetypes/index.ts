@@ -64,6 +64,8 @@ import { precessionFactory } from './precession';
 import { iteratedLogFactory } from './iteratedLog';
 import { spiralWhirlFactory } from './spiralWhirl';
 import { somFactory } from './som';
+import { vascularSomFactory } from './vascularSom';
+import { hopfionFactory } from './hopfion';
 import { bioBayFactory } from './bioBay';
 import { combJellyFactory } from './combJelly';
 import { jellyfishFountainFactory } from './jellyfishFountain';
@@ -152,6 +154,8 @@ export function registerArchetypes(): void {
   register(iteratedLogFactory);
   register(spiralWhirlFactory);
   register(somFactory);
+  register(vascularSomFactory);
+  register(hopfionFactory);
   register(bioBayFactory);
   register(combJellyFactory);
   register(jellyfishFountainFactory);
