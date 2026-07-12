@@ -18,6 +18,26 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    "version": "0.1.85",
+    "date": "2026-07-11",
+    "title": "Hopfion — the Hopf fibration made visible",
+    "summary": "The Hopf map sends the 3-sphere onto the ordinary sphere, and the preimage of every point is a circle — with any two circles linked exactly once. Projected into 3-D those fibres become nested, interlocking tori: the ground-state texture of a topological soliton that really appears in ferromagnets, superfluids, knotted light and vortex knots. Rescued from an 'emergent-spacetime' post — the framework is fringe, but the hopfion underneath is real and gorgeous.",
+    "newSystems": ["hopfion"],
+    "notes": [
+      "Hopfion (Field): great-circle fibres of the Hopf map, stereographically projected from S³ into R³ as a wheel of nested linked tori and coloured by base-sphere position. Turning the fibre phase is a rigid Hopf flow — every point slides along its own circle, so the whole knot appears to rotate without deforming. Winding-number control gives higher-order (torus-knot) hopfions."
+    ]
+  },
+  {
+    "version": "0.1.84",
+    "date": "2026-07-11",
+    "title": "Vascular SOM — a neural sheet meets a problem it can't solve perfectly",
+    "summary": "The same self-organizing map, handed a harder problem: a branching vascular tree instead of a smooth sphere. A flat rectangular lattice can't wrap around every bifurcation while keeping all its neighbours consistent — so the sheet stretches, compresses and tears near the branch points. What looks like the algorithm struggling is really it revealing the limits of topology preservation.",
+    "newSystems": ["vascularSom"],
+    "notes": [
+      "Vascular SOM (Life): the Kohonen map (best-matching-unit + shrinking Gaussian neighbourhood) trained on a recursive bifurcating tree rather than a sphere. Because a 2-D sheet cannot faithfully cover a branching topology, the blue neural mesh strains and tears between the tree's glowing gold branch-clusters — a companion to the sphere-draping SOM that shows where the assumptions break down."
+    ]
+  },
+  {
     "version": "0.1.83",
     "date": "2026-07-11",
     "title": "Screened Vortex Gas — a gas that turns into weather",

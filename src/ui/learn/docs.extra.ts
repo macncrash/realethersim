@@ -3236,4 +3236,45 @@ o[1] = p.b * x[0];`,
       { label: 'Two-dimensional / geostrophic turbulence', url: 'https://en.wikipedia.org/wiki/Two-dimensional_turbulence' },
     ],
   },
+  vascularSom: {
+    title: 'Vascular SOM',
+    about:
+      "A self-organizing map is excellent at learning smooth surfaces — hand it a sphere and it drapes over like an orange peel. A branching vascular network is a different challenge entirely. A flat rectangular lattice of neurons cannot wrap around every bifurcation while keeping all neighbouring neurons connected in a consistent way, so near the branch points the map begins to stretch, compress and reorganize. What looks like the algorithm struggling is one of its most interesting properties: it is revealing the limits of topology preservation. The geometry is simply asking more of the neural sheet than its lattice can faithfully represent — and sometimes the most informative machine-learning pictures are the ones that show you exactly where a method's assumptions break down.",
+    howItWorks:
+      "The rule is identical to the sphere-draping SOM. For each input sample x drawn from the data — here, points along a recursively branching tree — the map finds its best-matching neuron c = argminᵢ‖x − wᵢ‖, then nudges that neuron and its grid neighbours toward the sample, wᵢ ← wᵢ + η(t)·h_ci(t)·(x − wᵢ), with a Gaussian neighbourhood h that shrinks and a learning rate η that decays as training anneals. On a continuous manifold those local updates preserve neighbourhood structure beautifully. On a tree they cannot: a single sheet has to reach into every branch, so it strains and tears at the bifurcations. We keep the neighbourhood radius from collapsing to zero, so the sheet stays taut and its stress stays visible rather than crumpling. The blue mesh is the live sheet of neurons; the gold clusters are the tree's branch-tips (the data being learned).",
+    equations: [
+      { label: 'best-matching unit for a sample x', latex: 'c = \\arg\\min_i \\lVert x - w_i \\rVert' },
+      { label: 'update the winner and its grid neighbours', latex: 'w_i \\leftarrow w_i + \\eta(t)\\, h_{ci}(t)\\, (x - w_i)' },
+    ],
+    params: [
+      { key: 'rate', symbol: '\\eta', meaning: 'learning pace — how fast the sheet strains toward the tree' },
+    ],
+    code: "// same Kohonen rule as the sphere SOM — but the data is a branching tree\nfor each sample x on the vascular tree:\n  c = argmin_i |x - w_i|;                      // best-matching neuron\n  for each neuron i near c on the grid:\n    h = eta * exp(-|grid_i - grid_c|^2 / 2σ²); // shrinking neighbourhood\n    w_i += h * (x - w_i);                       // a flat sheet can't tile a tree → it tears",
+    links: [
+      { label: 'Self-organizing map (Kohonen)', url: 'https://en.wikipedia.org/wiki/Self-organizing_map' },
+      { label: 'Topology preservation', url: 'https://en.wikipedia.org/wiki/Topological_data_analysis' },
+      { label: 'Teuvo Kohonen', url: 'https://en.wikipedia.org/wiki/Teuvo_Kohonen' },
+    ],
+  },
+  hopfion: {
+    title: 'Hopfion',
+    about:
+      "In 1931 Heinz Hopf found the first example of a map from a higher sphere to a lower one that cannot be unwound — a map from the 3-sphere S³ onto the ordinary 2-sphere S². Its defining feature is that the preimage of every single point on S² is a whole circle in S³, and any two of those circles are linked exactly once, like adjacent rings of a chain mail. Stereographically projected into ordinary 3-D space, those fibres become a family of nested, interlocking tori that fill all of space. This isn't just pretty topology: a 'hopfion' — a field configuration carrying this linking as a conserved charge (the Hopf invariant) — is a genuine topological soliton, observed in ferromagnets and chiral magnets, in Bose–Einstein condensates and superfluids, in knotted beams of light, and in linked vortex tubes in fluids. (An 'emergent-spacetime superfluid' framing is speculative; the hopfion itself is textbook.)",
+    howItWorks:
+      "Write a point of S³ as a pair of complex numbers (z₀, z₁) with |z₀|² + |z₁|² = 1. The Hopf map records only their ratio z₀/z₁ as a point of S² (the Riemann sphere), so multiplying both by the same phase e^{iτ} leaves the S² point fixed — that phase orbit is the circular fibre. We pick a latitude θ on S² (which fixes |z₀|:|z₁| = cos(θ/2):sin(θ/2)) and run the fibre phase and azimuth to trace each circle, then stereographically project (z₀, z₁) ∈ S³ ⊂ R⁴ down to R³. A band of latitudes lifts to a set of nested tori; colour tracks the base-sphere azimuth so the linking reads as a wheel of colour. Advancing every fibre's phase together is a rigid isometry of S³ (the Hopf flow), so the whole knot spins without changing shape. The winding number turns the ordinary (1,1) fibres into (1,n) torus knots — higher-order hopfions.",
+    equations: [
+      { label: 'Hopf fibre of a base point (θ, φ), phase τ', latex: '(z_0, z_1) = \\left(\\cos\\tfrac{\\theta}{2}\\,e^{i\\tau},\\; \\sin\\tfrac{\\theta}{2}\\,e^{i(n\\tau+\\varphi)}\\right)' },
+      { label: 'stereographic projection S³ → R³ from the pole', latex: '\\mathbf{r} = \\frac{(\\,\\mathrm{Re}\\,z_0,\\ \\mathrm{Re}\\,z_1,\\ \\mathrm{Im}\\,z_0)}{1 - \\mathrm{Im}\\,z_1}' },
+    ],
+    params: [
+      { key: 'rate', symbol: '\\dot\\tau', meaning: 'Hopf flow — slides every point along its fibre' },
+      { key: 'winding', symbol: 'n', meaning: 'winding number — (1,n) torus-knot hopfions' },
+    ],
+    code: "// each fibre is a circle in S³ ⊂ R⁴; project it into R³\nz0 = (cos(θ/2)·cos τ, cos(θ/2)·sin τ);      // a complex number\nz1 = (sin(θ/2)·cos(nτ+φ), sin(θ/2)·sin(nτ+φ));\nden = 1 - z1.im;                             // stereographic from (0,0,0,1)\n(x, y, z) = (z0.re, z1.re, z0.im) / den;     // nested linked tori",
+    links: [
+      { label: 'Hopf fibration', url: 'https://en.wikipedia.org/wiki/Hopf_fibration' },
+      { label: 'Hopfion (topological soliton)', url: 'https://en.wikipedia.org/wiki/Hopfion' },
+      { label: 'Stereographic projection', url: 'https://en.wikipedia.org/wiki/Stereographic_projection' },
+    ],
+  },
 };
