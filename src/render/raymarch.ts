@@ -119,6 +119,19 @@ const vnoise = Fn(([p]: [Node]) => {
   const y1 = mix(x01, x11, u.y);
   return mix(y0, y1, u.z); // [0,1]
 });
+// 2-D value noise (for the Onsager line-integral-convolution flow texture). Hash → bilinear
+// smoothstep interpolation; sampling it ALONG a streamline turns white noise into flowing streaks.
+const hash21 = Fn(([p]: [Node]) => fract(sin(dot(floor(p), vec2(127.1, 311.7))).mul(43758.5453)));
+const vnoise2 = Fn(([p]: [Node]) => {
+  const i = floor(p).toVar();
+  const f = fract(p).toVar();
+  const u = f.mul(f).mul(f.mul(-2).add(3)).toVar(); // 3t²−2t³
+  const a = hash21(i);
+  const b = hash21(i.add(vec2(1, 0)));
+  const c = hash21(i.add(vec2(0, 1)));
+  const d = hash21(i.add(vec2(1, 1)));
+  return mix(mix(a, b, u.x), mix(c, d, u.x), u.y); // [0,1]
+});
 function makeFbm(OCT: number) {
   return Fn(([p]: [Node]) => {
     const pp = p.toVar();
@@ -950,6 +963,93 @@ export function createRaymarch(sys: RaymarchSystem, backend: 'webgpu' | 'webgl2'
       c.assign(mix(c, vec3(1.0, 0.95, 0.8), smoothstep(float(0.55), float(1.0), inten)));
       c.assign(c.mul(smoothstep(float(0.015), float(0.13), inten)));
       col.assign(c);
+    } else if (sys.sdf === 'onsagerFlow') {
+      // ── Fluid: an Onsager point-vortex gas at NEGATIVE temperature. Same-sign vortices, which
+      //    ordinarily repel their opposites, CLUMP into two giant coherent domains (the condensate
+      //    Onsager predicted in 1949). We fix K vortices in a few same-sign clusters and, per pixel,
+      //    sum their Biot–Savart velocity u = Σ Γ/(2π)·(ẑ×Δ)/|Δ|² and their vorticity ω = Σ Γ·G(Δ).
+      //    A short line-integral convolution (march noise a few steps along u, both ways) paints the
+      //    streaming ribbons; ω's sign tints them blue (⟳) vs ember (⟲); the cores burn white.
+      //    A true field, so the flow is exact — points can't render a stirred continuum. Owns col. ──
+      const t = uTime.mul(u.speed).mul(0.28);
+      const f = vec2(ndc.x, ndc.y).mul(u.zoom).mul(1.25).toVar();
+      const K = sys.beams ?? 14; // two condensed domains of K/2 same-sign vortices each
+      const HALF = float(2).div(float(K)); // 1/(vortices-per-cluster) → cluster index via floor
+      const a2 = float(0.006); // core softening (regularised Biot–Savart)
+      // ── line-integral convolution: march a forward and a backward tracer along the flow, sampling
+      //    a fine noise; the average streaks the noise into streamlines (the LIC flow texture) ──
+      const pf = f.toVar();
+      const pb = f.toVar();
+      const lic = float(0).toVar();
+      const licN = float(0).toVar();
+      Loop(11, () => {
+        const vfx = float(0).toVar();
+        const vfy = float(0).toVar();
+        const vbx = float(0).toVar();
+        const vby = float(0).toVar();
+        Loop(K, ({ i: j }: { i: Node }) => {
+          const fj = float(j);
+          const cl = floor(fj.mul(HALF)).toVar(); // 0 = left domain (+), 1 = right domain (−)
+          const sgn = cos(cl.mul(3.14159265)).toVar(); // +1 / −1 circulation
+          const orbit = t.mul(0.3).toVar(); // the counter-rotating dipole slowly precesses
+          const base = sgn.mul(-0.42).toVar();
+          const ccx = base.mul(cos(orbit)).toVar();
+          const ccy = base.mul(sin(orbit)).toVar();
+          const ia = fract(fj.mul(HALF)).mul(6.2831853).add(t.mul(1.1)).toVar(); // intra-cluster spin
+          const rkx = ccx.add(cos(ia).mul(0.15)).toVar();
+          const rky = ccy.add(sin(ia).mul(0.15)).toVar();
+          const dfx = pf.x.sub(rkx);
+          const dfy = pf.y.sub(rky);
+          const rf2 = dfx.mul(dfx).add(dfy.mul(dfy)).add(a2).toVar();
+          vfx.addAssign(sgn.mul(dfy).mul(-1).div(rf2)); // u = Γ·(ẑ×Δ)/|Δ|² = Γ·(−Δy,Δx)/|Δ|²
+          vfy.addAssign(sgn.mul(dfx).div(rf2));
+          const dbx = pb.x.sub(rkx);
+          const dby = pb.y.sub(rky);
+          const rb2 = dbx.mul(dbx).add(dby.mul(dby)).add(a2).toVar();
+          vbx.addAssign(sgn.mul(dby).mul(-1).div(rb2));
+          vby.addAssign(sgn.mul(dbx).div(rb2));
+        });
+        const vfl = sqrt(vfx.mul(vfx).add(vfy.mul(vfy))).add(1e-4);
+        const vbl = sqrt(vbx.mul(vbx).add(vby.mul(vby))).add(1e-4);
+        pf.addAssign(vec2(vfx.div(vfl), vfy.div(vfl)).mul(0.014));
+        pb.subAssign(vec2(vbx.div(vbl), vby.div(vbl)).mul(0.014));
+        lic.addAssign(vnoise2(pf.mul(72)));
+        lic.addAssign(vnoise2(pb.mul(72)));
+        licN.addAssign(2);
+      });
+      lic.assign(lic.div(licN));
+      // ── local vorticity sign (for colour) + white-hot vortex cores, sampled at the pixel itself ──
+      const omega = float(0).toVar();
+      const core = float(0).toVar();
+      Loop(K, ({ i: j }: { i: Node }) => {
+        const fj = float(j);
+        const cl = floor(fj.mul(HALF)).toVar();
+        const sgn = cos(cl.mul(3.14159265)).toVar();
+        const orbit = t.mul(0.3).toVar();
+        const base = sgn.mul(-0.42).toVar();
+        const ccx = base.mul(cos(orbit)).toVar();
+        const ccy = base.mul(sin(orbit)).toVar();
+        const ia = fract(fj.mul(HALF)).mul(6.2831853).add(t.mul(1.1)).toVar();
+        const rkx = ccx.add(cos(ia).mul(0.15)).toVar();
+        const rky = ccy.add(sin(ia).mul(0.15)).toVar();
+        const dx = f.x.sub(rkx);
+        const dy = f.y.sub(rky);
+        const d2 = dx.mul(dx).add(dy.mul(dy)).toVar();
+        omega.addAssign(sgn.mul(exp(d2.mul(-7)))); // Gaussian-smoothed circulation
+        core.addAssign(exp(d2.mul(-320))); // tight bright core
+      });
+      // colour: signed vorticity picks the domain (ember ⟲ vs cyan ⟳); its MAGNITUDE saturates the
+      // hue so the weak-field interstitium falls to a deep-indigo dark instead of a muddy grey; the
+      // LIC streaks modulate brightness; cores burn white. gain lifts contrast.
+      const dom = smoothstep(float(-0.14), float(0.14), omega).toVar();
+      const hue = mix(vec3(1.0, 0.5, 0.14), vec3(0.24, 0.62, 1.0), dom).toVar();
+      const sat = smoothstep(float(0.02), float(0.24), abs(omega)).toVar(); // 0 in neutral zones
+      const base = mix(vec3(0.05, 0.055, 0.11), hue, sat).toVar(); // deep indigo → domain colour
+      const streak = pow(clamp(lic, 0, 1), float(1.6)).mul(u.gain).toVar(); // dark background, bright ribbons
+      const cc = base.mul(streak.mul(1.25).add(0.12)).toVar();
+      cc.addAssign(hue.mul(sat).mul(0.14)); // faint domain glow so the two colours read even in slack flow
+      cc.addAssign(vec3(1.0, 0.96, 0.88).mul(clamp(core, 0, 1).mul(1.4))); // white-hot cores
+      col.assign(clamp(cc, 0, 1.5));
     } else if (sys.sdf === 'jellyfishBloom') {
       // ── Bloom: a drifting swarm of bioluminescent jellyfish. Each is a pulsing translucent bell (a
       //    glowing elliptical membrane + soft inner light) trailing wavy tentacles, in cool living-light

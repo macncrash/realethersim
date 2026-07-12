@@ -3191,4 +3191,26 @@ o[1] = p.b * x[0];`,
       { label: 'p5.js', url: 'https://p5js.org/' },
     ],
   },
+  onsagerVortex: {
+    title: 'Onsager Vortices',
+    about:
+      "In 1949 Lars Onsager turned statistical mechanics upside down. A gas of point vortices in a thin (2-D) fluid has bounded phase space, so above a critical energy its entropy DECREASES with energy — a negative absolute temperature. There, same-sign vortices, which normally orbit each other at a distance, instead condense into a few giant coherent domains: order emerging from adding energy, the reverse of everyday heat. It's the mechanism behind long-lived structures in 2-D turbulence, from soap films to Jupiter's Great Red Spot to trapped superfluid gases — and it was directly imaged in a Bose–Einstein condensate in 2019.",
+    howItWorks:
+      "Each point vortex of circulation Γ stirs the whole fluid: at a distance it induces an azimuthal velocity u = Γ/(2π)·(ẑ×Δ)/|Δ|² (Biot–Savart). We place two clusters of same-sign vortices — the condensed state Onsager predicted — and, for every pixel, sum that velocity from all of them. The flowing streamlines are drawn by line-integral convolution: a noise texture is marched a few steps forward and backward along the local velocity and averaged, smearing white noise into streaks that trace the flow exactly. The sign of the summed vorticity tints each region (cyan ↷ vs ember ↶), and the vortex cores burn white. Because it's a continuum field, not particles, the two counter-rotating domains read cleanly. 'Flow rate' sets the precession speed; 'contrast' the streamline sharpness.",
+    equations: [
+      { label: 'velocity a vortex induces (Biot–Savart, 2-D)', latex: '\\mathbf{u}(\\mathbf{r}) = \\frac{\\Gamma}{2\\pi}\\,\\frac{\\hat{\\mathbf{z}}\\times(\\mathbf{r}-\\mathbf{r}_j)}{|\\mathbf{r}-\\mathbf{r}_j|^2}' },
+      { label: 'Onsager’s negative temperature (bounded phase space)', latex: '\\frac{1}{T} = \\frac{\\partial S}{\\partial E} < 0 \\;\\Rightarrow\\; \\text{same-sign vortices clump}' },
+    ],
+    params: [
+      { key: 'zoom', symbol: 'z', meaning: 'field of view over the vortex gas' },
+      { key: 'speed', symbol: '\\dot t', meaning: 'how fast the dipole precesses' },
+      { key: 'gain', symbol: 'g', meaning: 'streamline contrast' },
+    ],
+    code: "// per pixel: sum the velocity every vortex induces, then trace the streamline\nu = (0,0);\nfor each vortex k:  d = p - r_k;  u += Γ_k/(2π) · (-d.y, d.x) / (|d|² + a²);\n// line-integral convolution: march noise along u, both ways, and average → streaks\nω = Σ Γ_k·G(p - r_k);  colour = (ω > 0) ? cyan : ember;",
+    links: [
+      { label: 'Onsager 1949 — Statistical hydrodynamics', url: 'https://en.wikipedia.org/wiki/Two-dimensional_point_vortex_gas' },
+      { label: 'Negative temperature', url: 'https://en.wikipedia.org/wiki/Negative_temperature' },
+      { label: 'Vortex clustering imaged in a BEC (2019)', url: 'https://en.wikipedia.org/wiki/Quantum_vortex' },
+    ],
+  },
 };

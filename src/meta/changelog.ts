@@ -18,6 +18,16 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    "version": "0.1.82",
+    "date": "2026-07-11",
+    "title": "Onsager Vortices — order from negative temperature",
+    "summary": "In 1949 Onsager predicted that a gas of point vortices in a 2-D fluid, above a critical energy, reaches a NEGATIVE-temperature state where same-sign vortices clump into giant coherent domains — the opposite of how heat usually spreads things apart. Here two condensed domains counter-rotate, cyan against ember, their streamlines rendered as a true flow field.",
+    "newSystems": ["onsagerVortex"],
+    "notes": [
+      "Onsager Vortices (Fluid): a full-screen flow-field shader — per pixel we sum the Biot–Savart velocity of two clusters of same-sign point vortices and paint their streamlines by line-integral convolution, tinted by the sign of the local vorticity (cyan ↷ vs ember ↶) with white-hot cores. Rendered as an exact continuum field rather than points, so the condensate reads as two clean counter-rotating domains. Flow rate + contrast live controls"
+    ]
+  },
+  {
     "version": "0.1.81",
     "date": "2026-07-11",
     "title": "Self-Organizing Map \u2014 a neural sheet finds the shape of data",
