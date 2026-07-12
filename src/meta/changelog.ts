@@ -18,6 +18,16 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    "version": "0.1.83",
+    "date": "2026-07-11",
+    "title": "Screened Vortex Gas — a gas that turns into weather",
+    "summary": "The quasi-geostrophic cousin of Onsager: give each vortex a finite reach (the deformation radius) and its pull is screened off beyond it, so only neighbours interact. Same-sign vortices bind into rotating islands, opposite signs form translating pairs, and a whole turbulent weave emerges — the equivalent-barotropic model behind Jupiter's bands and ocean eddies.",
+    "newSystems": ["screenedVortexGas"],
+    "notes": [
+      "Screened Vortex Gas (Fluid): a full-screen flow-field shader for the quasi-geostrophic point-vortex model — the streamfunction obeys a SCREENED Poisson equation (−∇²+R_d⁻²)ψ=q, so each vortex's Biot–Savart pull is cut off exponentially beyond the deformation radius (Yukawa screening). Dozens of same-sign vortices bind into co-rotating islands over a line-integral-convolution tracer weave, tinted jade↔emerald vs crimson↔copper by potential-vorticity sign. 'Deformation radius' controls how local the turbulence is."
+    ]
+  },
+  {
     "version": "0.1.82",
     "date": "2026-07-11",
     "title": "Onsager Vortices — order from negative temperature",
