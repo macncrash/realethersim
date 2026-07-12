@@ -45,6 +45,7 @@ export type RaymarchKind =
   | 'moire'
   | 'gravLens'
   | 'opticalVortex'
+  | 'onsagerFlow'
   | 'jellyfishBloom'
   | 'kaleidoTunnel';
 
@@ -452,6 +453,15 @@ export const RAYMARCH_SYSTEMS: Record<string, RaymarchSystem> = {
     ],
   },
 
+  onsagerVortex: {
+    id: 'onsagerVortex', label: 'Onsager Vortices', sdf: 'onsagerFlow', category: 'Fluid',
+    iters: 0, bound: 1, camDist: 1, maxSteps: 1, beams: 16, bloom: 0.4, // vortex cores glow
+    params: [
+      { key: 'zoom', label: 'field of view', min: 0.6, max: 2, step: 0.02, default: 1.05 },
+      { key: 'speed', label: 'flow rate', min: 0.1, max: 2.5, step: 0.05, default: 1 },
+      { key: 'gain', label: 'contrast', min: 0.4, max: 2, step: 0.05, default: 1 },
+    ],
+  },
   opticalVortex: {
     id: 'opticalVortex', label: 'Optical Vortices', sdf: 'opticalVortex', category: 'Spectral',
     iters: 0, bound: 1, camDist: 1, maxSteps: 1, beams: 5, bloom: 0.5, // interference fringes glow
