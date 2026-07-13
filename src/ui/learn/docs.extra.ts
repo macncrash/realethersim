@@ -3277,4 +3277,67 @@ o[1] = p.b * x[0];`,
       { label: 'Stereographic projection', url: 'https://en.wikipedia.org/wiki/Stereographic_projection' },
     ],
   },
+  bifurcation: {
+    title: 'Bifurcation Diagram',
+    about:
+      "The road from order to chaos, drawn in one picture. The logistic map xₙ₊₁ = r·xₙ·(1−xₙ) was introduced as a toy model of a population that grows in proportion to its size but is capped by limited resources. For each growth rate r it settles onto a long-run attractor — and as r increases that attractor keeps DOUBLING: one steady value, then an alternation between two, then four, eight, sixteen, the doublings crowding closer and closer together until, at r ≈ 3.5699, they accumulate and the orbit turns chaotic. Yet the chaos is not featureless: it is shot through with sudden PERIODIC WINDOWS, most famously a wide period-3 band near r ≈ 3.83. Mitchell Feigenbaum discovered that the doublings shrink by a universal ratio δ ≈ 4.669 — the SAME constant for a huge class of systems, one of the deep surprises of nonlinear science.",
+    howItWorks:
+      "Each point owns a fixed growth rate r and keeps iterating the map forever, so it hops around its own long-run attractor; the cloud of all points, continuously resampled, IS the diagram — and it shimmers as the orbits jump. Where the orbit is a stable cycle the points pile onto a few sharp curves (the period-1, 2, 4… branches); where it is chaotic they fill a band. Colour is baked by the Lyapunov exponent λ = ⟨ln|r(1−2x)|⟩, the average rate at which nearby orbits separate: cool teal where λ<0 (stable — the branches and the windows), hot where λ>0 (chaotic). Reading r left-to-right walks you up the period-doubling cascade, into the chaotic sea, and past the pale gaps of the periodic windows.",
+    equations: [
+      { label: 'the logistic map', latex: 'x_{n+1} = r\\,x_n\\,(1 - x_n)' },
+      { label: 'Feigenbaum’s universal ratio of the doublings', latex: '\\delta = \\lim_{n\\to\\infty}\\frac{r_{n-1}-r_{n-2}}{r_n-r_{n-1}} = 4.6692\\ldots' },
+      { label: 'Lyapunov exponent (colour): stable λ<0, chaotic λ>0', latex: '\\lambda = \\lim_{N\\to\\infty}\\frac1N\\sum_{n} \\ln\\bigl|\\,r(1-2x_n)\\,\\bigr|' },
+    ],
+    params: [
+      { key: 'rate', symbol: '\\dot n', meaning: 'how fast each orbit is re-iterated (the shimmer speed)' },
+    ],
+    code: "// every point holds a fixed r and keeps iterating — the ensemble is the diagram\nx = r*x*(1 - x);                 // one step of the logistic map\nscreen = ( map(r) , map(x) );    // r → horizontal, x → vertical\nλ += ln|r*(1 - 2x)|;             // running Lyapunov → colour (cool stable / hot chaotic)",
+    links: [
+      { label: 'Logistic map', url: 'https://en.wikipedia.org/wiki/Logistic_map' },
+      { label: 'Feigenbaum constants', url: 'https://en.wikipedia.org/wiki/Feigenbaum_constants' },
+      { label: 'Period-doubling bifurcation', url: 'https://en.wikipedia.org/wiki/Period-doubling_bifurcation' },
+    ],
+  },
+  elementaryCA: {
+    title: 'Elementary Cellular Automaton',
+    about:
+      "Stephen Wolfram's demonstration that you do not need a complicated rule to make complicated things. A single row of cells, each on or off, updates in lockstep: a cell's next state depends only on itself and its two immediate neighbours. There are just 2³ = 8 possible neighbourhoods, so a rule is nothing but 8 yes/no answers — and reading those 8 bits as a binary number gives the rule its name, 0 to 255. From a single lit cell, Rule 90 draws the Sierpiński triangle, Rule 30 produces provable chaos (Mathematica used it as a random-number generator), and Rule 110 was proved Turing-complete — capable, in principle, of any computation a computer can do — all from three-cell arithmetic. Stacking each new generation below the last builds the space-time diagram you see accrete.",
+    howItWorks:
+      "Label the three cells above a target as left, middle, right; their on/off values form a number 0–7. The rule is a byte, and its bit at that position is the target's new value: sᵢᵗ⁺¹ = (rule ≫ (4·L + 2·M + R)) & 1. We seed a single lit cell at the top and evolve the whole grid, then reveal it row by row so the pattern grows downward before looping. Rule 30's left half is a wall of noise while its right half throws off nested triangles; Rule 90 is a pure Sierpiński gasket; Rule 110 weaves drifting 'gliders' that collide and interact. The rule-number slider walks all 256 elementary universes.",
+    equations: [
+      { label: 'the update: the rule byte, indexed by the 3-cell neighbourhood', latex: 's_i^{\\,t+1} = \\left(\\,\\text{rule} \\gg (4\\,s_{i-1}^{\\,t} + 2\\,s_i^{\\,t} + s_{i+1}^{\\,t})\\,\\right) \\,\\&\\, 1' },
+    ],
+    params: [
+      { key: 'rule', symbol: 'R', meaning: 'which of the 256 rules (30 chaos · 90 Sierpiński · 110 universal)' },
+      { key: 'seed', symbol: 's_0', meaning: 'start from a single lit cell (0) or a random row (1)' },
+      { key: 'rate', symbol: '\\dot g', meaning: 'how fast new generations accrete downward' },
+    ],
+    code: "// each new cell looks up the rule byte by its 3-cell neighbourhood\nfor each cell i in the new row:\n  nb = 4*left + 2*middle + right;   // 0..7\n  cell[i] = (RULE >> nb) & 1;        // the nb-th bit of the rule number\n// stack rows downward → the space-time diagram",
+    links: [
+      { label: 'Elementary cellular automaton', url: 'https://en.wikipedia.org/wiki/Elementary_cellular_automaton' },
+      { label: 'Rule 30', url: 'https://en.wikipedia.org/wiki/Rule_30' },
+      { label: 'Rule 110 (Turing-complete)', url: 'https://en.wikipedia.org/wiki/Rule_110' },
+    ],
+  },
+  doublePendulumSwarm: {
+    title: 'Double Pendulum Swarm',
+    about:
+      "The clearest way to SEE chaos. A double pendulum — one pendulum hung from the end of another — obeys simple, exact, deterministic equations, yet it is the textbook example of sensitive dependence on initial conditions: change the starting angle by a hair and the future is utterly different. Here tens of thousands of them start from almost exactly the same angle, a spread far thinner than a pixel, so the cloud of lower-bob tips begins as a single bright dot. For a moment they move as one — then the microscopic differences, amplified exponentially, tear the dot into a filament, the filament folds, and within a few swings the swarm has detonated into a fog that fills the whole reachable region. The moment it smears is the Lyapunov horizon — the predictability time — made visible; past it the identical-looking pendulums have completely forgotten one another.",
+    howItWorks:
+      "Every pendulum integrates the same conservative equations of motion (equal masses and arms) with RK4, so no energy is added or lost — the divergence is pure chaos, not noise. Two nearby orbits separate on average like δ(t) ≈ δ₀·e^{λt} with a positive Lyapunov exponent λ, which is why a hair-thin initial fan explodes so fast. Unlike the phase-space Double Pendulum (which plots the abstract 4-D state), this shows the lower bob swinging in REAL space. Colour is baked across the starting bundle, so as it stretches and folds you watch the ordered rainbow shear and marble into mixing — the signature stretch-and-fold of a chaotic flow. The swarm periodically re-collapses to replay the divergence from the start.",
+    equations: [
+      { label: 'nearby orbits separate exponentially (chaos)', latex: '\\delta(t) \\approx \\delta_0\\, e^{\\lambda t}, \\qquad \\lambda > 0' },
+      { label: 'lower-bob tip in real space', latex: '(x,y) = \\bigl(L_1\\sin\\theta_1 + L_2\\sin\\theta_2,\\; -L_1\\cos\\theta_1 - L_2\\cos\\theta_2\\bigr)' },
+    ],
+    params: [
+      { key: 'spread', symbol: '\\delta_0', meaning: 'width of the initial angle bundle (smaller = longer as one dot)' },
+      { key: 'rate', symbol: '\\dot t', meaning: 'time rate of the integration' },
+    ],
+    code: "// tens of thousands of pendulums, almost identical start angles\nθ₁[i] = θ₁₀ + i·tiny;            // a spread thinner than a pixel\n// each integrates the SAME conservative equations with RK4\n// δ(t) ≈ δ₀·e^{λt}, λ>0  → the dot detonates into a fog\ntip = (L₁sinθ₁+L₂sinθ₂, −L₁cosθ₁−L₂cosθ₂);   // plotted in real space",
+    links: [
+      { label: 'Double pendulum', url: 'https://en.wikipedia.org/wiki/Double_pendulum' },
+      { label: 'Chaos theory / sensitive dependence', url: 'https://en.wikipedia.org/wiki/Chaos_theory' },
+      { label: 'Lyapunov exponent', url: 'https://en.wikipedia.org/wiki/Lyapunov_exponent' },
+    ],
+  },
 };

@@ -583,6 +583,17 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
       camera.position.set(0.7, 2.7, 1.05);
       controls.update();
     }
+    // Face-on 2-D plots: bifurcation diagram, CA space-time, and the pendulum-swarm plane.
+    if ($archetypeId.get() === 'bifurcation' || $archetypeId.get() === 'elementaryCA') {
+      controls.target.set(0, 0, 0);
+      camera.position.set(0, 0, 3.0);
+      controls.update();
+    }
+    if ($archetypeId.get() === 'doublePendulumSwarm') {
+      controls.target.set(0, -0.2, 0);
+      camera.position.set(0, -0.2, 3.4);
+      controls.update();
+    }
     if ($archetypeId.get() === 'aurora') {
       controls.target.set(0, 0.5, -0.4);
       camera.position.set(0, 0.3, 3.9);
@@ -1215,6 +1226,8 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
           else if (id === 'som') { controls.target.set(0, 0, 0); camera.position.set(1.6, 1.05, 2.2); }
           else if (id === 'vascularSom') { controls.target.set(-0.05, 0.03, 0); camera.position.set(0.9, 0.52, 2.05); }
           else if (id === 'hopfion') { controls.target.set(0, 0, 0); camera.position.set(0.7, 2.7, 1.05); }
+          else if (id === 'bifurcation' || id === 'elementaryCA') { controls.target.set(0, 0, 0); camera.position.set(0, 0, 3.0); }
+          else if (id === 'doublePendulumSwarm') { controls.target.set(0, -0.2, 0); camera.position.set(0, -0.2, 3.4); }
           else if (id === 'bioBay') { controls.target.set(0, 0, 0); camera.position.set(0, 1.7, 2.5); }
           else if (id === 'combJelly') { controls.target.set(0, 0, 0); camera.position.set(0.7, 0.25, 2.3); }
           else if (id === 'jellyfishFountain') { controls.target.set(0, -0.05, 0); camera.position.set(0, 0.3, 3.4); }

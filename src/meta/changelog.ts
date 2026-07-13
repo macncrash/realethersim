@@ -18,6 +18,36 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    "version": "0.1.88",
+    "date": "2026-07-13",
+    "title": "Double Pendulum Swarm — chaos you can watch detonate",
+    "summary": "Tens of thousands of double pendulums start from almost exactly the same angle — a spread thinner than a pixel — so the swarm of bob-tips begins as a single dot. Sensitive dependence does the rest: the dot stretches to a filament, folds, and within a few swings detonates into a fog. The moment it smears is the Lyapunov horizon, made visible.",
+    "newSystems": ["doublePendulumSwarm"],
+    "notes": [
+      "Double Pendulum Swarm (Oscillator): an ensemble of energy-conserving RK4 double pendulums with a hair-thin fan of start angles, plotted as lower-bob tips in REAL space (distinct from the phase-space Double Pendulum attractor). Colour baked across the bundle so the ordered rainbow shears and marbles as it mixes; the swarm periodically re-collapses to replay the divergence. From the exhaustive catalog-gap sweep."
+    ]
+  },
+  {
+    "version": "0.1.87",
+    "date": "2026-07-13",
+    "title": "Elementary CA — complexity from a three-cell rule",
+    "summary": "Wolfram's proof that a trivial rule can make anything. A row of on/off cells updates from just its neighbours; the 8 answers, read as a byte, name the rule (0–255). Rule 90 draws the Sierpiński triangle, Rule 30 makes provable chaos, Rule 110 is Turing-complete — the whole discrete-CA domain, opened.",
+    "newSystems": ["elementaryCA"],
+    "notes": [
+      "Elementary CA (Life): all 256 one-dimensional rules on a live rule-number slider, seeded from a single cell (or a random row) and grown row by row into the space-time diagram, then looped. Our first classic discrete cellular automaton (Lenia is the continuous cousin). From the exhaustive catalog-gap sweep."
+    ]
+  },
+  {
+    "version": "0.1.86",
+    "date": "2026-07-13",
+    "title": "Bifurcation Diagram — the road to chaos",
+    "summary": "The most iconic image in chaos theory, and a genre the catalog never had: not a strange attractor (an endpoint) but a live control-parameter sweep. The logistic map's attractor doubles — 1, 2, 4, 8… — faster and faster until it dissolves into chaos at r≈3.5699, threaded with periodic windows. Coloured by the Lyapunov exponent.",
+    "newSystems": ["bifurcation"],
+    "notes": [
+      "Bifurcation Diagram (Map): every point owns a fixed growth rate r and keeps iterating xₙ₊₁=r·xₙ(1−xₙ), so the continuously-resampled ensemble IS the period-doubling fig-tree — shimmering, with the period-3 window visible. Colour baked by the Lyapunov exponent λ=⟨ln|r(1−2x)|⟩ (cool stable, hot chaotic). Kicks off the gap-analysis-driven original-build era. From the exhaustive catalog-gap sweep."
+    ]
+  },
+  {
     "version": "0.1.85",
     "date": "2026-07-11",
     "title": "Hopfion — the Hopf fibration made visible",
