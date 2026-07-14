@@ -18,6 +18,16 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    "version": "0.1.89",
+    "date": "2026-07-13",
+    "title": "Ising Model — a phase transition on a slider",
+    "summary": "The simplest system in physics that has a phase transition. A lattice of spins wants to agree with its neighbours but is jostled by heat; below the Curie point Tc≈2.269 it spontaneously magnetizes into large domains, above it thermal noise wins, and exactly at Tc the domains go scale-free (critical opalescence). Real Metropolis Monte-Carlo, driven by a temperature slider. Opens the statistical-mechanics domain.",
+    "newSystems": ["ising"],
+    "notes": [
+      "Ising Model (Matter): a 384² spin lattice evolved by checkerboard Metropolis Monte-Carlo with periodic boundaries — propose a flip, accept if it lowers the energy else with probability e^{−ΔE/T}. Spin-up glows warm, spin-down cool, so domain walls read directly; slide temperature through Tc≈2/ln(1+√2) to drive order↔disorder. Cell positions are jittered so the points fill domains as solid pointillist clouds. From the exhaustive catalog-gap sweep."
+    ]
+  },
+  {
     "version": "0.1.88",
     "date": "2026-07-13",
     "title": "Double Pendulum Swarm — chaos you can watch detonate",

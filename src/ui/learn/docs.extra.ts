@@ -3340,4 +3340,26 @@ o[1] = p.b * x[0];`,
       { label: 'Lyapunov exponent', url: 'https://en.wikipedia.org/wiki/Lyapunov_exponent' },
     ],
   },
+  ising: {
+    title: 'Ising Model',
+    about:
+      "The simplest model in physics that still has a genuine phase transition — proposed by Wilhelm Lenz to his student Ernst Ising in 1920, and solved exactly in two dimensions by Lars Onsager in 1944, one of the landmark calculations of the century. Picture a grid of tiny magnets (spins), each pointing up or down. Neighbouring spins prefer to agree (that is what a ferromagnet is), but temperature constantly jostles them. Two forces compete: order (spins aligning to lower their energy) and entropy (heat scrambling them). Below a sharp critical temperature — the Curie point Tc = 2/ln(1+√2) ≈ 2.269 — order wins and the whole lattice spontaneously MAGNETIZES into large domains all pointing the same way. Above it, heat wins and the spins are a disordered salt-and-pepper. Exactly at Tc something remarkable happens: domains appear at every size at once, self-similar and fractal (critical opalescence), and quantities like the magnetic susceptibility diverge — the signature of a second-order phase transition.",
+    howItWorks:
+      "We evolve the lattice by the Metropolis Monte-Carlo rule, the workhorse of statistical physics. Pick a spin; flipping it changes the energy by ΔE = 2·s·(sum of its four neighbours). If that LOWERS the energy, always accept the flip; if it raises it, accept anyway with probability e^{−ΔE/T} — occasionally letting the system climb uphill, which is exactly how thermal fluctuations work. Sweeping the whole lattice this way (on a checkerboard, so the two sub-lattices update independently) samples the Boltzmann distribution at temperature T. Drag the temperature slider down and you watch domains freeze and grow; push it up through Tc and they dissolve into noise. Warm points are up-spins, cool points are down-spins, so the domain walls — the boundaries between agreeing regions — are drawn directly.",
+    equations: [
+      { label: 'energy: neighbours want to agree (ferromagnetic, J>0)', latex: 'E = -J\\sum_{\\langle i,j\\rangle} s_i s_j, \\qquad s_i = \\pm 1' },
+      { label: 'Metropolis acceptance of a proposed flip', latex: 'P(\\text{flip}) = \\min\\!\\left(1,\\; e^{-\\Delta E / T}\\right), \\quad \\Delta E = 2 s_i \\textstyle\\sum_{\\text{nbrs}} s_j' },
+      { label: 'the exact critical temperature (Onsager, 1944)', latex: 'T_c = \\frac{2}{\\ln(1+\\sqrt{2})} \\approx 2.269' },
+    ],
+    params: [
+      { key: 'temperature', symbol: 'T', meaning: 'the control knob — cross Tc≈2.27 to drive order ↔ disorder' },
+      { key: 'rate', symbol: '\\dot{s}', meaning: 'Monte-Carlo sweeps per frame' },
+    ],
+    code: "// Metropolis Monte-Carlo: propose a flip, accept by the Boltzmann rule\nΔE = 2 * s[i] * (s[up] + s[down] + s[left] + s[right]);\nif (ΔE <= 0 || random() < exp(-ΔE / T)) s[i] = -s[i];\n// below Tc = 2/ln(1+√2) ≈ 2.269 the lattice magnetizes into domains",
+    links: [
+      { label: 'Ising model', url: 'https://en.wikipedia.org/wiki/Ising_model' },
+      { label: 'Metropolis–Hastings algorithm', url: 'https://en.wikipedia.org/wiki/Metropolis%E2%80%93Hastings_algorithm' },
+      { label: 'Phase transitions & critical phenomena', url: 'https://en.wikipedia.org/wiki/Phase_transition' },
+    ],
+  },
 };

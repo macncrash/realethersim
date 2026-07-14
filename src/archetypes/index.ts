@@ -69,6 +69,7 @@ import { hopfionFactory } from './hopfion';
 import { bifurcationFactory } from './bifurcation';
 import { elementaryCAFactory } from './elementaryCA';
 import { doublePendulumSwarmFactory } from './doublePendulumSwarm';
+import { isingFactory } from './ising';
 import { bioBayFactory } from './bioBay';
 import { combJellyFactory } from './combJelly';
 import { jellyfishFountainFactory } from './jellyfishFountain';
@@ -162,6 +163,7 @@ export function registerArchetypes(): void {
   register(bifurcationFactory);
   register(elementaryCAFactory);
   register(doublePendulumSwarmFactory);
+  register(isingFactory);
   register(bioBayFactory);
   register(combJellyFactory);
   register(jellyfishFountainFactory);
