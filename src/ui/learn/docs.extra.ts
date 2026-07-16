@@ -3362,4 +3362,45 @@ o[1] = p.b * x[0];`,
       { label: 'Phase transitions & critical phenomena', url: 'https://en.wikipedia.org/wiki/Phase_transition' },
     ],
   },
+  penrose: {
+    title: 'Penrose Tiling',
+    about:
+      "One of the most surprising objects in modern geometry. Ordinary tilings repeat — slide them and they land back on themselves. In 1974 Roger Penrose found a pair of tiles, a fat and a thin rhombus, that tile the entire plane but ONLY aperiodically: the pattern never repeats no matter how far you go, and yet it is nothing like random. It has perfect five-fold symmetry (forbidden to ordinary crystals), a rigid long-range order, and the property that every finite patch, however large, reappears infinitely often — order without periodicity. For years it was a mathematical curiosity, until in 1982 Dan Shechtman found real metal alloys whose atoms are arranged exactly this way. Nobody believed him at first — five-fold crystals were 'impossible' — but he was right, the materials are called quasicrystals, and he won the 2011 Nobel Prize in Chemistry for them.",
+    howItWorks:
+      "We build the tiling with N. G. de Bruijn's elegant 1981 insight: the Penrose tiling is the DUAL of a 'pentagrid'. Take five families of equally-spaced parallel lines, each family rotated 72° from the last (five-fold symmetry). Wherever a line from one family crosses a line from another, place a rhombus whose edges point along those two families' directions — fat if the families are two apart, thin if they are adjacent. Slide the whole construction into place and these rhombi lock together, with no gaps or overlaps, into a perfect Penrose tiling. Each intersection of the pentagrid becomes exactly one tile; the five integer 'which-line' counts at a point are the tile's coordinates. We draw the rhombus edges as glowing points — the fat tiles warm, the thin tiles cool — so the characteristic ten-fold rosettes stand out.",
+    equations: [
+      { label: 'the five grid directions (72° apart)', latex: '\\mathbf{e}_k = (\\cos\\tfrac{2\\pi k}{5},\\ \\sin\\tfrac{2\\pi k}{5}), \\quad k = 0\\ldots 4' },
+      { label: 'de Bruijn grid: line index of family k at a point', latex: 'K_k(\\mathbf{r}) = \\lceil\\, \\mathbf{e}_k\\cdot\\mathbf{r} + \\gamma_k \\,\\rceil, \\qquad \\textstyle\\sum_k \\gamma_k \\in \\mathbb{Z}' },
+      { label: 'each pentagrid intersection → one rhombus (edges eₖ, e_l)', latex: '\\text{fat if } |k-l|\\in\\{2,3\\},\\quad \\text{thin if } |k-l|\\in\\{1,4\\}' },
+    ],
+    params: [
+      { key: 'speed', symbol: '\\dot\\theta', meaning: 'slow rotation of the whole tiling' },
+    ],
+    code: "// de Bruijn dual: every pair of pentagrid lines (k,i)×(l,j) makes one rhombus\nsolve  eₖ·r = i − γₖ,  e_l·r = j − γ_l   for the intersection r\nfor m ≠ k,l:  Kₘ = floor(eₘ·r + γₘ);   O = Σ Kₘ·eₘ\ncorners = O + {i−1,i}·eₖ + {j−1,j}·e_l    // a rhombus spanned by eₖ and e_l",
+    links: [
+      { label: 'Penrose tiling', url: 'https://en.wikipedia.org/wiki/Penrose_tiling' },
+      { label: 'de Bruijn — pentagrid / multigrid method', url: 'https://en.wikipedia.org/wiki/Penrose_tiling#Deflation_for_P2_and_P3_tilings' },
+      { label: 'Quasicrystals (Shechtman, Nobel 2011)', url: 'https://en.wikipedia.org/wiki/Quasicrystal' },
+    ],
+  },
+  primeSpiral: {
+    title: 'Prime Spiral',
+    about:
+      "What happens when you let number theory arrange itself geometrically? Take the sunflower's own packing — the arrangement a real sunflower head, pinecone, or pineapple uses to fit the most seeds into a disk — and drop the whole number line onto it. Integer n goes at radius √n and angle n × 137.507°, the GOLDEN ANGLE: a full turn scaled by 1/φ², the 'most irrational' rotation there is, so no two seeds ever line up and the packing stays maximally even. The interlocking spiral arms you see (botanists call them parastichies, and there are always a Fibonacci number of them) are not drawn in — they emerge purely from that irrational spacing. Now colour each point by whether it is PRIME. The primes are not scattered at random: they flare through the arms in a structured way, thinning some spirals and lighting others — a portrait of how the multiplicative fabric of the integers threads through nature's favourite packing. It is a phyllotactic cousin of Stanisław Ulam's famous square prime spiral.",
+    howItWorks:
+      "Two ingredients. First, the geometry: Vogel's 1979 formula r = c√n, θ = n·ψ with ψ = 2π/φ² ≈ 137.507° places point n on the sunflower; because √n makes the area per point constant, the disk fills evenly, and because ψ is irrational the arms never close into spokes. Second, the arithmetic: we mark which integers are prime with a single pass of the Sieve of Eratosthenes — cross out every multiple of 2, then 3, then 5, and so on; whatever survives is prime. (No need to re-test primality every frame — it never changes.) Primes are drawn incandescent, ember at the dense core fading to ivory at the rim; composites collapse to a dim violet haze so the spiral families still read. The whole bloom turns slowly.",
+    equations: [
+      { label: 'Vogel sunflower placement of integer n', latex: 'r = c\\sqrt{n}, \\qquad \\theta = n\\cdot\\psi, \\quad \\psi = \\frac{2\\pi}{\\varphi^2} \\approx 137.507^\\circ' },
+      { label: 'the golden angle from the golden ratio', latex: '\\varphi = \\tfrac{1+\\sqrt5}{2}, \\qquad \\psi = 2\\pi\\,(1 - 1/\\varphi) = \\pi(3-\\sqrt5)' },
+    ],
+    params: [
+      { key: 'speed', symbol: '\\dot\\theta', meaning: 'slow rotation of the whole bloom' },
+    ],
+    code: "// place every integer on the sunflower, then light the primes\nfor n = 1..N:\n  r = c·√n;  θ = n · 137.507°;         // Vogel / golden-angle packing\n  (x,y) = (r·cosθ, r·sinθ);\n// primality once, by the Sieve of Eratosthenes\nfor p = 2..√N:  if prime(p):  mark 2p,3p,4p… composite\ncolour = isPrime(n) ? ember→ivory : dim violet;",
+    links: [
+      { label: 'Fermat / Vogel spiral (phyllotaxis)', url: 'https://en.wikipedia.org/wiki/Fermat%27s_spiral' },
+      { label: 'Golden angle', url: 'https://en.wikipedia.org/wiki/Golden_angle' },
+      { label: 'Ulam spiral (the square cousin)', url: 'https://en.wikipedia.org/wiki/Ulam_spiral' },
+    ],
+  },
 };

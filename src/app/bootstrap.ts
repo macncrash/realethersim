@@ -599,6 +599,16 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
       camera.position.set(0, 0, 3.1);
       controls.update();
     }
+    if ($archetypeId.get() === 'penrose') {
+      controls.target.set(0, 0, 0);
+      camera.position.set(0, 0, 3.0);
+      controls.update();
+    }
+    if ($archetypeId.get() === 'primeSpiral') {
+      controls.target.set(0, 0, 0);
+      camera.position.set(0, 0, 3.0);
+      controls.update();
+    }
     if ($archetypeId.get() === 'aurora') {
       controls.target.set(0, 0.5, -0.4);
       camera.position.set(0, 0.3, 3.9);
@@ -1234,6 +1244,8 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
           else if (id === 'bifurcation' || id === 'elementaryCA') { controls.target.set(0, 0, 0); camera.position.set(0, 0, 3.0); }
           else if (id === 'doublePendulumSwarm') { controls.target.set(0, -0.2, 0); camera.position.set(0, -0.2, 3.4); }
           else if (id === 'ising') { controls.target.set(0, 0, 0); camera.position.set(0, 0, 3.1); }
+          else if (id === 'penrose') { controls.target.set(0, 0, 0); camera.position.set(0, 0, 3.0); }
+          else if (id === 'primeSpiral') { controls.target.set(0, 0, 0); camera.position.set(0, 0, 3.0); }
           else if (id === 'bioBay') { controls.target.set(0, 0, 0); camera.position.set(0, 1.7, 2.5); }
           else if (id === 'combJelly') { controls.target.set(0, 0, 0); camera.position.set(0.7, 0.25, 2.3); }
           else if (id === 'jellyfishFountain') { controls.target.set(0, -0.05, 0); camera.position.set(0, 0.3, 3.4); }
