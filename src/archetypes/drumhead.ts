@@ -9,13 +9,15 @@ import type {
 } from '../core/archetype';
 import { besselJn, besselJzero } from './bessel';
 
-// Circular Chladni plate / vibrating drumhead. The standing waves of a circular membrane fixed at its
-// rim are the Bessel eigenmodes uₘₙ(r,θ) = Jₘ(λₘₙ·r)·cos(mθ), where λₘₙ is the n-th positive zero of the
-// Bessel function Jₘ (so the rim r=1 is a node, Jₘ(λₘₙ)=0). The nodal set — where the membrane stands
-// still and the "sand" collects — is m straight diameters (cos mθ = 0) plus n concentric circles (the
-// interior zeros of Jₘ). Sampled as a sunflower (phyllotaxis) disk of points displaced by y = u·cos(ωt)
-// (the mode breathing in time) and coloured ONCE by |u| so the nodal figure (dark) is always visible.
-// Bessel is evaluated only on a mode change; per frame is just a cheap cos(ωt) scale. Bounded ∀t.
+// Vibrating drumhead — the normal modes of a circular MEMBRANE (∇²u = c⁻²ü, unlike a stiff Chladni
+// PLATE which is ∇⁴). Fixed at its rim, the standing waves are the Bessel eigenmodes
+// uₘₙ(r,θ) = Jₘ(λₘₙ·r)·cos(mθ), where λₘₙ is the n-th positive zero of Jₘ (so the rim r=1 is a node,
+// Jₘ(λₘₙ)=0). The nodal set — where the membrane stands still — is m straight diameters (cos mθ = 0)
+// plus n−1 concentric circles (the interior zeros of Jₘ). Each mode has its OWN frequency ωₘₙ ∝ λₘₙ,
+// and those ratios are inharmonic (2.295, 3.598, 1.593…), which is why a drum is not pitched like a
+// string. Sampled as an area-uniform polar disk displaced by y = u·cos(ωₘₙ·t) and coloured ONCE by |u|
+// so the nodal figure (dark) reads. Bessel is evaluated only on a mode change; per frame is a cheap
+// cos scale. Bounded ∀t.
 const TAU = Math.PI * 2;
 const SCALE = 2.5; // disk radius in render units
 
@@ -39,6 +41,9 @@ class DrumheadArchetype implements Archetype {
   private speed = 1.6;
   private t = 0;
   private modeKey = '';
+  private freqRatio = 1; // f_{m,n}/f_{0,1} = λ_{m,n}/λ_{0,1} — the true relative pitch of this mode
+  private mNodes = 5; // nodal diameters m
+  private nMode = 4; // radial index n (= circles + 1)
 
   constructor(config: ArchetypeConfig) {
     const n = config.particleCount;
@@ -57,6 +62,10 @@ class DrumheadArchetype implements Archetype {
     const m = Math.round(p.diameters ?? 5);
     this.modeKey = `${nCircles},${m}`;
     const lambda = besselJzero(m, nCircles + 1); // (nCircles+1)-th zero ⇒ nCircles interior nodal rings
+    // eigenfrequency ∝ the Bessel zero, so each mode has its own pitch: f_{m,n}/f_{0,1} = λ_{m,n}/λ_{0,1}.
+    // These ratios are INHARMONIC (2.295, 3.598, 1.593…) — why a drum sounds nothing like a string.
+    this.freqRatio = lambda / besselJzero(0, 1);
+    this.mNodes = m; this.nMode = nCircles + 1;
     const n = this.particleCount;
     let umax = 1e-6;
     // Area-uniform POLAR grid (rings × spokes, spokes ∝ circumference) — aligned with the nodal
@@ -94,7 +103,9 @@ class DrumheadArchetype implements Archetype {
   }
 
   private syncPositions(): void {
-    const osc = Math.cos(this.speed * this.t) * this.relief;
+    // breathe at the mode's TRUE eigenfrequency (∝ λ_{m,n}): higher modes ripple faster, exactly in the
+    // inharmonic ratios that guide drum tuning — switching modes now changes the pitch.
+    const osc = Math.cos(this.speed * this.freqRatio * this.t) * this.relief;
     const pos = this.positions;
     for (let i = 0; i < this.particleCount; i++) {
       const o = i * 3;
@@ -133,7 +144,7 @@ class DrumheadArchetype implements Archetype {
     this.syncPositions();
   }
   getHierarchy(): NodeSpec[] {
-    return [{ id: 'root', parentId: null, label: 'Drumhead mode', stateOffset: 0, stateLength: 1 }];
+    return [{ id: 'root', parentId: null, label: `drumhead J${this.mNodes},${this.nMode} · f/f₀₁ = ${this.freqRatio.toFixed(3)}`, stateOffset: 0, stateLength: 1 }];
   }
   renderHint(): RenderHint {
     return { geometry: 'points', pointSize: 0.01 };
@@ -145,7 +156,7 @@ class DrumheadArchetype implements Archetype {
 
 export const drumheadFactory: ArchetypeFactory = {
   id: 'drumhead',
-  label: 'Circular Chladni Plate',
+  label: 'Drumhead (Bessel modes)',
   category: 'Field',
   kind: 'flow',
   params: PARAM_SPEC,
