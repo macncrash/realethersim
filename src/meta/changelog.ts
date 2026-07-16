@@ -18,6 +18,16 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    "version": "0.1.92",
+    "date": "2026-07-13",
+    "title": "Fix: Penrose Tiling froze the render",
+    "summary": "The Penrose Tiling could lock up on load. Its archetype produced a different point count than the driver was told, so the worker wrote past the end of its buffer — filling positions with NaN, which stalls the GPU. Fixed by having the tiling honour the requested particle budget; it now also renders denser, brighter rhombus edges.",
+    "newSystems": [],
+    "notes": [
+      "Fix: Penrose Tiling now respects the driver's particle count (no more count mismatch → no NaN vertex positions → no GPU stall). Bonus: edges are drawn with far more points, so the rhombi and ten-fold rosettes glow crisply."
+    ]
+  },
+  {
     "version": "0.1.91",
     "date": "2026-07-13",
     "title": "Prime Spiral — number theory on a sunflower",

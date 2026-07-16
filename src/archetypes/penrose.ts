@@ -79,12 +79,14 @@ class PenroseArchetype implements Archetype {
       }
     }
 
-    const perEdge = 90;
-    const N = Math.max(2048, rh.length * 4 * perEdge);
+    // Respect the requested budget so the archetype's particleCount matches what the driver (main +
+    // worker) was told — a mismatch stalls the SharedArrayBuffer handshake and hangs the render loop.
+    const N = Math.max(2048, config.particleCount);
     this.particleCount = N;
     this.positions = new Float32Array(N * 3);
     this.colors = new Float32Array(N * 3);
     this.bx = new Float64Array(N); this.by = new Float64Array(N);
+    const perEdge = Math.max(4, Math.floor(N / Math.max(1, rh.length * 4))); // spread the budget over the edges
     let idx = 0;
     for (const r of rh) {
       // fat rhombi warm amber, thin rhombi cool cyan (bright for bloom on the thin edges)
@@ -100,7 +102,8 @@ class PenroseArchetype implements Archetype {
         }
       }
     }
-    while (idx < N) { this.bx[idx] = 0; this.by[idx] = 0; idx++; }
+    // any leftover budget parks off-frame with colour 0 (invisible)
+    while (idx < N) { this.bx[idx] = 0; this.by[idx] = -46; idx++; }
     this.readParams(config.params);
     this.syncPositions();
   }
