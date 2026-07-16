@@ -2135,22 +2135,22 @@ o[1] = p.b * x[0];`,
     ]
   },
   drumhead: {
-    title: 'Circular Chladni Plate',
+    title: 'Drumhead (Bessel Modes)',
     about:
-      "A vibrating circular drumhead. Where a square plate gives the blocky Chladni grids, a clamped circular membrane rings in its own family of standing waves — the Bessel eigenmodes — whose still lines (where sand would gather) are m straight diameters crossed by n concentric circles. Pick the mode with the two sliders and the membrane settles into that pure tone, breathing up and down in place.",
+      "The standing waves of a real drum. A circular MEMBRANE clamped at its rim (a drumhead — not a stiff Chladni plate, which bends by a different, fourth-order law) rings in its own family of modes, the Bessel eigenmodes, whose still lines are m straight diameters crossed by concentric circles. Pick a mode with the two sliders and the membrane settles into it, rippling up and down. Crucially, each mode has its OWN frequency, and — unlike a string's neat 1:2:3 harmonics — a drum's overtones are INHARMONIC (ratios like 1.59, 2.30, 2.92, 3.60…). That is exactly why a drum has no clear pitch, and why tuning one is an art: this is the maths behind it. The readout shows each mode's ratio f_{m,n}/f_{0,1}, and the surface now breathes at that true relative rate.",
     howItWorks:
-      "The standing waves of a membrane fixed at its rim are uₘₙ(r,θ) = Jₘ(λₘₙ·r)·cos(mθ), where Jₘ is the order-m Bessel function and λₘₙ is its n-th positive zero — chosen precisely so the rim r=1 is a node (Jₘ(λₘₙ)=0). The angular factor cos(mθ) vanishes on m evenly-spaced diameters; the radial factor Jₘ(λₘₙ·r) vanishes on n interior circles (the earlier zeros of Jₘ), unevenly spaced and bunched toward the rim — the signature of a real drum, not the even rings of a naive sine. Points are laid on an area-uniform polar grid, displaced in height by u·cos(ωt) so the whole mode oscillates, and coloured once by |u| (gold antinode lobes, dark nodal lines). Bessel is evaluated only when you change the mode; each frame is a cheap cosine scale, so it can never blow up.",
+      "The standing waves of a membrane fixed at its rim are uₘₙ(r,θ,t) = Jₘ(λₘₙ·r)·cos(mθ)·cos(ωₘₙt), where Jₘ is the order-m Bessel function and λₘₙ is its n-th positive zero — chosen precisely so the rim r=1 is a node (Jₘ(λₘₙ)=0). The angular factor cos(mθ) vanishes on m evenly-spaced diameters; the radial factor vanishes on n−1 interior circles (the earlier zeros of Jₘ), unevenly spaced and bunched toward the rim — the signature of a real drum, not the even rings of a naive sine. The temporal frequency is set by the SAME zero, ωₘₙ ∝ λₘₙ, so the fundamental (m=0,n=1) uses λ=2.405 and every other mode's pitch is λₘₙ/2.405 times higher — the inharmonic ratios shown in the readout. Points are laid on an area-uniform polar grid, displaced in height by u·cos(ωₘₙt), and coloured once by |u| (gold antinode lobes, dark nodal lines). Bessel is evaluated only when you change the mode; each frame is a cheap cosine scale.",
     equations: [
       { label: 'circular membrane eigenmode', latex: 'u_{mn}(r,\\theta,t) = J_m(\\lambda_{mn}\\,r)\\,\\cos(m\\theta)\\,\\cos(\\omega t)' },
       { label: 'fixed rim (node) sets λ', latex: 'J_m(\\lambda_{mn}) = 0\\quad(\\lambda_{mn}=\\text{the }n\\text{-th zero of }J_m)' },
-      { label: 'nodal set', latex: 'm\\text{ diameters } (\\cos m\\theta=0)\\ +\\ n\\text{ circles } (J_m(\\lambda_{mn}r)=0)' },
-      { label: 'Bessel function', latex: 'J_m(x)=\\sum_{k=0}^{\\infty}\\frac{(-1)^k}{k!\\,(k+m)!}\\Big(\\frac{x}{2}\\Big)^{2k+m}' },
+      { label: 'nodal set', latex: 'm\\text{ diameters } (\\cos m\\theta=0)\\ +\\ (n{-}1)\\text{ circles } (J_m(\\lambda_{mn}r)=0)' },
+      { label: 'inharmonic overtone ratio (the drum-tuning point)', latex: '\\frac{f_{m,n}}{f_{0,1}} = \\frac{\\lambda_{m,n}}{\\lambda_{0,1}} = \\frac{\\lambda_{m,n}}{2.40483\\ldots}' },
     ],
     params: [
       { key: 'circles', symbol: 'n', meaning: 'number of concentric nodal circles (radial nodes) — selects the n-th zero of Jₘ' },
       { key: 'diameters', symbol: 'm', meaning: 'number of nodal diameters (angular nodes) — the order of the Bessel function Jₘ' },
       { key: 'relief', symbol: 'r', meaning: 'vertical exaggeration of the mode shape u·relief' },
-      { key: 'speed', symbol: '\\omega', meaning: 'how fast the mode oscillates up and down in time' },
+      { key: 'speed', symbol: '\\dot t', meaning: 'base tempo — each mode then ripples at its true relative frequency λₘₙ/λ₀₁' },
     ],
     code: "// eigenmode (computed once per mode change; per frame is just a cos(ωt) scale)\nconst lambda = besselJzero(m, nCircles + 1); // (nCircles+1)-th zero of J_m ⇒ rim is a node\nfor (each point on an area-uniform polar disk at (r, θ)) {\n  const u = besselJn(m, lambda * r) * Math.cos(m * θ); // r ∈ [0,1]\n  // height y = u * cos(ω t) * relief ; colour once by |u| (gold lobes, dark nodes)\n}",
     links: [

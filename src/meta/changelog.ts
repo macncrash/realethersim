@@ -18,6 +18,16 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    "version": "0.1.93",
+    "date": "2026-07-13",
+    "title": "Drumhead — modes now ring at their true (inharmonic) pitch",
+    "summary": "The circular-membrane system got the physics it was missing. Every Bessel mode now breathes at its OWN eigenfrequency (ω ∝ λ_{m,n}), so switching modes changes the pitch — and those ratios are inharmonic (1.59, 2.30, 2.92, 3.60…), which is exactly why a drum has no clear note. The readout shows each mode's f_{m,n}/f_{0,1}. Also relabeled from 'Circular Chladni Plate' (a drumhead is a membrane, not a stiff plate).",
+    "newSystems": [],
+    "notes": [
+      "Drumhead (Bessel modes): modes ripple at their true relative frequency λ_{m,n}/λ_{0,1} instead of a fixed rate — the inharmonic overtone ratios that guide drum tuning; the readout now shows f_{m,n}/f_{0,1}. Renamed from 'Circular Chladni Plate' for physical accuracy (∇² membrane, not a ∇⁴ plate). Prompted by a Mathematica post; the underlying modes were already shipped, so this is a polish, not a duplicate."
+    ]
+  },
+  {
     "version": "0.1.92",
     "date": "2026-07-13",
     "title": "Fix: Penrose Tiling froze the render",
