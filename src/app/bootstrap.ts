@@ -20,6 +20,7 @@ import { NullDriver } from '../sim/nullDriver';
 import { createGpu, hasGpu, type GpuSim } from '../gpu';
 import { isRaymarch, getFactory } from '../core/registry';
 import { createRaymarch, type RaymarchPass } from '../render/raymarch';
+import { createFieldPass, type FieldPass } from '../render/field';
 import { RAYMARCH_SYSTEMS } from '../archetypes/raymarchFractal';
 import { APP_VERSION } from '../version';
 import { embedText } from '../state/pngMeta';
@@ -238,6 +239,7 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
   }
   // --- sphere-traced 3D fractals: a full-screen distance-estimator pass, orbited by the camera ---
   let raymarch: RaymarchPass | null = null;
+  let fieldPass: FieldPass | null = null;
   function teardownRaymarch(): void {
     if (!raymarch) return;
     scene.remove(raymarch.mesh);
@@ -264,8 +266,34 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
     }
   }
 
-  // Toggle visibility/driver between CPU, GPU, and raymarch paths without tearing down the pipeline.
+  function teardownField(): void {
+    if (!fieldPass) return;
+    scene.remove(fieldPass.mesh);
+    fieldPass.dispose();
+    fieldPass = null;
+  }
+  function setupField(): void {
+    teardownField();
+    fieldPass = createFieldPass({ size: 3.4 });
+    scene.add(fieldPass.mesh);
+    const f = driver.readField?.();
+    if (f) fieldPass.update(f);
+  }
+
+  // Toggle visibility/driver between CPU, GPU, raymarch, and field-texture paths.
   function applyMode(): void {
+    // continuous-field systems draw their readField() as a smooth colour-map panel, not a point cloud
+    if (getFactory($archetypeId.get()).fieldRender) {
+      teardownRaymarch();
+      teardownGpu();
+      driver.setPaused(paused);
+      cloud.points.visible = false;
+      trailCloud.setVisible(false);
+      if (!fieldPass) setupField();
+      $telemetry.setKey('backend', `${backend} · field`);
+      return;
+    }
+    teardownField();
     if (isRaymarch($archetypeId.get())) {
       driver.setPaused(true);
       cloud.points.visible = false;
@@ -329,7 +357,8 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
     $selectedNode.set(null); // clear selection/highlight for the new archetype
     teardownGpu(); // force a fresh GPU sim for the new archetype / particle count
     teardownRaymarch(); // force a fresh raymarch pass (e.g. switching between 3D fractals)
-    applyMode(); // re-establish raymarch vs GPU vs CPU
+    teardownField(); // force a fresh field-texture pass for the new archetype
+    applyMode(); // re-establish field vs raymarch vs GPU vs CPU
     updateGuides(); // refresh the overlay for the new system
     if (bloomPass) bloomPass.strength.value = getFactory($archetypeId.get()).bloom ?? BLOOM_DEFAULT;
     // The Kármán field is a flat horizontal sheet — frame it near top-down (the classic CFD view).
@@ -615,6 +644,12 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
       camera.position.set(2.6, 1.8, 3.4);
       controls.update();
     }
+    // Near-top-down so the plane wave, the lens disk, and the focus all read as a flat field.
+    if ($archetypeId.get() === 'luneburgLens') {
+      controls.target.set(0, 0, 0);
+      camera.position.set(0, 3.9, 0.7);
+      controls.update();
+    }
     if ($archetypeId.get() === 'aurora') {
       controls.target.set(0, 0.5, -0.4);
       camera.position.set(0, 0.3, 3.9);
@@ -751,9 +786,14 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
       }
     } else {
       if (!paused) driver.pump(dt);
-      floatingOrigin.rebase(driver.source(), posArray); // anchor = 0 (identity copy) in P1
-      cloud.posAttr.needsUpdate = true;
-      if (trailCloud.group.visible) trailCloud.update(driver.trailHead());
+      if (fieldPass) {
+        const f = driver.readField?.();
+        if (f) fieldPass.update(f); // draw the field colour-map instead of the point cloud
+      } else {
+        floatingOrigin.rebase(driver.source(), posArray); // anchor = 0 (identity copy) in P1
+        cloud.posAttr.needsUpdate = true;
+        if (trailCloud.group.visible) trailCloud.update(driver.trailHead());
+      }
     }
   }
 
@@ -1253,6 +1293,7 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
           else if (id === 'penrose') { controls.target.set(0, 0, 0); camera.position.set(0, 0, 3.0); }
           else if (id === 'primeSpiral') { controls.target.set(0, 0, 0); camera.position.set(0, 0, 3.0); }
           else if (id === 'customParametric') { controls.target.set(0, 0, 0); camera.position.set(2.6, 1.8, 3.4); }
+          else if (id === 'luneburgLens') { controls.target.set(0, 0, 0); camera.position.set(0, 3.9, 0.7); }
           else if (id === 'bioBay') { controls.target.set(0, 0, 0); camera.position.set(0, 1.7, 2.5); }
           else if (id === 'combJelly') { controls.target.set(0, 0, 0); camera.position.set(0.7, 0.25, 2.3); }
           else if (id === 'jellyfishFountain') { controls.target.set(0, -0.05, 0); camera.position.set(0, 0.3, 3.4); }

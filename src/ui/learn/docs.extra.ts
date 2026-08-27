@@ -2134,6 +2134,30 @@ o[1] = p.b * x[0];`,
       }
     ]
   },
+  luneburgLens: {
+    title: 'Luneburg Lens',
+    about:
+      "A lens with no lens shape. Every ordinary lens bends light with a curved surface; a Luneburg lens is a flat disk that bends it with a GRADIENT instead — its refractive index is highest at the centre and falls smoothly to the value of empty space at the rim, following the beautifully simple law n(r) = √(2 − (r/R)²). Because light travels slower where the index is higher, a wave crossing the disk has its inner parts held back while its outer parts race ahead, and the whole wavefront curls around and converges to a perfect point — remarkably, right on the opposite surface of the lens. And it does this for a wave coming from ANY direction, which is why real Luneburg lenses (built as onion-like shells of dielectric) are prized for radar and satellite antennas: one ball focuses signals from all over the sky at once.",
+    howItWorks:
+      "We solve the genuine two-dimensional wave equation, ü = c(x,y)²∇²u, by leapfrog time-stepping on a grid — but the wave speed c is not constant. Inside the lens we bake it from the Luneburg profile, c = c₀/n(r), so the core is slow and the rim is vacuum-fast; outside, it is c₀ everywhere. A soft line source on the left launches a steady plane wave (added, not clamped, so it stays transparent to waves passing back through it), and a quadratic 'sponge' of damping around the border absorbs everything that reaches the edge, so no reflection bounces back to muddy the picture. Rather than dots, the field is drawn as a smooth colour map — orange crests, blue troughs — so you watch straight wavefronts enter, bend continuously through the disk, and squeeze to a bright focus on the far side. Stability is automatic: the vacuum Courant number is the cap, and the slower core only makes the scheme more stable.",
+    equations: [
+      { label: 'the Luneburg gradient index', latex: 'n(r) = \\sqrt{2 - (r/R)^2}, \\qquad 0 \\le r \\le R' },
+      { label: '2-D scalar wave equation with a varying speed', latex: '\\partial_{tt} u = c(x,y)^2\\,\\nabla^2 u, \\qquad c = c_0 / n(r)' },
+      { label: 'every parallel ray meets at the far surface', latex: '\\text{plane wave} \\;\\longrightarrow\\; \\text{focus at } r = R' },
+    ],
+    params: [
+      { key: 'frequency', symbol: '\\omega', meaning: 'source frequency — lower ω = longer wavelength' },
+      { key: 'courant', symbol: 'c_0', meaning: 'vacuum wave speed (the stability cap, ≤ 0.5)' },
+      { key: 'gain', symbol: 'g', meaning: 'colour contrast of the field' },
+      { key: 'relief', symbol: 'h', meaning: 'kept for the point fallback; the field render is flat' },
+    ],
+    code: "// bake the wave speed from the Luneburg index, then leapfrog the wave equation\nif (r < R)  n = sqrt(2 - (r/R)^2);  c = c0 / n;   // slow core, fast rim\nelse        c = c0;\nu_next = 2*u - u_prev + c*c * laplacian(u);        // 2nd-order wave eq\n// soft plane-wave source on the left; absorbing sponge at the borders",
+    links: [
+      { label: 'Luneburg lens', url: 'https://en.wikipedia.org/wiki/Luneburg_lens' },
+      { label: 'Gradient-index (GRIN) optics', url: 'https://en.wikipedia.org/wiki/Gradient-index_optics' },
+      { label: 'Finite-difference wave equation', url: 'https://en.wikipedia.org/wiki/Finite_difference_method' },
+    ],
+  },
   drumhead: {
     title: 'Drumhead (Bessel Modes)',
     about:

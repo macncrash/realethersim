@@ -18,6 +18,17 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+    "version": "0.1.94",
+    "date": "2026-08-15",
+    "title": "Luneburg Lens — focusing a wave with a gradient, not a curve",
+    "summary": "A Luneburg lens bends light with no curved surface at all: its refractive index falls smoothly from centre to rim, n(r)=√(2−(r/R)²), so a plane wave is steered continuously to a point on the far side. We simulate the real 2-D wave equation with the wave speed baked from that profile, and — powered by a NEW field-texture renderer — draw the wavefronts as a smooth blue/orange field instead of a point cloud.",
+    "newSystems": ["luneburgLens"],
+    "notes": [
+      "Luneburg Lens (Spectral): a leapfrog 2-D scalar wave equation ü=c(x,y)²∇²u with the wave speed set per cell from the Luneburg gradient index, a soft plane-wave source, and absorbing borders — watch straight wavefronts curl through the disk and pinch to a focus.",
+      "New field-texture render path: systems exposing a 2-D scalar field now draw it as a smooth colour-mapped panel (a DataTexture with linear filtering) rather than 1-px points — continuous fields finally read as gap-free heatmaps. Unblocks the whole wave / reaction-diffusion / lattice family."
+    ]
+  },
+  {
     "version": "0.1.93",
     "date": "2026-07-13",
     "title": "Drumhead — modes now ring at their true (inharmonic) pitch",
