@@ -72,6 +72,7 @@ import { doublePendulumSwarmFactory } from './doublePendulumSwarm';
 import { isingFactory } from './ising';
 import { penroseFactory } from './penrose';
 import { primeSpiralFactory } from './primeSpiral';
+import { customParametricFactory } from './customParametric';
 import { bioBayFactory } from './bioBay';
 import { combJellyFactory } from './combJelly';
 import { jellyfishFountainFactory } from './jellyfishFountain';
@@ -168,6 +169,7 @@ export function registerArchetypes(): void {
   register(isingFactory);
   register(penroseFactory);
   register(primeSpiralFactory);
+  register(customParametricFactory);
   register(bioBayFactory);
   register(combJellyFactory);
   register(jellyfishFountainFactory);
