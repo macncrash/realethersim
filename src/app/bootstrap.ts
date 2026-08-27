@@ -134,7 +134,8 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
     if (isRaymarch(id)) return new NullDriver(id, getFactory(id).label);
     const g = $global.get();
     const p = $params.get();
-    return useWorker && !forceMainDriver
+    // user-authored systems carry compiled closures that can't be shipped to the worker → main thread
+    return useWorker && !forceMainDriver && !getFactory(id).mainThread
       ? WorkerDriver.create(id, p, g.dt, g.particleCount, SEED, g.trailLength)
       : new MainThreadDriver(id, p, g.dt, g.particleCount, SEED);
   }
@@ -607,6 +608,11 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
     if ($archetypeId.get() === 'primeSpiral') {
       controls.target.set(0, 0, 0);
       camera.position.set(0, 0, 3.0);
+      controls.update();
+    }
+    if ($archetypeId.get() === 'customParametric') {
+      controls.target.set(0, 0, 0);
+      camera.position.set(2.6, 1.8, 3.4);
       controls.update();
     }
     if ($archetypeId.get() === 'aurora') {
@@ -1246,6 +1252,7 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
           else if (id === 'ising') { controls.target.set(0, 0, 0); camera.position.set(0, 0, 3.1); }
           else if (id === 'penrose') { controls.target.set(0, 0, 0); camera.position.set(0, 0, 3.0); }
           else if (id === 'primeSpiral') { controls.target.set(0, 0, 0); camera.position.set(0, 0, 3.0); }
+          else if (id === 'customParametric') { controls.target.set(0, 0, 0); camera.position.set(2.6, 1.8, 3.4); }
           else if (id === 'bioBay') { controls.target.set(0, 0, 0); camera.position.set(0, 1.7, 2.5); }
           else if (id === 'combJelly') { controls.target.set(0, 0, 0); camera.position.set(0.7, 0.25, 2.3); }
           else if (id === 'jellyfishFountain') { controls.target.set(0, -0.05, 0); camera.position.set(0, 0.3, 3.4); }
