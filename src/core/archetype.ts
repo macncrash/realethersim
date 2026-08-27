@@ -97,6 +97,7 @@ export interface ArchetypeFactory {
   readonly guides?: () => GuideSpec; // optional static overlay geometry (render space); see GuideSpec
   readonly bloom?: number; // optional HDR bloom strength override for this system (default in bootstrap)
   readonly mainThread?: boolean; // force the main-thread driver (e.g. user-authored systems whose compiled closures can't cross to the sim worker)
+  readonly fieldRender?: boolean; // render the system's readField() as a smooth colour-map panel instead of a point cloud (implies mainThread)
   // Physical sim-clock: when present, the UI shows "T + <modelTime × scale> <unit>". modelTime is
   // accumulated in bootstrap as Σ(fixed-step dt × current speed param) — exactly how time-calibrated
   // archetypes advance their own t — and wraps at `cycle` (model units) for systems that replay.
