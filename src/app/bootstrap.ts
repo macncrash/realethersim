@@ -644,6 +644,12 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
       camera.position.set(2.6, 1.8, 3.4);
       controls.update();
     }
+    // Front 3/4 view of the brain so the paired lobes and the midline central complex read.
+    if ($archetypeId.get() === 'flyBrain') {
+      controls.target.set(0, 0, 0);
+      camera.position.set(0.4, 0.7, 3.3);
+      controls.update();
+    }
     // Near-top-down so the plane wave, the lens disk, and the focus all read as a flat field.
     if ($archetypeId.get() === 'luneburgLens') {
       controls.target.set(0, 0, 0);
@@ -1294,6 +1300,7 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
           else if (id === 'primeSpiral') { controls.target.set(0, 0, 0); camera.position.set(0, 0, 3.0); }
           else if (id === 'customParametric') { controls.target.set(0, 0, 0); camera.position.set(2.6, 1.8, 3.4); }
           else if (id === 'luneburgLens') { controls.target.set(0, 0, 0); camera.position.set(0, 3.9, 0.7); }
+          else if (id === 'flyBrain') { controls.target.set(0, 0, 0); camera.position.set(0.4, 0.7, 3.3); }
           else if (id === 'bioBay') { controls.target.set(0, 0, 0); camera.position.set(0, 1.7, 2.5); }
           else if (id === 'combJelly') { controls.target.set(0, 0, 0); camera.position.set(0.7, 0.25, 2.3); }
           else if (id === 'jellyfishFountain') { controls.target.set(0, -0.05, 0); camera.position.set(0, 0.3, 3.4); }

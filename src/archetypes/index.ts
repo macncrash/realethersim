@@ -74,6 +74,7 @@ import { penroseFactory } from './penrose';
 import { primeSpiralFactory } from './primeSpiral';
 import { customParametricFactory } from './customParametric';
 import { luneburgLensFactory } from './luneburgLens';
+import { flyBrainFactory } from './flyBrain';
 import { bioBayFactory } from './bioBay';
 import { combJellyFactory } from './combJelly';
 import { jellyfishFountainFactory } from './jellyfishFountain';
@@ -172,6 +173,7 @@ export function registerArchetypes(): void {
   register(primeSpiralFactory);
   register(customParametricFactory);
   register(luneburgLensFactory);
+  register(flyBrainFactory);
   register(bioBayFactory);
   register(combJellyFactory);
   register(jellyfishFountainFactory);

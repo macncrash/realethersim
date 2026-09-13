@@ -18,6 +18,20 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+      "version": "0.1.95",
+      "date": "2026-09-12",
+      "title": "Fly Brain Cascade — a spiking brain, wired like a fly's",
+      "summary": "The fly connectome's surprise (Shiu et al. 2024): put the simplest neuron model there is — leaky integrate-and-fire — on the real wiring and it predicts behaviour with no tuning. This is that experiment on a statistical connectome shaped like a Drosophila brain: neurons laid out by neuropil, wired by the known pathways, log-normal synapses, 10% inhibitory. Pick a sense, watch the activity cascade. Opens a new Neural category.",
+      "newSystems": [
+          "flyBrain"
+      ],
+      "notes": [
+          "Fly Brain Cascade (Neural): 60k leaky integrate-and-fire neurons in paired optic lobes, antennal lobes, mushroom-body calyces and lobes, lateral horns, the central complex and the subesophageal zone; 1.2M synapses with distance-dependent delays. Spikes launch packets of light down their axons; adaptation makes each cascade rise and self-terminate.",
+          "Stimulus selector (olfactory / visual / taste / spontaneous), drive, synaptic gain and inhibition knobs — gain ≈1.5 tips the brain from bursting cascades into sustained asynchronous firing.",
+          "Browse/tab ordering now lists the Tiling, Number, Neural and Custom categories explicitly."
+      ]
+  },
+  {
     "version": "0.1.94",
     "date": "2026-08-15",
     "title": "Luneburg Lens — focusing a wave with a gradient, not a curve",

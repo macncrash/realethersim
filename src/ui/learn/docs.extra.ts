@@ -2134,6 +2134,67 @@ o[1] = p.b * x[0];`,
       }
     ]
   },
+  flyBrain: {
+      "title": "Fly Brain Cascade",
+      "about": "In 2024 the complete wiring diagram of a fruit-fly brain — about 140,000 neurons and 50 million synapses — was finished, and something surprising followed. Researchers dropped the SIMPLEST possible neuron model onto that wiring, a leaky integrate-and-fire cell that just sums its inputs and fires when they cross a threshold, with no tuning at all — and the model predicted real behaviour. Stimulate the sugar-tasting neurons in the simulation and the proboscis-extension motor neurons fire, exactly as in a living fly. The wiring itself was doing the computing. We cannot ship fifty million synapses, so this is the same experiment on a statistical stand-in: neurons are laid out by neuropil in the shape of a fly brain — the big paired optic lobes, the antennal lobes where smell arrives, the mushroom-body calyces and lobes (the fly's memory centre), the lateral horns, the central complex on the midline, and the subesophageal zone that drives taste and feeding — and wired by the known pathways between them. Choose a sense and watch the activity cascade: smell goes antennal lobe → mushroom body and lateral horn → the rest of the brain; vision floods the optic lobes first.",
+      "howItWorks": "Every neuron is a leaky integrator: its membrane potential decays toward rest, synaptic inputs push it up, and when it crosses threshold it fires, resets, and goes refractory for a few steps. Each spike is delivered to the neuron's 20 out-synapses after a delay proportional to the distance to the target, through a circular delay line; synaptic weights are drawn log-normally (a heavy tail of a few very strong synapses, as the real connectome shows) and one cell in ten is inhibitory. Targets are chosen by a pathway table — antennal lobe → calyx and lateral horn, calyx → mushroom-body lobes, optic lobe mostly to itself and onward to the central brain, everything eventually to the subesophageal zone — with paired structures wired mostly ipsilaterally. A spike also launches packets of light along its first few axons, so you see the signal travel. Spike-frequency adaptation is what makes it cascade rather than seize: each burst raises an after-current that shuts the neuron down, so a wave of activity sweeps through, exhausts itself and dies before the next stimulus pulse. The stimulus is a breathing Poisson drive into the chosen sensory neuropil. Raise the gain and the brain crosses into sustained asynchronous firing; cut the inhibition and it does the same.",
+      "equations": [
+          {
+              "label": "leaky integrate-and-fire membrane",
+              "latex": "\\tau\\,\\dot v_i = -v_i + I_i(t) - \\beta\\,a_i, \\qquad v_i \\ge 1 \\;\\Rightarrow\\; v_i \\to 0,\\; a_i \\to a_i + 1"
+          },
+          {
+              "label": "delayed synaptic delivery",
+              "latex": "I_j(t) \\mathrel{+}= \\sum_{i \\to j} w_{ij}\\,\\delta\\!\\left(t - t_i^{\\text{spike}} - d_{ij}\\right), \\qquad d_{ij} \\propto |x_j - x_i|"
+          },
+          {
+              "label": "log-normal synaptic weights, 10% inhibitory",
+              "latex": "w_{ij} = \\pm g\\,e^{\\sigma\\xi - \\sigma^2/2}, \\qquad \\xi \\sim \\mathcal N(0,1)"
+          }
+      ],
+      "params": [
+          {
+              "key": "stimulus",
+              "symbol": "\\text{stim}",
+              "meaning": "which sensory neuropil is driven: antennal lobes (smell), optic lobes (vision), subesophageal zone (taste), or none"
+          },
+          {
+              "key": "drive",
+              "symbol": "\\lambda",
+              "meaning": "strength of the Poisson input into the stimulated region"
+          },
+          {
+              "key": "gain",
+              "symbol": "g",
+              "meaning": "synaptic strength — ≈1 gives self-terminating cascades, ≈1.5 sustained firing"
+          },
+          {
+              "key": "balance",
+              "symbol": "g_I/g_E",
+              "meaning": "inhibitory synapse strength relative to excitatory"
+          },
+          {
+              "key": "rate",
+              "symbol": "n",
+              "meaning": "network steps per rendered frame"
+          }
+      ],
+      "code": "// one step of the whole-brain LIF network\nfor each neuron i:\n  I = delayLine[now][i];  delayLine[now][i] = 0   // inputs arriving this step\n  v[i] = v[i]*exp(-1/tau) + I - beta*a[i];  a[i] *= 0.96\n  if (v[i] >= 1 && !refractory) {\n    v[i] = 0; a[i] += 1;                          // spike, adapt\n    for each synapse (j, w, d) of i: delayLine[now + d][j] += w\n    launch light packets i -> j along the first few axons\n  }",
+      "links": [
+          {
+              "label": "Shiu et al. 2024 — a Drosophila computational brain model (Nature)",
+              "url": "https://www.nature.com/articles/s41586-024-07763-9"
+          },
+          {
+              "label": "FlyWire — the whole-brain fly connectome",
+              "url": "https://flywire.ai/"
+          },
+          {
+              "label": "Leaky integrate-and-fire neuron",
+              "url": "https://en.wikipedia.org/wiki/Biological_neuron_model#Leaky_integrate-and-fire"
+          }
+      ]
+  },
   luneburgLens: {
     title: 'Luneburg Lens',
     about:
