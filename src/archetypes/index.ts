@@ -72,6 +72,7 @@ import { doublePendulumSwarmFactory } from './doublePendulumSwarm';
 import { isingFactory } from './ising';
 import { penroseFactory } from './penrose';
 import { primeSpiralFactory } from './primeSpiral';
+import { collatzFactory } from './collatz';
 import { customParametricFactory } from './customParametric';
 import { luneburgLensFactory } from './luneburgLens';
 import { flyBrainFactory } from './flyBrain';
@@ -171,6 +172,7 @@ export function registerArchetypes(): void {
   register(isingFactory);
   register(penroseFactory);
   register(primeSpiralFactory);
+  register(collatzFactory);
   register(customParametricFactory);
   register(luneburgLensFactory);
   register(flyBrainFactory);
