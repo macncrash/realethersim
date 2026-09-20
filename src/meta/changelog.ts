@@ -18,6 +18,19 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+      "version": "0.1.96",
+      "date": "2026-09-19",
+      "title": "Collatz Coral — a rule this simple should not look this alive",
+      "summary": "The Collatz conjecture: halve an even number, triple-plus-one an odd one, repeat, and every number is believed to fall to 1 — checked past 2^68, unproven for 87 years. Turn each number's descent around and draw it as a turtle bough (gentle left at an even step, harder right at an odd one) and, because every sequence ends 8→4→2→1, hundreds of independent walks weave into one branching coral. Opens the Number category's second system.",
+      "newSystems": [
+          "collatz"
+      ],
+      "notes": [
+          "Collatz Coral (Number): reversed hailstone sequences drawn as continuous boughs from a shared root, dim at the stem and bright at each tip, so the crown blazes with fronds while the trunk stays a thin thread. The rarer odd numbers put the kinks that throw off new branches.",
+          "Sway and sway-speed knobs give the coral a slow seaweed drift."
+      ]
+  },
+  {
       "version": "0.1.95",
       "date": "2026-09-12",
       "title": "Fly Brain Cascade — a spiking brain, wired like a fly's",

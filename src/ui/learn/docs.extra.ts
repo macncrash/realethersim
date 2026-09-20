@@ -3468,6 +3468,52 @@ o[1] = p.b * x[0];`,
       { label: 'Quasicrystals (Shechtman, Nobel 2011)', url: 'https://en.wikipedia.org/wiki/Quasicrystal' },
     ],
   },
+  collatz: {
+      "title": "Collatz Coral",
+      "about": "Pick any positive whole number. If it is even, halve it; if it is odd, triple it and add one. Repeat. The Collatz conjecture — posed in 1937 and still unproven — says that no matter where you start, you always tumble down to 1. It has been checked by computer for every number up to about 2^68, yet no proof exists; Paul Erdős said \"mathematics may not be ready for such problems.\" Each number's journey down to 1 is its hailstone sequence (the values bounce up and down like hail in a cloud before falling). This piece turns those journeys into a plant. Because every sequence ends the same way — …→8→4→2→1 — all of them share that final stretch, so if you draw each one as a little path they overlap along a common stem and only peel apart where their numbers differ. Hundreds of independent descents, drawn together, weave themselves into a single branching coral: no tree-building, just arithmetic finding its own shape.",
+      "howItWorks": "We run each number's sequence BACKWARDS, starting from the root at 1, and draw it with a turtle: step forward one unit, and at every number turn a little — gently to the left when the number is even, more sharply to the right when it is odd. Because roughly two of every three steps are halvings (even), the boughs sweep in long gentle curves, and the occasional odd number puts the kink that throws off a new branch. Every bough is drawn as a continuous line of points, dim where it shares the crowded stem and brightening toward its own tip, so the trunk stays a thin bright thread while the crown blazes with hundreds of overlapping fronds. We sample starting integers spread across a wide range for variety, cap how deep each bough is drawn so the rare very-long sequences don't spiral away, and normalise the whole coral to sit upright in the frame. The turn angles are balanced so the boughs, on average, grow straight up — the fan comes from the natural spread of even/odd patterns, not from a bias.",
+      "equations": [
+          {
+              "label": "the Collatz (3n+1) map",
+              "latex": "f(n) = \\begin{cases} n/2 & n \\text{ even} \\\\ 3n+1 & n \\text{ odd} \\end{cases}"
+          },
+          {
+              "label": "the conjecture: every start reaches 1",
+              "latex": "\\forall n \\in \\mathbb{Z}^{+}\\; \\exists k:\\; f^{(k)}(n) = 1 \\quad(\\text{unproven})"
+          },
+          {
+              "label": "turtle heading along a reversed bough",
+              "latex": "\\theta_{j} = \\theta_{j-1} + \\begin{cases} +\\alpha & \\text{value even} \\\\ -\\beta & \\text{value odd} \\end{cases}"
+          }
+      ],
+      "params": [
+          {
+              "key": "sway",
+              "symbol": "a",
+              "meaning": "amplitude of the slow seaweed drift; 0 freezes the coral"
+          },
+          {
+              "key": "speed",
+              "symbol": "\\omega",
+              "meaning": "how fast the coral sways"
+          }
+      ],
+      "code": "// draw each number's descent, backwards from the root, as a turtle bough\nfor each start:\n  seq = hailstone(start)         // start -> ... -> 1\n  x = 0; y = 0; h = PI/2         // root at the base, pointing up\n  for val in reverse(seq):\n    h += (val even) ? +A_EVEN : -A_ODD   // gentle left / sharper right\n    x += cos(h); y += sin(h)\n    plot a line point here, dim near the root, bright toward the tip",
+      "links": [
+          {
+              "label": "Collatz conjecture (Wikipedia)",
+              "url": "https://en.wikipedia.org/wiki/Collatz_conjecture"
+          },
+          {
+              "label": "Veritasium — The Simplest Math Problem No One Can Solve",
+              "url": "https://www.youtube.com/watch?v=094y1Z2wpJg"
+          },
+          {
+              "label": "hailstone sequences (OEIS A006577)",
+              "url": "https://oeis.org/A006577"
+          }
+      ]
+  },
   primeSpiral: {
     title: 'Prime Spiral',
     about:
