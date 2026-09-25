@@ -73,6 +73,7 @@ import { isingFactory } from './ising';
 import { penroseFactory } from './penrose';
 import { primeSpiralFactory } from './primeSpiral';
 import { collatzFactory } from './collatz';
+import { barabasiAlbertFactory } from './barabasiAlbert';
 import { customParametricFactory } from './customParametric';
 import { luneburgLensFactory } from './luneburgLens';
 import { flyBrainFactory } from './flyBrain';
@@ -173,6 +174,7 @@ export function registerArchetypes(): void {
   register(penroseFactory);
   register(primeSpiralFactory);
   register(collatzFactory);
+  register(barabasiAlbertFactory);
   register(customParametricFactory);
   register(luneburgLensFactory);
   register(flyBrainFactory);

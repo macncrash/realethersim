@@ -644,6 +644,11 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
       camera.position.set(0, 0, 5.4);
       controls.update();
     }
+    if ($archetypeId.get() === 'barabasiAlbert') {
+      controls.target.set(0, 0, 0);
+      camera.position.set(0, 0.4, 5.0);
+      controls.update();
+    }
     if ($archetypeId.get() === 'customParametric') {
       controls.target.set(0, 0, 0);
       camera.position.set(2.6, 1.8, 3.4);
@@ -1304,6 +1309,7 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
           else if (id === 'penrose') { controls.target.set(0, 0, 0); camera.position.set(0, 0, 3.0); }
           else if (id === 'primeSpiral') { controls.target.set(0, 0, 0); camera.position.set(0, 0, 3.0); }
           else if (id === 'collatz') { controls.target.set(0, 0, 0); camera.position.set(0, 0, 5.4); }
+          else if (id === 'barabasiAlbert') { controls.target.set(0, 0, 0); camera.position.set(0, 0.4, 5.0); }
           else if (id === 'customParametric') { controls.target.set(0, 0, 0); camera.position.set(2.6, 1.8, 3.4); }
           else if (id === 'luneburgLens') { controls.target.set(0, 0, 0); camera.position.set(0, 3.9, 0.7); }
           else if (id === 'flyBrain') { controls.target.set(0, 0, 0); camera.position.set(0.4, 0.7, 3.3); }

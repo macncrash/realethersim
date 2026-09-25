@@ -18,6 +18,19 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+      "version": "0.1.97",
+      "date": "2026-09-25",
+      "title": "Barabási–Albert Network — where hubs come from",
+      "summary": "Add nodes to a network one at a time and let each newcomer wire preferentially to the nodes that already have the most links, and a few giant hubs emerge on their own — the scale-free, power-law structure behind the web, citations, and the connectivity people now point to when they call a 1665 combinatorial diagram an early neural net. Grown live, laid out in 3-D, edges drawn as glowing spokes. Opens a new Network category.",
+      "newSystems": [
+          "barabasiAlbert"
+      ],
+      "notes": [
+          "Barabási–Albert Network (Network): nodes arrive one at a time and attach to m existing nodes with probability proportional to their current degree (preferential attachment). Hot gold hubs and cool blue spokes emerge with no design — a power-law degree distribution from a single rule.",
+          "3-D force-directed layout (links attract, all nodes repel), edges rendered as point-chains, slow spin to show the hub-and-spoke skeleton. Knobs: node count, links-per-node (m), spin."
+      ]
+  },
+  {
       "version": "0.1.96",
       "date": "2026-09-19",
       "title": "Collatz Coral — a rule this simple should not look this alive",
