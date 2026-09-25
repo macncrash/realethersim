@@ -3468,6 +3468,57 @@ o[1] = p.b * x[0];`,
       { label: 'Quasicrystals (Shechtman, Nobel 2011)', url: 'https://en.wikipedia.org/wiki/Quasicrystal' },
     ],
   },
+  barabasiAlbert: {
+      "title": "Barabási–Albert Network",
+      "about": "Why do so many real networks — the World Wide Web, scientific citations, protein interactions, airline routes, who-follows-whom — have a few enormously connected hubs and a vast majority of barely-connected nodes, instead of everyone having roughly the same number of links? In 1999 Albert-László Barabási and Réka Albert showed that two ingredients are enough: the network GROWS (nodes are added over time) and new nodes attach PREFERENTIALLY (they are more likely to link to nodes that are already well connected). That is all. No hub is planned; the earliest, best-connected nodes simply keep winning new links — \"the rich get richer\" — and the result is a scale-free network whose degree distribution follows a power law, P(k) ∝ k^-3. It is the same self-reinforcing structure people are gesturing at when they look at a dense all-to-all diagram — even a 1665 alchemical table — and see a neural network: connectivity concentrating into hubs.",
+      "howItWorks": "We grow the graph exactly as the model prescribes. Start with a small seed of fully-connected nodes. Then add nodes one at a time; each new node makes m links, and it chooses each partner with probability proportional to that node's current number of links. We implement the proportional choice with the classic 'stub list' trick — a list in which every node appears once for each link it has, so picking a random entry automatically favours high-degree nodes — which makes each attachment O(1). Once the graph is grown we lay it out in three dimensions with a force-directed relaxation: every pair of nodes repels (so the graph spreads out) while linked nodes attract (so neighbours stay close), cooled over many passes until it settles. Finally each edge is drawn as a short chain of points, dim along the low-degree end and bright at the hubs, and each node gets a little glow whose size and warmth grow with its degree — so the emergent hubs blaze gold while the periphery stays a cool blue web. A slow spin reveals the three-dimensional hub-and-spoke skeleton.",
+      "equations": [
+          {
+              "label": "preferential attachment probability",
+              "latex": "\\Pi(k_i) = \\dfrac{k_i}{\\sum_j k_j}"
+          },
+          {
+              "label": "resulting scale-free degree distribution",
+              "latex": "P(k) \\sim k^{-3}"
+          },
+          {
+              "label": "the network grows one node (m links) at a time",
+              "latex": "N \\to N+1, \\qquad E \\to E + m"
+          }
+      ],
+      "params": [
+          {
+              "key": "nodes",
+              "symbol": "N",
+              "meaning": "total number of nodes grown"
+          },
+          {
+              "key": "attach",
+              "symbol": "m",
+              "meaning": "links each new node makes — higher m = denser, more interconnected"
+          },
+          {
+              "key": "speed",
+              "symbol": "\\omega",
+              "meaning": "how fast the network spins"
+          }
+      ],
+      "code": "// grow the graph: new nodes attach preferentially to well-connected nodes\nseed = fully_connected(m+1)\nstubs = [each node once per link]          // sampling this favours high degree\nfor i in (m+1) .. N-1:\n  targets = m distinct nodes drawn from stubs   // preferential attachment\n  for t in targets: add_edge(i, t); stubs += [i, t]\n// then: 3-D force-directed layout, draw edges as glowing spokes, hubs hot",
+      "links": [
+          {
+              "label": "Barabási & Albert 1999 — Emergence of scaling in random networks",
+              "url": "https://en.wikipedia.org/wiki/Barab%C3%A1si%E2%80%93Albert_model"
+          },
+          {
+              "label": "Scale-free network",
+              "url": "https://en.wikipedia.org/wiki/Scale-free_network"
+          },
+          {
+              "label": "Preferential attachment",
+              "url": "https://en.wikipedia.org/wiki/Preferential_attachment"
+          }
+      ]
+  },
   collatz: {
       "title": "Collatz Coral",
       "about": "Pick any positive whole number. If it is even, halve it; if it is odd, triple it and add one. Repeat. The Collatz conjecture — posed in 1937 and still unproven — says that no matter where you start, you always tumble down to 1. It has been checked by computer for every number up to about 2^68, yet no proof exists; Paul Erdős said \"mathematics may not be ready for such problems.\" Each number's journey down to 1 is its hailstone sequence (the values bounce up and down like hail in a cloud before falling). This piece turns those journeys into a plant. Because every sequence ends the same way — …→8→4→2→1 — all of them share that final stretch, so if you draw each one as a little path they overlap along a common stem and only peel apart where their numbers differ. Hundreds of independent descents, drawn together, weave themselves into a single branching coral: no tree-building, just arithmetic finding its own shape.",
