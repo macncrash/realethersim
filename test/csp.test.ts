@@ -3,9 +3,10 @@ import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { APP_CSP, APP_DEV_CSP, SANDBOX_CSP } from '../src/security/csp';
 
-// CSP drift guard. The production policy is sent by the Caddy front door (sibling repo
-// ethersim-deploy — authoritative) and mirrored in public/_headers; both must match the single
-// source in src/security/csp.ts exactly, and the app policy must never allow string-eval.
+// CSP drift guard. Production sends the policy from the shared Caddy front door on ps0; the sibling
+// repo ethersim-deploy keeps a local mirror of it, and public/_headers is the Cloudflare/Netlify copy.
+// Both local files must match the single source in src/security/csp.ts exactly, and the app policy
+// must never allow string-eval. (The live policy itself is checked by curl after each deploy.)
 const read = (rel: string): string | null => {
   const path = fileURLToPath(new URL(rel, import.meta.url));
   return existsSync(path) ? readFileSync(path, 'utf8') : null;
@@ -28,7 +29,7 @@ describe('content security policy', () => {
     expect(headers).toContain(`Content-Security-Policy: ${APP_CSP}`);
   });
 
-  it('the Caddy front door sends the app policy exactly (when the deploy repo is checked out)', () => {
+  it('the local Caddyfile mirror carries the app policy exactly (when the deploy repo is checked out)', () => {
     const caddy = read('../../ethersim-deploy/Caddyfile');
     if (caddy === null) return; // forks / CI without the private deploy repo
     expect(caddy).toContain(`Content-Security-Policy "${APP_CSP}"`);

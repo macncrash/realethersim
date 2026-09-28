@@ -1,9 +1,11 @@
 // Content-Security-Policy — the single source of truth for every place a CSP is sent:
-//   • production: the Caddy front door (sibling repo ethersim-deploy/Caddyfile — authoritative)
+//   • production: the SHARED Caddy front door on ps0 (~/ethersim/deploy/Caddyfile — authoritative; it
+//     also fronts other sites). The sibling repo ethersim-deploy holds only a local mirror of it.
 //   • public/_headers (a Cloudflare/Netlify-style mirror, copied into the build output)
 //   • vite dev + preview (so a CSP-only bug shows up locally instead of first on the live site —
 //     the silent Custom Equation breakage happened precisely because dev sent no CSP)
-// test/csp.test.ts asserts the deploy files contain exactly these strings, so they can't drift.
+// test/csp.test.ts asserts the local files contain exactly these strings; after a deploy, confirm the
+// live policy with `curl -sI https://ethersim.ai/ | grep -i content-security`.
 
 type Csp = Record<string, string[]>;
 
