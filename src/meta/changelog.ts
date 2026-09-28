@@ -18,17 +18,6 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
-      "version": "0.1.98",
-      "date": "2026-09-28",
-      "title": "Fix: Custom Equation paused while it moves to a sandbox",
-      "summary": "The Custom Equation system was silently broken on the live site: it compiles your expressions into code at runtime, which ETHERSIM's strict security policy (rightly) forbids, so every point collapsed to a single dot. It's withdrawn for now and will return with a real editor once user-written and AI-written sims run in an isolated sandbox — the first step toward building your own sims in the app.",
-      "newSystems": [],
-      "notes": [
-          "Fix: Custom Equation removed from the catalog until it can run sandboxed (on ethersim.ai it rendered every point at the origin; the refused code evaluation was swallowed, so nothing looked wrong in the console).",
-          "The development and preview servers now send the exact production Content-Security-Policy, generated from one source of truth with a test that checks it against the live deploy config — so a security-policy bug shows up locally instead of first on the live site."
-      ]
-  },
-  {
       "version": "0.1.97",
       "date": "2026-09-25",
       "title": "Barabási–Albert Network — where hubs come from",
