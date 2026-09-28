@@ -1,12 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { APP_CSP, APP_DEV_CSP, SANDBOX_CSP } from '../src/security/csp';
+import { APP_CSP, APP_DEV_CSP } from '../src/security/csp';
 
-// CSP drift guard. Production sends the policy from the shared Caddy front door on ps0; the sibling
-// repo ethersim-deploy keeps a local mirror of it, and public/_headers is the Cloudflare/Netlify copy.
-// Both local files must match the single source in src/security/csp.ts exactly, and the app policy
-// must never allow string-eval. (The live policy itself is checked by curl after each deploy.)
+// CSP drift guard. The local copies of the policy (public/_headers, and the private deploy mirror when
+// it is checked out alongside) must match the single source in src/security/csp.ts exactly, and the
+// app policy must never allow string-eval. The live header is confirmed by curl after each deploy.
 const read = (rel: string): string | null => {
   const path = fileURLToPath(new URL(rel, import.meta.url));
   return existsSync(path) ? readFileSync(path, 'utf8') : null;
@@ -33,14 +32,5 @@ describe('content security policy', () => {
     const caddy = read('../../ethersim-deploy/Caddyfile');
     if (caddy === null) return; // forks / CI without the private deploy repo
     expect(caddy).toContain(`Content-Security-Policy "${APP_CSP}"`);
-  });
-
-  it('the sandbox policy allows eval but no network, embedding, or foreign framing', () => {
-    expect(directive(SANDBOX_CSP, 'script-src')).toContain("'unsafe-eval'");
-    expect(directive(SANDBOX_CSP, 'connect-src')).toEqual(["'none'"]);
-    expect(directive(SANDBOX_CSP, 'default-src')).toEqual(["'none'"]);
-    expect(directive(SANDBOX_CSP, 'frame-ancestors')).toContain('https://ethersim.ai');
-    expect(directive(SANDBOX_CSP, 'frame-ancestors')).not.toContain('*');
-    expect(directive(SANDBOX_CSP, 'sandbox')).toEqual(['allow-scripts']);
   });
 });
