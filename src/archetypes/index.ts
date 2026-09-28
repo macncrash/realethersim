@@ -74,7 +74,6 @@ import { penroseFactory } from './penrose';
 import { primeSpiralFactory } from './primeSpiral';
 import { collatzFactory } from './collatz';
 import { barabasiAlbertFactory } from './barabasiAlbert';
-import { customParametricFactory } from './customParametric';
 import { luneburgLensFactory } from './luneburgLens';
 import { flyBrainFactory } from './flyBrain';
 import { bioBayFactory } from './bioBay';
@@ -175,7 +174,10 @@ export function registerArchetypes(): void {
   register(primeSpiralFactory);
   register(collatzFactory);
   register(barabasiAlbertFactory);
-  register(customParametricFactory);
+  // Custom Equation (customParametric) is withdrawn until user code runs in the sandbox: it compiles
+  // expressions with `new Function`, which the production CSP (no 'unsafe-eval') blocks, so on the
+  // live site it silently drew every point at the origin. It returns with an editor once sandboxed
+  // execution lands (ETHERSIM Studio plan, Phase 3).
   register(luneburgLensFactory);
   register(flyBrainFactory);
   register(bioBayFactory);

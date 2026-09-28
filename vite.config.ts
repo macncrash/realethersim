@@ -1,6 +1,7 @@
 import { defineConfig, type PluginOption } from 'vite';
 import { resolve } from 'node:path';
 import { mkdir, writeFile } from 'node:fs/promises';
+import { APP_CSP, APP_DEV_CSP } from './src/security/csp';
 
 // Cross-origin isolation headers — required for SharedArrayBuffer (Phase 1 Worker path).
 // Harmless for the main-thread vertical slice; keeps the dev/preview server SAB-ready.
@@ -8,6 +9,12 @@ const coiHeaders = {
   'Cross-Origin-Opener-Policy': 'same-origin',
   'Cross-Origin-Embedder-Policy': 'require-corp',
 };
+
+// The production Content-Security-Policy is sent locally too, so a CSP-only bug (e.g. string-eval,
+// which silently broke Custom Equation on the live site) surfaces in dev instead of in production.
+// Dev adds only the websocket Vite's HMR client needs; preview serves the build exactly as prod does.
+const devHeaders = { ...coiHeaders, 'Content-Security-Policy': APP_DEV_CSP };
+const previewHeaders = { ...coiHeaders, 'Content-Security-Policy': APP_CSP };
 
 // DEV-ONLY (apply:'serve') endpoint for the offline thumbnail-capture pass (?capture=thumbs in the
 // app). It accepts a base64 WebP and writes public/thumbs/<id>.webp. Never part of the production
@@ -73,8 +80,8 @@ function thumbCapturePlugin(): PluginOption {
 
 export default defineConfig({
   plugins: [thumbCapturePlugin()],
-  server: { headers: coiHeaders },
-  preview: { headers: coiHeaders },
+  server: { headers: devHeaders },
+  preview: { headers: previewHeaders },
   worker: { format: 'es' },
   build: {
     target: 'esnext',

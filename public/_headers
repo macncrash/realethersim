@@ -5,6 +5,8 @@
 # The app is fully self-contained — no network calls, no external resources — so a strict, self-only
 # CSP costs nothing. 'unsafe-inline' is needed for style only (inline <style> + Tweakpane/KaTeX inject
 # styles at runtime); scripts are same-origin ES modules (the inline modulepreload polyfill is off).
+# The CSP string must match src/security/csp.ts exactly (test/csp.test.ts). In production the Caddy
+# front door (ethersim-deploy/Caddyfile) is authoritative; this file is the Cloudflare/Netlify mirror.
 /*
   Cross-Origin-Opener-Policy: same-origin
   Cross-Origin-Embedder-Policy: require-corp
