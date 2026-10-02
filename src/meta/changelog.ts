@@ -18,6 +18,24 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+      "version": "0.1.99",
+      "date": "2026-10-02",
+      "title": "Network shapes — islands, a charged sphere, cables, and Recamán's arches",
+      "summary": "Four ways a network's structure becomes visible. A tangled hairball relaxes into community islands joined by weak ties; charges on a sphere settle into a near-hexagonal net that Euler's formula forces to carry exactly twelve defects; a thousand chords on a ring gather into cables routed through their hierarchy; and Recamán's go-back-if-you-can sequence draws itself as interlocking arches.",
+      "newSystems": [
+          "communityIslands",
+          "thomson",
+          "edgeBundling",
+          "recaman"
+      ],
+      "notes": [
+          "Community Islands (Network): a stochastic block model laid out live by springs and charges — the hairball unmixes into communities joined by white-gold bridges, and scrambles itself every so often to do it again. Knobs: communities, nodes, bridges, link pull, scramble period.",
+          "Thomson Network (Network): N charges relaxed on a sphere, triangulated (convex hull = spherical Delaunay) and coloured by neighbour count — 5 red, 6 blue, 7 green. The topological charge Σ(6 − z) is always 12; above a few hundred charges the defects grow into scars.",
+          "Edge Bundling (Network): Holten's hierarchical edge bundles — links routed through a group hierarchy as B-splines, bundling strength β breathing between straight chords and tight cables; colour runs from source group to target group.",
+          "Recamán Arcs (Number): OEIS A005132 drawn as Numberphile's arc diagram, coloured by step, with a ripple running through the arches in jump order; lower arcs tilt out of the plane for depth."
+      ]
+  },
+  {
       "version": "0.1.97",
       "date": "2026-09-25",
       "title": "Barabási–Albert Network — where hubs come from",

@@ -649,6 +649,18 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
       camera.position.set(0, 0.4, 5.0);
       controls.update();
     }
+    // Edge bundling is a ring with arched bundles — view it nearly face-on, tilted enough to see the dome.
+    if ($archetypeId.get() === 'edgeBundling') {
+      controls.target.set(0, 0, 0);
+      camera.position.set(0, -1.0, 4.5);
+      controls.update();
+    }
+    // Recamán's arc diagram lies along the number line — face-on, from slightly above so the tilted lower arcs read.
+    if ($archetypeId.get() === 'recaman') {
+      controls.target.set(0, 0, 0);
+      camera.position.set(0, 0.8, 4.3);
+      controls.update();
+    }
     if ($archetypeId.get() === 'customParametric') {
       controls.target.set(0, 0, 0);
       camera.position.set(2.6, 1.8, 3.4);
@@ -1310,6 +1322,8 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
           else if (id === 'primeSpiral') { controls.target.set(0, 0, 0); camera.position.set(0, 0, 3.0); }
           else if (id === 'collatz') { controls.target.set(0, 0, 0); camera.position.set(0, 0, 5.4); }
           else if (id === 'barabasiAlbert') { controls.target.set(0, 0, 0); camera.position.set(0, 0.4, 5.0); }
+          else if (id === 'edgeBundling') { controls.target.set(0, 0, 0); camera.position.set(0, -1.0, 4.5); }
+          else if (id === 'recaman') { controls.target.set(0, 0, 0); camera.position.set(0, 0.8, 4.3); }
           else if (id === 'customParametric') { controls.target.set(0, 0, 0); camera.position.set(2.6, 1.8, 3.4); }
           else if (id === 'luneburgLens') { controls.target.set(0, 0, 0); camera.position.set(0, 3.9, 0.7); }
           else if (id === 'flyBrain') { controls.target.set(0, 0, 0); camera.position.set(0.4, 0.7, 3.3); }
