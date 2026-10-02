@@ -3585,4 +3585,228 @@ o[1] = p.b * x[0];`,
       { label: 'Ulam spiral (the square cousin)', url: 'https://en.wikipedia.org/wiki/Ulam_spiral' },
     ],
   },
+  communityIslands: {
+      "title": "Community Islands",
+      "about": "Most real networks — friendships, papers citing papers, proteins that work together, the web — are made of COMMUNITIES: groups whose members link to each other far more often than to anyone outside. Finding those groups is one of network science's central problems (community detection), and the first obstacle is simply seeing them: drawn naively, a few hundred nodes and links are an unreadable hairball. The trick that makes structure visible is to treat the network as a physical object. Make every link a spring and every node an electric charge that pushes all the others away, and let the whole thing relax. Densely-linked groups pull themselves together into tight balls, while the few links between groups — the sociologist Mark Granovetter's 'weak ties', which turn out to carry most of the new information in a social network — get stretched into long bridges. The hairball unmixes into islands. Every so often this network scrambles itself back into a tangle so you can watch it happen again.",
+      "howItWorks": "The network is a stochastic block model, the standard benchmark for community-detection algorithms: nodes are split into communities of uneven size; inside a community each pair is linked with a probability that gives about five links per node (plus a random spanning tree so no community falls apart); a small number of 'bridge' links join random nodes in different communities. The layout is a live force simulation in the spirit of Fruchterman and Reingold: every pair of nodes repels with an inverse-square force, every link is a Hooke spring with a fixed rest length, a weak pull toward the centre stops separate islands drifting away, and velocities are damped so the system settles. We step it every frame (it is cheap enough to do exactly, all pairs, for a few hundred nodes). Links are drawn as chains of points in their community's colour; bridges glow white-gold; each node is a small ball sized by how many links it has. The 'link pull' knob strengthens the springs (tighter, more separated islands); 'bridges' adds more weak ties (with enough of them the islands merge back into one blob — communities only exist while ties inside outnumber ties between).",
+      "equations": [
+          {
+              "label": "repulsion between every pair of nodes",
+              "latex": "\\mathbf F_{ij} = k_r\\,\\dfrac{\\mathbf x_i - \\mathbf x_j}{\\lVert \\mathbf x_i - \\mathbf x_j \\rVert^{3}}"
+          },
+          {
+              "label": "each link is a spring with rest length L₀",
+              "latex": "\\mathbf F_{ij} = -k_s\\,(d_{ij} - L_0)\\,\\hat{\\mathbf d}_{ij}"
+          },
+          {
+              "label": "damped motion",
+              "latex": "\\ddot{\\mathbf x}_i = \\textstyle\\sum_j \\mathbf F_{ij} - g\\,\\mathbf x_i - \\gamma\\,\\dot{\\mathbf x}_i"
+          },
+          {
+              "label": "stochastic block model: link probability",
+              "latex": "P(i \\sim j) = \\begin{cases} p_{\\text{in}} & c_i = c_j \\\\ p_{\\text{out}} & c_i \\ne c_j \\end{cases}, \\quad p_{\\text{in}} \\gg p_{\\text{out}}"
+          }
+      ],
+      "params": [
+          {
+              "key": "communities",
+              "symbol": "C",
+              "meaning": "number of communities"
+          },
+          {
+              "key": "nodes",
+              "symbol": "N",
+              "meaning": "number of nodes"
+          },
+          {
+              "key": "bridges",
+              "symbol": "p_{\\text{out}}",
+              "meaning": "how many weak ties join different communities"
+          },
+          {
+              "key": "pull",
+              "symbol": "k_s",
+              "meaning": "spring strength of the links"
+          },
+          {
+              "key": "reshuffle",
+              "symbol": "T",
+              "meaning": "seconds between scrambles back into a hairball (0 = never)"
+          }
+      ],
+      "code": "// a stochastic block model, laid out by a spring–charge simulation\nfor each pair in the same community: link with prob p_in\nadd a few bridge links between communities (p_out)\nevery frame:\n  F_i = Σ_j k_r (x_i−x_j)/|x_i−x_j|³          // all pairs repel\n      + Σ_links −k_s (d−L0) d̂                  // links are springs\n      − g x_i                                  // weak pull to the centre\n  v_i = (v_i + F_i dt)·e^(−γ dt);  x_i += v_i dt",
+      "links": [
+          {
+              "label": "Stochastic block model",
+              "url": "https://en.wikipedia.org/wiki/Stochastic_block_model"
+          },
+          {
+              "label": "Community structure",
+              "url": "https://en.wikipedia.org/wiki/Community_structure"
+          },
+          {
+              "label": "Force-directed graph drawing",
+              "url": "https://en.wikipedia.org/wiki/Force-directed_graph_drawing"
+          },
+          {
+              "label": "Granovetter 1973 — The Strength of Weak Ties",
+              "url": "https://en.wikipedia.org/wiki/Interpersonal_ties#Weak_ties"
+          }
+      ]
+  },
+  thomson: {
+      "title": "Thomson Network",
+      "about": "In 1904 J. J. Thomson — who had just discovered the electron — asked a question as a model of the atom: if N electrons are stuck on the surface of a sphere and repel each other by Coulomb's law, how do they arrange themselves? A few answers are elegant (4 charges sit at the corners of a tetrahedron, 6 an octahedron, 12 an icosahedron); for large N the charges form an almost-hexagonal net, like a honeycomb. But a sphere can never be tiled by hexagons alone. Euler's formula for any network drawn on a sphere forces a 'topological charge': if each charge has z neighbours, the total of (6 − z) over all charges is exactly 12. So there are always defects — at least twelve 5-fold sites (red here) — and above a few hundred charges the defects grow 7-fold partners (green) and string out into short lines called scars. The same rule shapes virus shells, fullerenes (C₆₀ has exactly twelve pentagons), and particle 'armour' on droplets. The Thomson problem is still unsolved in general: the number of near-optimal arrangements grows exponentially with N.",
+      "howItWorks": "We scatter N charges at random on a sphere and relax them by projected gradient descent: compute the total Coulomb force on each charge, remove the part pointing out of the sphere, take a small step, and push every charge back onto the surface — repeated until the arrangement settles into a (local) minimum of the energy. Then we find each charge's neighbours. For points on a sphere the convex hull — the tightest polyhedron around them — is exactly their Delaunay triangulation, so we build the hull (incrementally, adding one point at a time and replacing the faces it can see) and read off which charges share a triangle. Each charge is coloured by its number of neighbours (5 red-orange, 6 blue, 7 green) and each link is drawn as a short great-circle arc, blending the colours of its two ends. The label in the hierarchy panel reports the defect count, and you can check the topological charge is always 12. A small thermal jiggle (each charge wanders around its site) and a slow spin keep it alive; the colours belong to the relaxed ground state.",
+      "equations": [
+          {
+              "label": "Coulomb energy to minimise (unit sphere)",
+              "latex": "E = \\sum_{i<j} \\frac{1}{\\lVert \\mathbf x_i - \\mathbf x_j \\rVert}, \\qquad \\lVert \\mathbf x_i \\rVert = 1"
+          },
+          {
+              "label": "Euler's formula for a triangulated sphere",
+              "latex": "V - E + F = 2"
+          },
+          {
+              "label": "…forces a total topological charge of 12",
+              "latex": "\\sum_i \\,(6 - z_i) = 12"
+          }
+      ],
+      "params": [
+          {
+              "key": "charges",
+              "symbol": "N",
+              "meaning": "number of charges on the sphere"
+          },
+          {
+              "key": "jiggle",
+              "symbol": "T",
+              "meaning": "thermal motion of each charge around its site"
+          },
+          {
+              "key": "spin",
+              "symbol": "\\omega",
+              "meaning": "how fast the sphere turns"
+          }
+      ],
+      "code": "// relax N charges on a sphere, then triangulate and count neighbours\nscatter N points on the unit sphere\nrepeat:\n  F_i = Σ_j (x_i − x_j)/|x_i − x_j|³\n  F_i −= (F_i·x_i) x_i                 // stay on the sphere\n  x_i = normalise(x_i + step·F_i)\nneighbours = edges of the convex hull     // = spherical Delaunay\ncolour by z_i: 5 red · 6 blue · 7 green   // Σ(6 − z_i) = 12",
+      "links": [
+          {
+              "label": "Thomson problem",
+              "url": "https://en.wikipedia.org/wiki/Thomson_problem"
+          },
+          {
+              "label": "Euler characteristic",
+              "url": "https://en.wikipedia.org/wiki/Euler_characteristic"
+          },
+          {
+              "label": "Bausch et al. 2003 — grain boundary scars on colloidal crystals",
+              "url": "https://www.science.org/doi/10.1126/science.1081160"
+          }
+      ]
+  },
+  edgeBundling: {
+      "title": "Edge Bundling",
+      "about": "How do you see the structure in thousands of connections? Put every node of a network on a ring and draw each link as a straight chord, and you get a grey disc of spaghetti. In 2006 Danny Holten had the idea of letting the network's own HIERARCHY do the routing. Most real networks come with one — software modules inside packages, neurons inside brain regions, people inside teams inside departments. Instead of a straight line, each link travels the path through that tree: from its node up to its group, up to the common ancestor, and back down to the target, drawn as a smooth curve that uses the tree nodes as guide points. Links that run between the same parts of the hierarchy share guide points, so they merge into cables, and the big picture — which parts talk to which — leaps out of the clutter. One knob, the bundling strength β, slides every curve from the straight chord (β = 0) to the full tree route (β = 1). Here it breathes slowly, so you can watch the spaghetti gather into cables and fray apart again.",
+      "howItWorks": "The nodes are leaves of a three-level hierarchy — groups split into subgroups split into leaves — laid out radially: leaves evenly on the ring (a small gap between groups), each subgroup and group placed further in at the average angle of its members, the root at the centre. Each group talks mostly to itself and to two partner groups, with a few random links, so there is real structure to find. For a link from leaf a to leaf b we list the tree path a → subgroup → group → root → group → subgroup → b (stopping at the lowest common ancestor when they share one), straighten those control points toward the chord by β, and draw a uniform cubic B-spline through them (the end points repeated so the curve lands exactly on the leaves). Colour runs along each link from its source group's hue to its target's — the ring is a colour wheel — so a bundle's ends tell you who is talking to whom. A gentle dome lifts the bundles off the ring plane, so orbiting shows them as arches.",
+      "equations": [
+          {
+              "label": "straightening each control point toward the chord",
+              "latex": "\\mathbf P_i' = \\beta\\,\\mathbf P_i + (1-\\beta)\\Big(\\mathbf P_0 + \\tfrac{i}{n-1}(\\mathbf P_{n-1} - \\mathbf P_0)\\Big)"
+          },
+          {
+              "label": "uniform cubic B-spline segment",
+              "latex": "\\mathbf C(s) = \\tfrac16\\big[(1-s)^3\\mathbf Q_0 + (3s^3-6s^2+4)\\mathbf Q_1 + (-3s^3+3s^2+3s+1)\\mathbf Q_2 + s^3\\mathbf Q_3\\big]"
+          }
+      ],
+      "params": [
+          {
+              "key": "beta",
+              "symbol": "\\beta",
+              "meaning": "bundling strength: 0 = straight chords, 1 = full route through the hierarchy"
+          },
+          {
+              "key": "breathe",
+              "symbol": "a",
+              "meaning": "how far β swings down and back (period about 14 s)"
+          },
+          {
+              "key": "groups",
+              "symbol": "G",
+              "meaning": "number of top-level groups"
+          },
+          {
+              "key": "links",
+              "symbol": "k",
+              "meaning": "average links per node"
+          },
+          {
+              "key": "dome",
+              "symbol": "h",
+              "meaning": "how high the bundles arch off the ring"
+          }
+      ],
+      "code": "// hierarchical edge bundling (Holten 2006)\nfor each link (a, b):\n  P = [a, sub(a), group(a), root, group(b), sub(b), b]   // path through the tree via the common ancestor\n  P'_i = β·P_i + (1−β)·lerp(P_0, P_last, i/(n−1))       // straighten toward the chord\n  draw uniform cubic B-spline through P' (ends tripled)\ncolour along the link: hue(group a) → hue(group b)",
+      "links": [
+          {
+              "label": "Holten 2006 — Hierarchical Edge Bundles",
+              "url": "https://doi.org/10.1109/TVCG.2006.147"
+          },
+          {
+              "label": "Edge bundling (overview)",
+              "url": "https://en.wikipedia.org/wiki/Edge_bundling"
+          },
+          {
+              "label": "B-spline",
+              "url": "https://en.wikipedia.org/wiki/B-spline"
+          }
+      ]
+  },
+  recaman: {
+      "title": "Recamán Arcs",
+      "about": "A sequence with a one-line rule that draws a cathedral. Start at 0. On step n, jump BACKWARD by n if that lands on a positive number you have not visited yet; otherwise jump FORWARD by n. That is all. It begins 0, 1, 3, 6, 2, 7, 13, 20, 12, 21, 11, 22, 10, 23, … — and its rhythm is impossible to predict. The Colombian mathematician Bernardo Recamán Santos sent it to Neil Sloane's encyclopedia of integer sequences (entry A005132) in 1991, and Numberphile made it famous with the right way to look at it: an ARC DIAGRAM. Lay the numbers along a line and draw each jump as a half-circle, alternating above and below. Backward jumps nest inside earlier forward ones, and the picture fills with interlocking arches. Nobody knows whether every positive number is eventually visited — it is conjectured, but unproven, and some small numbers take an astronomically long time to appear, if they ever do.",
+      "howItWorks": "We generate the sequence exactly by the rule, keeping a set of visited numbers. Each jump from aₙ₋₁ to aₙ becomes a half-circle of radius |aₙ − aₙ₋₁| / 2 centred halfway between them; even-numbered jumps arc above the number line and odd ones below, and the lower arcs are tilted out of the plane (the tilt knob) so the diagram has depth when you orbit it. Colour runs with the step number, blue through magenta to gold, so you can read the order of the jumps in the finished picture, and a slow ripple travels through the arches in the same order — each one swells as the wave passes — like the sequence being played back.",
+      "equations": [
+          {
+              "label": "Recamán's sequence (OEIS A005132)",
+              "latex": "a_0 = 0, \\qquad a_n = \\begin{cases} a_{n-1} - n & \\text{if } a_{n-1} - n > 0 \\text{ and not already in the sequence} \\\\ a_{n-1} + n & \\text{otherwise} \\end{cases}"
+          },
+          {
+              "label": "each jump drawn as a half-circle",
+              "latex": "\\text{centre } \\tfrac{a_{n-1}+a_n}{2}, \\qquad \\text{radius } \\tfrac{|a_n - a_{n-1}|}{2}"
+          }
+      ],
+      "params": [
+          {
+              "key": "steps",
+              "symbol": "n",
+              "meaning": "how many jumps to draw"
+          },
+          {
+              "key": "wave",
+              "symbol": "a",
+              "meaning": "height of the ripple that runs through the arches in step order"
+          },
+          {
+              "key": "tilt",
+              "symbol": "\\phi",
+              "meaning": "how far the lower arcs lean out of the plane"
+          }
+      ],
+      "code": "// Recamán: go back if you can, forward if you must\na = [0]; seen = {0}\nfor n = 1..N:\n  b = a[n−1] − n\n  a[n] = (b > 0 and b not in seen) ? b : a[n−1] + n\n  seen.add(a[n])\n// draw jump n as a half-circle from a[n−1] to a[n], alternating above/below",
+      "links": [
+          {
+              "label": "OEIS A005132 — Recamán's sequence",
+              "url": "https://oeis.org/A005132"
+          },
+          {
+              "label": "Recamán's sequence (Wikipedia)",
+              "url": "https://en.wikipedia.org/wiki/Recam%C3%A1n%27s_sequence"
+          },
+          {
+              "label": "Numberphile — The Slightly Spooky Recamán Sequence",
+              "url": "https://www.youtube.com/watch?v=FGC5TdIiT9U"
+          }
+      ]
+  },
 };
