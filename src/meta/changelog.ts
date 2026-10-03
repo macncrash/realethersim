@@ -18,6 +18,25 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+      "version": "0.1.100",
+      "date": "2026-10-03",
+      "title": "Rotation — why rackets flip, tops nod, the Earth wobbles and pendulums turn",
+      "summary": "A new Rotation category for the physics of spinning things. See why a racket spun about its middle axis keeps flipping (and the saddle on the momentum sphere that causes it), the three ways a heavy top can nod as it precesses, Poinsot's picture of a free body as an egg rolling on a floor (the Earth's Chandler wobble), and Foucault's pendulum knocking down pegs as the Earth turns beneath it.",
+      "newSystems": [
+          "racketFlip",
+          "heavyTop",
+          "poinsot",
+          "foucault"
+      ],
+      "notes": [
+          "Why the Racket Flips (Rotation): three plates spun about their three principal axes — only the middle one flips (the Dzhanibekov / tennis-racket effect). The momentum sphere shows why: stable loops round the red and blue axes, a saddle X round the yellow one. Exact torque-free Euler equations + quaternion attitude.",
+          "Heavy Top: Precession & Nutation (Rotation): Lagrange's top released three ways — pushed forward (waves), let go (cusps), pushed back (loops) — tracing its axis on a sphere.",
+          "Poinsot's Rolling Ellipsoid (Rotation): the inertia ellipsoid rolls without slipping on the invariable plane; gold polhode on the body, pink herpolhode on the floor; set asymmetry to 0 for the Earth-like circle of the Chandler wobble.",
+          "Foucault's Pendulum (Rotation): the swing plane turns at Ω·sin(latitude) — clockwise in the north, anticlockwise in the south, not at the equator — drawing a star on the floor and toppling a ring of pegs; the real period for your latitude is shown.",
+          "New Rotation category; a shared rigid-body integrator (Euler's equations + quaternions, |L| held exact)."
+      ]
+  },
+  {
       "version": "0.1.99",
       "date": "2026-10-02",
       "title": "Network shapes — islands, a charged sphere, cables, and Recamán's arches",

@@ -3809,4 +3809,209 @@ o[1] = p.b * x[0];`,
           }
       ]
   },
+  racketFlip: {
+      "title": "Why the Racket Flips",
+      "about": "Toss a tennis racket, a phone or a book into the air with a spin, and it behaves very differently depending on which way you spin it. Every rigid body has three special 'principal' axes: one it is easiest to spin about (here RED), one hardest (BLUE), and one in between (YELLOW). Spin it about the red or the blue axis and it spins calmly. Spin it about the yellow, in-between axis and every few turns it flips over by half a turn — while flying freely, with nothing touching it. Cosmonaut Vladimir Dzhanibekov noticed a wing nut doing exactly this aboard the Salyut 7 space station in 1985, which is why it is often called the Dzhanibekov effect; mathematicians call it the intermediate-axis or tennis-racket theorem. Three identical plates spin here, one about each axis; only the middle one flips. The sphere underneath explains why.",
+      "howItWorks": "Each plate obeys Euler's equations for a body with no torque acting on it, integrated exactly (RK4) together with its orientation (a quaternion). Two things are conserved: the angular momentum L (a vector fixed in space) and the kinetic energy. Seen from inside the body, the direction of L must therefore stay on a sphere (fixed length) and on an ellipsoid (fixed energy) at the same time — so it can only travel along the curves where the two meet, called polhodes. The sphere draws those curves. Around the red and blue axes they are small closed loops: nudge the spin and it just circles nearby — stable. Around the yellow axis the curves cross in an X (the separatrix, in white): a saddle point. Any tiny wobble starts L sliding along that X, all the way round to the opposite side of the sphere, and back — which, seen from outside, is the plate flipping over and over. The coloured comet on the sphere is each plate's own L; the middle plate's comet sweeps through the X each time it flips. Making the plate thicker or wider changes the three moments of inertia, and with them how fast the flips come.",
+      "equations": [
+          {
+              "label": "Euler's equations (torque-free, principal axes)",
+              "latex": "I_1\\dot\\omega_1 = (I_2-I_3)\\,\\omega_2\\omega_3,\\quad I_2\\dot\\omega_2 = (I_3-I_1)\\,\\omega_3\\omega_1,\\quad I_3\\dot\\omega_3 = (I_1-I_2)\\,\\omega_1\\omega_2"
+          },
+          {
+              "label": "conserved: momentum (a sphere) and energy (an ellipsoid)",
+              "latex": "L_1^2+L_2^2+L_3^2 = |\\mathbf L|^2, \\qquad \\frac{L_1^2}{I_1}+\\frac{L_2^2}{I_2}+\\frac{L_3^2}{I_3} = 2E"
+          },
+          {
+              "label": "near the middle axis small wobbles grow exponentially",
+              "latex": "\\lambda = \\omega\\sqrt{\\frac{(I_3-I_2)(I_2-I_1)}{I_1 I_3}} > 0 \\quad (I_1<I_2<I_3)"
+          }
+      ],
+      "params": [
+          {
+              "key": "spin",
+              "symbol": "\\omega",
+              "meaning": "how fast the plates spin"
+          },
+          {
+              "key": "wobble",
+              "symbol": "\\varepsilon",
+              "meaning": "how far each plate starts from a perfect spin about its axis (smaller = longer between flips)"
+          },
+          {
+              "key": "width",
+              "symbol": "b",
+              "meaning": "plate width — changes the middle moment of inertia"
+          },
+          {
+              "key": "thickness",
+              "symbol": "c",
+              "meaning": "plate thickness"
+          }
+      ],
+      "code": "// torque-free rigid body: Euler's equations + quaternion attitude\nω̇1 = (I2−I3)/I1·ω2ω3;  ω̇2 = (I3−I1)/I2·ω3ω1;  ω̇3 = (I1−I2)/I3·ω1ω2\nq̇ = ½ q ⊗ (0, ω)                       // orientation\nRK4 step, renormalise q, rescale ω so |Iω| = |L| exactly\n// the sphere: L/|L| in the body frame; polhodes = sphere ∩ energy ellipsoid",
+      "links": [
+          {
+              "label": "Tennis racket theorem",
+              "url": "https://en.wikipedia.org/wiki/Tennis_racket_theorem"
+          },
+          {
+              "label": "Euler's equations (rigid body dynamics)",
+              "url": "https://en.wikipedia.org/wiki/Euler%27s_equations_(rigid_body_dynamics)"
+          },
+          {
+              "label": "Polhode",
+              "url": "https://en.wikipedia.org/wiki/Polhode"
+          }
+      ]
+  },
+  heavyTop: {
+      "title": "Heavy Top: Precession & Nutation",
+      "about": "Why doesn't a spinning top fall over? Gravity pulls its leaning centre down, but on a spinning body that pull doesn't tip it — it twists the spin axis sideways, so the axis sweeps slowly round the vertical instead: PRECESSION. Look closer and the axis also nods up and down as it goes round: NUTATION. How it nods depends only on how the top was let go, and there are exactly three kinds of path its tip can draw. Three identical tops spin here with the same tilt and the same spin; the only difference is a sideways nudge at release. Pushed forward along the precession, the tip draws gentle WAVES. Let go with no nudge, it draws CUSPS — it comes to a dead stop at the top of every nod, like a ball thrown straight up. Pushed backwards, it draws LOOPS — briefly running backwards on every nod.",
+      "howItWorks": "This is Lagrange's top: a symmetric top on a fixed point under gravity, one of the few spinning-body problems that can be solved exactly. Two angular momenta are conserved — about the vertical (p_φ) and about the top's own axis (p_ψ) — along with the energy. They let us write the precession rate φ̇ directly in terms of the tilt θ, leaving a single equation for the nodding motion, which we integrate with RK4. Whether the tip draws waves, cusps or loops is decided by whether φ̇ ever reaches zero: never (waves), exactly at the top of each nod (cusps — the case when the top is released without a sideways push), or passing through zero and changing sign (loops). Each top's axis tip leaves a fading trail on the sphere it moves on, and a coloured stripe on each disc shows its spin. Spin faster and the nutation shrinks into a fast shiver and the precession slows — the 'sleepy' top you see on a table.",
+      "equations": [
+          {
+              "label": "precession rate from the conserved momenta (transverse inertia I)",
+              "latex": "\\dot\\phi = \\frac{p_\\phi - p_\\psi\\cos\\theta}{I\\sin^2\\theta}"
+          },
+          {
+              "label": "the nodding (nutation) equation",
+              "latex": "I\\ddot\\theta = I\\dot\\phi^{2}\\sin\\theta\\cos\\theta - p_\\psi\\,\\dot\\phi\\sin\\theta + mgl\\sin\\theta"
+          },
+          {
+              "label": "slow precession of a fast top",
+              "latex": "\\Omega_p \\approx \\frac{mgl}{I_3\\,\\omega_3}"
+          }
+      ],
+      "params": [
+          {
+              "key": "spin",
+              "symbol": "\\omega_3",
+              "meaning": "spin about the top's own axis"
+          },
+          {
+              "key": "tilt",
+              "symbol": "\\theta_0",
+              "meaning": "tilt from the vertical at release"
+          },
+          {
+              "key": "gravity",
+              "symbol": "mgl",
+              "meaning": "gravity's torque (weight × distance of the centre of mass from the tip)"
+          }
+      ],
+      "code": "// Lagrange top: φ̇ from the conserved momenta, θ integrated (RK4)\nb = φ̇0·sin²θ0 + a·cosθ0                    // a = p_ψ/I, b = p_φ/I\nφ̇ = (b − a cosθ)/sin²θ\nθ̈ = φ̇² sinθ cosθ − a φ̇ sinθ + (mgl/I) sinθ\nψ̇ = ω3 − φ̇ cosθ\ntip = (sinθ cosφ, cosθ, sinθ sinφ)   // trail on the sphere\n// φ̇0 > 0: waves · φ̇0 = 0: cusps · φ̇0 < 0: loops",
+      "links": [
+          {
+              "label": "Lagrange, Euler and Kovalevskaya tops",
+              "url": "https://en.wikipedia.org/wiki/Lagrange,_Euler,_and_Kovalevskaya_tops"
+          },
+          {
+              "label": "Precession",
+              "url": "https://en.wikipedia.org/wiki/Precession"
+          },
+          {
+              "label": "Nutation",
+              "url": "https://en.wikipedia.org/wiki/Nutation"
+          }
+      ]
+  },
+  poinsot: {
+      "title": "Poinsot's Rolling Ellipsoid",
+      "about": "In 1834 Louis Poinsot found a purely geometric way to see how any body spins when nothing pushes on it. Attach to the body an egg-shaped surface built from its moments of inertia (its inertia ellipsoid). Then the whole motion is just this: the ellipsoid rolls, without slipping, on a fixed flat floor — the 'invariable plane', square to the body's angular momentum — with its centre held still. The point where egg touches floor always lies on the body's instantaneous spin axis. Seen from the body, that contact point runs round a closed curve on the egg (the polhode, gold); seen from outside it draws a curve on the floor (the herpolhode, pink) that generally never closes. Make the body nearly symmetric (asymmetry near 0) and the floor curve becomes a circle: the spin axis simply circles the momentum axis. That is exactly what the Earth does — its rotation axis wanders around in a circle a few metres across at the poles, the Chandler wobble, with a period of about 433 days (Euler predicted 305 days for a rigid Earth; the real Earth's oceans and mantle stretch it).",
+      "howItWorks": "We integrate the exact torque-free motion (Euler's equations plus the body's orientation, with RK4), with the angular momentum pointing straight down so that the invariable plane is a floor under the ellipsoid. Each step we compute where the spin vector meets the ellipsoid — scaling ω by 1/√(2T) puts it exactly on the surface xᵀIx = 1, and its height is always the same, √(2T)/|L|, which is why the floor is flat — and record the contact point on the floor. The ellipsoid is drawn as a lattice of lines that turns with the body; the gold polhode is the closed curve on its surface where the momentum sphere meets the energy ellipsoid, mapped onto the inertia ellipsoid; the white rod is the instantaneous spin axis from the centre to the contact point; the fading pink trail is the herpolhode. 'Wobble size' picks how far the spin starts from the body's main axis (which polhode it runs on).",
+      "equations": [
+          {
+              "label": "the inertia (Poinsot) ellipsoid, fixed in the body",
+              "latex": "\\mathbf x^{\\mathsf T} I\\,\\mathbf x = 1"
+          },
+          {
+              "label": "the contact point is the scaled spin vector",
+              "latex": "\\mathbf x_c = \\frac{\\boldsymbol\\omega}{\\sqrt{2T}}, \\qquad \\mathbf x_c\\cdot\\hat{\\mathbf L} = \\frac{\\sqrt{2T}}{|\\mathbf L|} = \\text{const}"
+          },
+          {
+              "label": "Euler's free-wobble period for an oblate rigid body",
+              "latex": "T_{\\text{wobble}} = \\frac{2\\pi}{\\Omega}\\,\\frac{I_1}{I_3 - I_1}"
+          }
+      ],
+      "params": [
+          {
+              "key": "asymmetry",
+              "symbol": "I_2",
+              "meaning": "how far the middle moment sits from the smallest (0 = symmetric, like the Earth)"
+          },
+          {
+              "key": "start",
+              "symbol": "\\theta_0",
+              "meaning": "how far the spin starts from the main axis — the size of the wobble"
+          },
+          {
+              "key": "spin",
+              "symbol": "\\omega",
+              "meaning": "how fast it turns"
+          }
+      ],
+      "code": "// Poinsot: the inertia ellipsoid rolls on the invariable plane\nintegrate Euler's equations + quaternion (RK4)\nx_c(body) = ω / √(2T)                 // on the ellipsoid xᵀIx = 1\nx_c(space) = R·x_c                     // its height along L̂ is constant: a flat floor\nherpolhode += (x_c.x, x_c.z)             // the trace on the floor\npolhode  = sphere ∩ energy-ellipsoid, mapped by x = I⁻¹L/√(2E)",
+      "links": [
+          {
+              "label": "Poinsot's ellipsoid",
+              "url": "https://en.wikipedia.org/wiki/Poinsot%27s_ellipsoid"
+          },
+          {
+              "label": "Polhode (and herpolhode)",
+              "url": "https://en.wikipedia.org/wiki/Polhode"
+          },
+          {
+              "label": "Chandler wobble",
+              "url": "https://en.wikipedia.org/wiki/Chandler_wobble"
+          }
+      ]
+  },
+  foucault: {
+      "title": "Foucault's Pendulum",
+      "about": "In 1851 Léon Foucault hung a 28 kg brass bob on a 67 m wire from the dome of the Panthéon in Paris and set it swinging. Nothing pushes the pendulum sideways — and yet, over the hours, the line it swings along slowly turns, clockwise, knocking over a ring of pegs one by one. The swing isn't really turning: the floor is. The pendulum keeps swinging in the same direction in space while Paris, the building and the spectators turn underneath it with the Earth — the first direct, indoors demonstration that the Earth rotates. How fast it turns depends on where you are: once a day at the North or South Pole, not at all on the equator, and in between at the Earth's rate times the sine of the latitude — once every 31.8 hours in Paris, anticlockwise in the southern hemisphere. Here the Earth's spin is speeded up enormously (the knob) so a turn takes a minute or two; the hierarchy panel shows the real period for the latitude you choose.",
+      "howItWorks": "Watched from the rotating floor, the bob feels an extra sideways push — the Coriolis force — that bends each swing a little to the right in the northern hemisphere. Only the vertical part of the Earth's spin matters for a pendulum swinging near the floor, which is where the sin(latitude) comes from. We integrate the standard small-swing pendulum in the rotating frame with RK4: a spring-like pull back to the centre plus the Coriolis term. Released from rest at the edge, as Foucault did by burning the thread that held it back, the bob's path seen from the floor is a star of petals with sharp points at the rim; give it a sideways push at release and the petals open into loops. The fading gold trace on the floor is the bob's path, and a peg falls whenever the bob passes over it; the pegs stand up again after each half turn of the swing plane.",
+      "equations": [
+          {
+              "label": "the pendulum seen from the rotating floor",
+              "latex": "\\ddot x = -\\omega_0^2 x - 2\\Omega\\sin\\lambda\\,\\dot z, \\qquad \\ddot z = -\\omega_0^2 z + 2\\Omega\\sin\\lambda\\,\\dot x"
+          },
+          {
+              "label": "rate at which the swing plane turns",
+              "latex": "\\Omega_F = \\Omega_\\oplus \\sin\\lambda"
+          },
+          {
+              "label": "time for a full turn",
+              "latex": "T_F = \\frac{23.93\\ \\text{h}}{\\sin\\lambda} \\quad (31.8\\ \\text{h in Paris, } \\lambda = 48.85^\\circ)"
+          }
+      ],
+      "params": [
+          {
+              "key": "latitude",
+              "symbol": "\\lambda",
+              "meaning": "latitude in degrees (negative = southern hemisphere)"
+          },
+          {
+              "key": "earth",
+              "symbol": "\\Omega/\\omega_0",
+              "meaning": "the Earth's spin relative to the swing rate — hugely exaggerated so you can watch"
+          },
+          {
+              "key": "push",
+              "symbol": "v_0",
+              "meaning": "a sideways push at release (0 = released from rest, as Foucault did)"
+          }
+      ],
+      "code": "// small-swing pendulum in the Earth's rotating frame (RK4)\nWv = Ω·sin(latitude)\nẍ = −ω0²·x − 2·Wv·ż\nz̈ = −ω0²·z + 2·Wv·ẋ\n// the swing plane turns at −Wv: clockwise in the north, anticlockwise in the south\ntrace (x, z) on the floor; knock over a peg when the bob passes it",
+      "links": [
+          {
+              "label": "Foucault pendulum",
+              "url": "https://en.wikipedia.org/wiki/Foucault_pendulum"
+          },
+          {
+              "label": "Coriolis force",
+              "url": "https://en.wikipedia.org/wiki/Coriolis_force"
+          }
+      ]
+  },
 };

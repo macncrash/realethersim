@@ -661,6 +661,30 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
       camera.position.set(0, 0.8, 4.3);
       controls.update();
     }
+    // Three plates in a row over the momentum sphere — face-on so both read.
+    if ($archetypeId.get() === 'racketFlip') {
+      controls.target.set(0, -0.3, 0);
+      camera.position.set(0, -0.1, 5.7);
+      controls.update();
+    }
+    // Three tops side by side — from a little above so the trails on their spheres read.
+    if ($archetypeId.get() === 'heavyTop') {
+      controls.target.set(0, -0.35, 0);
+      camera.position.set(0, 1.6, 5.4);
+      controls.update();
+    }
+    // The ellipsoid rolling on its floor — from above so the herpolhode rosette reads.
+    if ($archetypeId.get() === 'poinsot') {
+      controls.target.set(0, -0.35, 0);
+      camera.position.set(0.6, 2.3, 4.2);
+      controls.update();
+    }
+    // The pendulum over its floor — a high 3/4 view of the wire, the trace and the pegs.
+    if ($archetypeId.get() === 'foucault') {
+      controls.target.set(0, -0.3, 0);
+      camera.position.set(1.7, 2.8, 3.2);
+      controls.update();
+    }
     if ($archetypeId.get() === 'customParametric') {
       controls.target.set(0, 0, 0);
       camera.position.set(2.6, 1.8, 3.4);
@@ -1324,6 +1348,10 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
           else if (id === 'barabasiAlbert') { controls.target.set(0, 0, 0); camera.position.set(0, 0.4, 5.0); }
           else if (id === 'edgeBundling') { controls.target.set(0, 0, 0); camera.position.set(0, -1.0, 4.5); }
           else if (id === 'recaman') { controls.target.set(0, 0, 0); camera.position.set(0, 0.8, 4.3); }
+          else if (id === 'racketFlip') { controls.target.set(0, -0.3, 0); camera.position.set(0, -0.1, 5.7); }
+          else if (id === 'heavyTop') { controls.target.set(0, -0.35, 0); camera.position.set(0, 1.6, 5.4); }
+          else if (id === 'poinsot') { controls.target.set(0, -0.35, 0); camera.position.set(0.6, 2.3, 4.2); }
+          else if (id === 'foucault') { controls.target.set(0, -0.3, 0); camera.position.set(1.7, 2.8, 3.2); }
           else if (id === 'customParametric') { controls.target.set(0, 0, 0); camera.position.set(2.6, 1.8, 3.4); }
           else if (id === 'luneburgLens') { controls.target.set(0, 0, 0); camera.position.set(0, 3.9, 0.7); }
           else if (id === 'flyBrain') { controls.target.set(0, 0, 0); camera.position.set(0.4, 0.7, 3.3); }
