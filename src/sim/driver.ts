@@ -16,7 +16,7 @@ export interface SimDriver {
 
   pump(dtSeconds: number): number; // advance the sim (main-thread); returns substeps. 0 for Worker.
   source(): Float32Array; // positions to render this frame
-  readField?(): { texture: unknown; width: number; height: number } | null; // 2-D scalar field for the field-texture render (main-thread systems only)
+  readField?(): { texture: unknown; width: number; height: number; mask?: ArrayLike<number> } | null; // 2-D scalar field for the field-texture render (main-thread systems only)
   frameIndex(): number;
   substeps(): number;
   // Trail ring buffer (FR-2.2): K-slot history the renderer draws as age-faded clouds.
@@ -91,7 +91,7 @@ export class MainThreadDriver implements SimDriver {
     return this.manager.positions();
   }
 
-  readField(): { texture: unknown; width: number; height: number } | null {
+  readField(): { texture: unknown; width: number; height: number; mask?: ArrayLike<number> } | null {
     return this.manager.active.readField?.() ?? null;
   }
 

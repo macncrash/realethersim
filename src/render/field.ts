@@ -15,7 +15,7 @@ const { Fn, uniform, vec3, uv, clamp, pow, texture } = tsl as any;
 
 export interface FieldPass {
   mesh: THREE.Mesh;
-  update(field: { texture: unknown; width: number; height: number }): void;
+  update(field: { texture: unknown; width: number; height: number; mask?: ArrayLike<number> }): void;
   dispose(): void;
 }
 
@@ -23,15 +23,19 @@ export interface FieldOptions {
   size?: number; // world size of the panel (square), default 3.4
   cold?: [number, number, number]; // trough colour (negative)
   warm?: [number, number, number]; // crest colour (positive)
+  tint?: [number, number, number]; // colour of the optional material mask (walls, glass)
 }
 
 export function createFieldPass(opts: FieldOptions = {}): FieldPass {
   const size = opts.size ?? 3.4;
   const cold = opts.cold ?? [0.16, 0.55, 1.15];
   const warm = opts.warm ?? [1.0, 0.5, 0.12];
+  const tint = opts.tint ?? [0.3, 0.33, 0.46];
 
   let tex: THREE.DataTexture | null = null;
   let buf: Float32Array | null = null;
+  let maskTex: THREE.DataTexture | null = null; // optional static material mask, uploaded once
+  let maskSrc: ArrayLike<number> | null = null;
   const uScale = uniform(1); // normalisation (≈ mean amplitude) so the map reads bright at any level
 
   const mat = new MeshBasicNodeMaterial();
@@ -45,7 +49,8 @@ export function createFieldPass(opts: FieldOptions = {}): FieldPass {
     const v = texture(t, uvN).r.div(uScale).toVar(); // field value, mean-normalised
     const posv = clamp(v, 0, 1);
     const negv = clamp(v.mul(-1), 0, 1);
-    const c = vec3(...warm).mul(pow(posv, 0.8)).add(vec3(...cold).mul(pow(negv, 0.8)));
+    let c = vec3(...warm).mul(pow(posv, 0.8)).add(vec3(...cold).mul(pow(negv, 0.8)));
+    if (maskTex) c = c.add(vec3(...tint).mul(texture(maskTex, uvN).r));
     mat.colorNode = Fn(() => c)();
     mat.needsUpdate = true;
     colorBuilt = true;
@@ -56,7 +61,7 @@ export function createFieldPass(opts: FieldOptions = {}): FieldPass {
   geo.rotateX(-Math.PI / 2);
   const mesh = new THREE.Mesh(geo, mat);
 
-  function update(field: { texture: unknown; width: number; height: number }): void {
+  function update(field: { texture: unknown; width: number; height: number; mask?: ArrayLike<number> }): void {
     const src = field.texture as ArrayLike<number>;
     const w = field.width, h = field.height, n = w * h;
     if (!tex || !buf || buf.length !== n) {
@@ -67,6 +72,20 @@ export function createFieldPass(opts: FieldOptions = {}): FieldPass {
       tex.wrapS = THREE.ClampToEdgeWrapping;
       tex.wrapT = THREE.ClampToEdgeWrapping;
       tex.needsUpdate = true;
+      colorBuilt = false;
+    }
+    // a static material mask (walls, glass): uploaded once per mask array, re-colouring when it changes
+    const m = field.mask ?? null;
+    if (m !== maskSrc) {
+      maskTex?.dispose();
+      maskTex = null;
+      maskSrc = m;
+      if (m && m.length === n) {
+        maskTex = new THREE.DataTexture(Float32Array.from(m), w, h, THREE.RedFormat, THREE.FloatType);
+        maskTex.minFilter = THREE.LinearFilter;
+        maskTex.magFilter = THREE.LinearFilter;
+        maskTex.needsUpdate = true;
+      }
       colorBuilt = false;
     }
     // copy the field (Float64 grid) into the R-float texture buffer + track mean amplitude
@@ -81,6 +100,7 @@ export function createFieldPass(opts: FieldOptions = {}): FieldPass {
     geo.dispose();
     mat.dispose();
     tex?.dispose();
+    maskTex?.dispose();
   }
 
   return { mesh, update, dispose };

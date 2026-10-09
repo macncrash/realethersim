@@ -18,6 +18,29 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+      "version": "0.1.102",
+      "date": "2026-10-09",
+      "title": "Teaching staples — relativity, light, fields and three bodies",
+      "summary": "Six systems that a physics course is built on, each checked against the textbook result it shows. Einstein's train and platform of light clocks; light cones and what a change of observer can and cannot change; a spinning black hole dragging space; Maxwell's equations solved live (antenna, phased array, double slit, glass); charged particles in electric and magnetic fields; and the three-body problem from Lagrange points to chaos.",
+      "newSystems": [
+          "specialRelativity",
+          "lightCones",
+          "kerrDragging",
+          "maxwellFdtd",
+          "chargedParticles",
+          "threeBody"
+      ],
+      "notes": [
+          "Train and Platform (Special Relativity) (Spacetime): rows of light clocks on a train and a platform, drawn exactly in the platform's, the train's or the midway frame — time dilation, length contraction, and clocks that disagree along a moving train; lightning strikes that are simultaneous for one observer and not the other.",
+          "Light Cones (Causal Structure) (Spacetime): a 2+1 spacetime diagram swept through Lorentz boosts — events slide along hyperbolae and axes scissor, but no event ever changes its causal class; a spacelike event changes order with E, a timelike one never does.",
+          "Kerr Black Hole (Frame Dragging) (Spacetime): exact zero-angular-momentum geodesics hooking round a spinning hole, drawn in horizon-crossing coordinates; light on circular tracks shows the static limit (backward light stands still at 2M, and goes forward inside); prograde and retrograde ISCOs and photon orbits.",
+          "Maxwell's Equations (FDTD) (Field): Yee's method on a grid — one antenna, a steerable phased pair, Young's double slit (with a time-averaged intensity view) and refraction into glass. Fringe angles, Snell's law and the beam angle were checked against theory.",
+          "Charged Particles in Fields (Plasma): the Boris pusher in four set-ups — cyclotron circles whose period doesn't depend on speed, E × B drift that is the same for every charge, a magnetic bottle with its loss cone, and the Earth's radiation belt with ions drifting west and electrons east.",
+          "Three-Body Problem (Orbital): the Lagrange-point landscape with Trojan tadpoles and horseshoes (and Routh's stability limit), the figure-eight choreography, and Burrau's Pythagorean problem ending with the lightest body thrown out.",
+          "Fixed: sliders that change a system's set-up (marked as rebuilding) now take effect straight away instead of only after switching away and back — for example the flume's stream speed Fr."
+      ]
+  },
+  {
       "version": "0.1.101",
       "date": "2026-10-08",
       "title": "The physics of warp — flowing space, horizons, negative energy, and spinning shells",

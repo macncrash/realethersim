@@ -709,6 +709,42 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
       camera.position.set(1.6, 2.6, 4.6);
       controls.update();
     }
+    // The train and the platform side by side — a raised front view so the clock rows and dials read.
+    if ($archetypeId.get() === 'specialRelativity') {
+      controls.target.set(0, 0.15, -0.1);
+      camera.position.set(0, 3.3, 4.5);
+      controls.update();
+    }
+    // The spacetime diagram: time up, a low 3/4 view so the cones, hyperbolae and tilting axes all read.
+    if ($archetypeId.get() === 'lightCones') {
+      controls.target.set(0, 0, 0);
+      camera.position.set(1.7, 1.6, 7.4);
+      controls.update();
+    }
+    // The spinning hole from above the equator, tilted so the twisting rain and the equatorial tracks both read.
+    if ($archetypeId.get() === 'kerrDragging') {
+      controls.target.set(0, 0, 0);
+      camera.position.set(0.5, 4.4, 3.0);
+      controls.update();
+    }
+    // The FDTD field panel, seen from almost straight above like the Luneburg lens.
+    if ($archetypeId.get() === 'maxwellFdtd') {
+      controls.target.set(0, 0, 0);
+      camera.position.set(0, 3.9, 0.7);
+      controls.update();
+    }
+    // Charged particles: a raised 3/4 view that suits the mirror bottle, the belts, and the cyclotron layers.
+    if ($archetypeId.get() === 'chargedParticles') {
+      controls.target.set(0, 0, 0);
+      camera.position.set(2.3, 2.5, 3.7);
+      controls.update();
+    }
+    // Three-body: a raised view of the Lagrange landscape (the orbit plane is flat, so it suits all set-ups).
+    if ($archetypeId.get() === 'threeBody') {
+      controls.target.set(0, -0.3, 0);
+      camera.position.set(0.3, 3.0, 3.9);
+      controls.update();
+    }
     if ($archetypeId.get() === 'customParametric') {
       controls.target.set(0, 0, 0);
       camera.position.set(2.6, 1.8, 3.4);
@@ -793,11 +829,35 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
       scheduleRebuild();
     }
   });
+  // A param declared `rebuild: true` (a structural choice: a set-up, a grid size, a count) re-creates the
+  // system when it changes. The view is kept — only switching systems moves the camera to its preset.
+  let lastParamsId = $archetypeId.get();
+  let lastParams: Record<string, number> = { ...$params.get() };
+  let structuralTimer: ReturnType<typeof setTimeout> | undefined;
   $params.listen((p) => {
     driver.setParams(p, $global.get().dt);
     gpuSim?.setParams({ ...p, dt: $global.get().dt });
     raymarch?.setParams(p);
     scheduleLle();
+    // decide after the current task settles: switching systems sets the new defaults BEFORE the new id
+    const snap = { ...p };
+    queueMicrotask(() => {
+      const id = $archetypeId.get();
+      const structural = id === lastParamsId && getFactory(id).params.some((s) => s.rebuild && snap[s.key] !== lastParams[s.key]);
+      lastParamsId = id;
+      lastParams = snap;
+      if (!structural) return;
+      // debounced: dragging a structural slider fires many changes, but only the value it settles on rebuilds
+      clearTimeout(structuralTimer);
+      structuralTimer = setTimeout(() => {
+        if ($archetypeId.get() !== id) return; // switched away meanwhile — that switch rebuilt already
+        const pos = camera.position.clone(), target = controls.target.clone();
+        scheduleRebuild();
+        queueMicrotask(() => {
+          chain = chain.then(() => { camera.position.copy(pos); controls.target.copy(target); controls.update(); });
+        });
+      }, 180);
+    });
   });
 
   // --- resize ---
@@ -1380,6 +1440,12 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
           else if (id === 'alcubierre') { controls.target.set(0, -0.1, 0); camera.position.set(0.5, 4.4, 5.6); }
           else if (id === 'warpFlume') { controls.target.set(0, -0.7, 0); camera.position.set(0, 6.4, 8.4); }
           else if (id === 'thirringShell') { controls.target.set(0, 0, 0); camera.position.set(1.6, 2.6, 4.6); }
+          else if (id === 'specialRelativity') { controls.target.set(0, 0.15, -0.1); camera.position.set(0, 3.3, 4.5); }
+          else if (id === 'lightCones') { controls.target.set(0, 0, 0); camera.position.set(1.7, 1.6, 7.4); }
+          else if (id === 'kerrDragging') { controls.target.set(0, 0, 0); camera.position.set(0.5, 4.4, 3.0); }
+          else if (id === 'maxwellFdtd') { controls.target.set(0, 0, 0); camera.position.set(0, 3.9, 0.7); }
+          else if (id === 'chargedParticles') { controls.target.set(0, 0, 0); camera.position.set(2.3, 2.5, 3.7); }
+          else if (id === 'threeBody') { controls.target.set(0, -0.3, 0); camera.position.set(0.3, 3.0, 3.9); }
           else if (id === 'customParametric') { controls.target.set(0, 0, 0); camera.position.set(2.6, 1.8, 3.4); }
           else if (id === 'luneburgLens') { controls.target.set(0, 0, 0); camera.position.set(0, 3.9, 0.7); }
           else if (id === 'flyBrain') { controls.target.set(0, 0, 0); camera.position.set(0.4, 0.7, 3.3); }

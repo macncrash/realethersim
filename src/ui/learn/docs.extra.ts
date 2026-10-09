@@ -4247,4 +4247,453 @@ o[1] = p.b * x[0];`,
           }
       ]
   },
+  specialRelativity: {
+      "title": "Train and Platform (Special Relativity)",
+      "about": "Einstein's train, built out of clocks. A platform and a train with the same rest length each carry a row of light clocks — a flash of light bouncing between two mirrors, one tick for each round trip, with a dial counting the ticks. The train runs past at speed v, and everything is drawn exactly as it is in the frame you choose. In the platform's frame the train is shorter than the platform (length contraction), its photons run a longer zigzag so its clocks tick slower (time dilation), and — the part people forget — its clocks, which agree with each other aboard the train, disagree along its length: the front clock reads earlier than the rear one (the relativity of simultaneity). Switch to the train's frame and everything turns around: now the platform is the short one with the slow clocks. Two lightning bolts strike the ends of the train at the same platform time. Their light (violet from the rear, rose from the front) reaches the observer standing mid-platform together, but the observer mid-train is heading into the front flash and sees it first — so for the people on the train, the two strikes did not happen at the same time. Each observer raises a lamp on the side a flash has reached them from.",
+      "howItWorks": "Take c = 1. Every object is at rest in one frame — the platform's or the train's — at a rest-frame position ξ, and its clock shows proper time τ. If that frame moves at velocity w relative to you, a Lorentz transformation puts the object, at your time t, at x = ξ/γ + w t, and its clock then reads τ = t/γ − w ξ, where γ = 1/√(1 − w²). The 1/γ in the first formula is length contraction; the 1/γ in the second is time dilation; the −w ξ is the relativity of simultaneity. Velocities seen from the 'train' or 'midway' frame come from relativistic velocity addition, w = (v − u)/(1 − v u). A light clock's photon is at height H·tri(τ/2H) above its lower mirror, so drawing it at its own τ makes moving clocks slow and staggered automatically, and its trail is its real path in your frame — straight up and down for a clock at rest, a zigzag for a moving one. The lightning strikes happen at the train's ends at platform time 0, and their light spreads as a sphere at speed 1 from each strike event, transformed into your frame. A lamp rises when the sphere has reached an observer. The order and the observers' own clock readings at each arrival come out the same in every frame — the hierarchy panel gives the train observer's gap between the two flashes.",
+      "equations": [
+          {
+              "label": "Lorentz factor",
+              "latex": "\\gamma = \\frac{1}{\\sqrt{1 - v^2/c^2}}"
+          },
+          {
+              "label": "a point at rest at ξ in a frame moving at w",
+              "latex": "x(t) = \\frac{\\xi}{\\gamma} + w\\,t"
+          },
+          {
+              "label": "what its clock reads",
+              "latex": "\\tau(t) = \\frac{t}{\\gamma} - \\frac{w\\,\\xi}{c^2}"
+          },
+          {
+              "label": "Lorentz transformation",
+              "latex": "t' = \\gamma\\left(t - \\frac{v x}{c^2}\\right),\\quad x' = \\gamma\\,(x - v t)"
+          },
+          {
+              "label": "velocity addition",
+              "latex": "w = \\frac{v - u}{1 - v u / c^2}"
+          },
+          {
+              "label": "the train observer's gap between the flashes",
+              "latex": "\\Delta\\tau \\approx \\frac{v L}{c^2}"
+          }
+      ],
+      "params": [
+          {
+              "key": "v",
+              "symbol": "v/c",
+              "meaning": "the train's speed relative to the platform, as a fraction of light speed"
+          },
+          {
+              "key": "frame",
+              "symbol": "u",
+              "meaning": "whose frame the scene is drawn in: the platform's (u = 0), the train's (u = v), or the midway frame where both move at equal and opposite speeds"
+          }
+      ],
+      "code": "// every object: rest-frame position xi, in a frame moving at w relative to the viewer (c = 1)\ngamma = 1 / sqrt(1 - w*w)\nx   = xi / gamma + w * t        // length contraction\ntau = t / gamma - w * xi        // time dilation + relativity of simultaneity\nphoton height = H * triangle(tau / (2H))\n// lightning at the train's ends at platform time 0 → Lorentz-transform the events,\n// draw spheres of radius (t - t_strike) around them",
+      "links": [
+          {
+              "label": "Einstein 1905 — Zur Elektrodynamik bewegter Körper (Annalen der Physik 322, 891)",
+              "url": "https://doi.org/10.1002/andp.19053221004"
+          },
+          {
+              "label": "Einstein — Relativity: The Special and General Theory (the train and embankment, ch. 9)",
+              "url": "https://www.gutenberg.org/ebooks/5001"
+          },
+          {
+              "label": "Relativity of simultaneity",
+              "url": "https://en.wikipedia.org/wiki/Relativity_of_simultaneity"
+          },
+          {
+              "label": "Time dilation",
+              "url": "https://en.wikipedia.org/wiki/Time_dilation"
+          },
+          {
+              "label": "Length contraction",
+              "url": "https://en.wikipedia.org/wiki/Length_contraction"
+          },
+          {
+              "label": "Lorentz transformation",
+              "url": "https://en.wikipedia.org/wiki/Lorentz_transformation"
+          }
+      ]
+  },
+  lightCones: {
+      "title": "Light Cones (Causal Structure)",
+      "about": "A spacetime diagram you can walk around: two directions of space laid flat, time pointing up, and light travelling on 45° cones. Pick one event E — the bright point at the centre. Every other event is in one of three places. Inside the upper cone (gold) is E's future: anything E does can reach those events. Inside the lower cone (blue) is E's past: those events could have affected E. Everything outside both cones (violet) is 'elsewhere': no signal, even light, can link it to E either way. The diagram is redrawn from the point of view of an observer whose velocity sweeps back and forth along x. Watch what changes: events slide along hyperbolae, the lab's time axis and its 'now' line scissor towards the light cone, and the ticks of a moving clock spread apart (time dilation). And watch what doesn't: the cones stay put and no event ever changes colour. Different observers disagree about when and where, but never about what could cause what. The one thing that does flip is the order of 'elsewhere' events: the rose marker B, outside E's cones, happens after E for some observers and before it for others — which is harmless, because nothing can travel between them. The gold marker C, inside the future cone, is after E for everyone.",
+      "howItWorks": "Units with c = 1. A change of observer moving along x is a Lorentz boost, which in terms of the rapidity φ (v = tanh φ) is a hyperbolic rotation of the (t, x) plane: t′ = t cosh φ − x sinh φ, x′ = x cosh φ − t sinh φ, and y is untouched. It keeps the interval s² = t² − x² − y² fixed, so every event moves along its own hyperbola and keeps its causal class. The event dust is sampled in invariant coordinates — in each wedge of the (t, x) plane an event is ρ(cosh η, sinh η) — so a boost simply shifts every rapidity η by −φ; the sample is uniform in η, which is the boost-invariant way to spread points, and it is wrapped at the window's edges so the cloud looks the same in every frame. Each event's colour is set once from its interval to E and never needs to change. The light cone, the hyperboloids where a clock that left E reads ±1 (gold and blue bowls) and the one-sheet hyperboloid s² = −1 (violet) are all invariant, so they are drawn fixed. Worldlines through E — an observer at rest in the lab (cyan), one moving at 0.5c (green) and the lab's own x axis (its 'now') — are drawn for ±1.4 units of their own proper time, with a tick every 0.2; a boost stretches them. The pink curve is an observer with constant proper acceleration, x² − t² = 1: a boost just slides its ticks along it. Rings of light run out along the future cone and in along the past cone at speed 1.",
+      "equations": [
+          {
+              "label": "the interval (the same for every observer)",
+              "latex": "s^2 = c^2t^2 - x^2 - y^2"
+          },
+          {
+              "label": "a boost along x, with rapidity φ",
+              "latex": "t' = t\\cosh\\varphi - x\\sinh\\varphi,\\quad x' = x\\cosh\\varphi - t\\sinh\\varphi,\\quad v = c\\tanh\\varphi"
+          },
+          {
+              "label": "causal classes",
+              "latex": "s^2>0:\\ \\text{timelike (future or past)},\\quad s^2=0:\\ \\text{on the cone},\\quad s^2<0:\\ \\text{elsewhere}"
+          },
+          {
+              "label": "when a spacelike event B happens in the new frame",
+              "latex": "t'_B = \\gamma\\,(t_B - v\\,x_B/c^2)\\ \\text{changes sign at}\\ v = c^2 t_B / x_B"
+          },
+          {
+              "label": "constant proper acceleration a",
+              "latex": "t = \\tfrac{c}{a}\\sinh\\tfrac{a\\tau}{c},\\quad x = \\tfrac{c^2}{a}\\cosh\\tfrac{a\\tau}{c}"
+          }
+      ],
+      "params": [
+          {
+              "key": "sweep",
+              "symbol": "\\varphi(t)",
+              "meaning": "sweep the observer's velocity back and forth automatically"
+          },
+          {
+              "key": "vmax",
+              "symbol": "v_{max}",
+              "meaning": "how fast the sweep goes, at most, as a fraction of light speed"
+          },
+          {
+              "key": "v",
+              "symbol": "v",
+              "meaning": "the observer's velocity when the sweep is off"
+          }
+      ],
+      "code": "// every event in invariant coordinates: wedge q, |s| = rho, rapidity eta\n// a boost by rapidity phi shifts eta → eta − phi; colour = sign of s² (never changes)\n(t, x) = rho * (cosh(eta - phi), sinh(eta - phi))   // future wedge; others by symmetry\n// worldlines: lab events boosted\nt' = t*cosh(phi) - x*sinh(phi);  x' = x*cosh(phi) - t*sinh(phi)\n// accelerating observer: (sinh(tau - phi), cosh(tau - phi))",
+      "links": [
+          {
+              "label": "Minkowski 1908 — Space and Time (translation)",
+              "url": "https://en.wikisource.org/wiki/Translation:Space_and_Time"
+          },
+          {
+              "label": "Light cone",
+              "url": "https://en.wikipedia.org/wiki/Light_cone"
+          },
+          {
+              "label": "Minkowski diagram",
+              "url": "https://en.wikipedia.org/wiki/Minkowski_diagram"
+          },
+          {
+              "label": "Causal structure",
+              "url": "https://en.wikipedia.org/wiki/Causal_structure"
+          },
+          {
+              "label": "Rapidity",
+              "url": "https://en.wikipedia.org/wiki/Rapidity"
+          },
+          {
+              "label": "Hyperbolic motion (relativity)",
+              "url": "https://en.wikipedia.org/wiki/Hyperbolic_motion_(relativity)"
+          }
+      ]
+  },
+  kerrDragging: {
+      "title": "Kerr Black Hole (Frame Dragging)",
+      "about": "Real black holes spin, and a spinning black hole drags space around with it. Here matter is let go from rest far away with no angular momentum at all — nothing pushes it sideways — in eight narrow streams around the equator. With no spin (set a = 0) each stream falls straight in. With spin, the streams hook round in the hole's sense of rotation as they get close, and cross the horizon going round with it. The orange shell is the ergosphere, the region where the dragging is so strong that nothing can stay still. On the equator, light is sent both ways round circular mirror tracks (think of a ring of optical fibre). Far out, the backward beam (pink) goes backwards and the forward beam (cyan) forwards, a little faster. At the edge of the ergosphere — 2M on the equator — the backward beam stands still. Inside, it is carried forwards too: even light cannot go against the spin there. The faint rings mark the innermost stable circular orbits for matter going with the spin and against it (solid), and the circular photon orbits (dotted). As the spin grows the prograde ones shrink towards the horizon and the retrograde ones move out, which is why a spinning hole's accretion disc can reach so much deeper.",
+      "howItWorks": "Units with G = c = M = 1, spin a. The falling matter follows exact geodesics of the Kerr metric: the 'rain' with energy E = 1 (from rest at infinity), angular momentum L = 0 and Carter constant Q = 0. These keep a fixed latitude θ, and in Boyer–Lindquist coordinates go round at exactly the frame-dragging rate ω = −g_tφ/g_φφ. Boyer–Lindquist coordinates break down at the horizon (a falling body there would wind round infinitely often and never cross), so we draw everything in ingoing Kerr coordinates (T, r, θ, φ̃), in which the rain's path is finite everywhere: dφ̃/dr = a/[(r²+a²)(1+β)] and dT/dr = [a² sin²θ − (r²+a²)(1+β+β²)/(1+β)]/√(2r(r²+a²)), with β = √(2r/(r²+a²)). Both are integrated once into tables; each tracer's radius at time T comes from a table lookup, and the point is placed at the Kerr–Schild position x + iy = (r + ia)e^{iφ̃} sin θ, z = r cos θ. The streams are drawn as a steady flow from r = 6M; tracers are thinned with depth (each stops at its own radius, with the share that gets deeper than r falling like r²) so the inflow doesn't pile up into a glare at the centre — that thinning is a drawing choice, not physics. The light tracks use the equatorial metric: light confined to a circle of radius r goes round at Ω± = [−g_tφ ± √(g_tφ² − g_tt g_φφ)]/g_φφ, and Ω₋ = 0 exactly where g_tt = 0, the static limit r = 2M. The ISCOs and photon orbits are Bardeen, Press and Teukolsky's 1972 formulas. The hierarchy panel gives the horizon radius, its rotation rate Ω_H = a/(2Mr₊), the ISCOs, and which way the backward beam goes on each track.",
+      "equations": [
+          {
+              "label": "horizon and ergosphere",
+              "latex": "r_+ = M + \\sqrt{M^2 - a^2},\\qquad r_E(\\theta) = M + \\sqrt{M^2 - a^2\\cos^2\\theta}"
+          },
+          {
+              "label": "frame-dragging rate (zero angular momentum)",
+              "latex": "\\omega = -\\frac{g_{t\\phi}}{g_{\\phi\\phi}} = \\frac{2Mar}{(r^2+a^2)^2 - a^2\\Delta\\sin^2\\theta},\\quad \\Delta = r^2 - 2Mr + a^2"
+          },
+          {
+              "label": "the rain, in ingoing coordinates",
+              "latex": "\\frac{d\\tilde\\phi}{dr} = \\frac{a}{(r^2+a^2)(1+\\beta)},\\quad \\beta = \\sqrt{\\frac{2Mr}{r^2+a^2}}"
+          },
+          {
+              "label": "light going round a circle of radius r",
+              "latex": "\\Omega_\\pm = \\frac{-g_{t\\phi} \\pm \\sqrt{g_{t\\phi}^2 - g_{tt}\\,g_{\\phi\\phi}}}{g_{\\phi\\phi}}"
+          },
+          {
+              "label": "photon orbits (prograde −, retrograde +)",
+              "latex": "r_{ph} = 2M\\left[1 + \\cos\\left(\\tfrac{2}{3}\\arccos(\\mp a/M)\\right)\\right]"
+          },
+          {
+              "label": "horizon angular velocity",
+              "latex": "\\Omega_H = \\frac{a}{2Mr_+}"
+          }
+      ],
+      "params": [
+          {
+              "key": "a",
+              "symbol": "a/M",
+              "meaning": "the black hole's spin (angular momentum per unit mass); 0 is a non-spinning Schwarzschild hole, 1 is the maximum"
+          }
+      ],
+      "code": "// rain (E = 1, L = 0, Q = 0): fixed latitude, tabulated once per spin\nX = r*r + a*a;  beta = sqrt(2r / X)\ndphi/dr = a / (X (1 + beta))\ndT/dr   = (a*a*sin²θ - X (1+beta+beta²)/(1+beta)) / sqrt(2 r X)\n// each tracer: r(T) by table lookup → Kerr–Schild position\nx + i y = (r + i a) e^{i phi} sin θ;  z = r cos θ\n// light on a circular track: Ω± = (−g_tφ ± sqrt(g_tφ² − g_tt g_φφ)) / g_φφ",
+      "links": [
+          {
+              "label": "Kerr 1963 — Gravitational field of a spinning mass… (Phys. Rev. Lett. 11, 237)",
+              "url": "https://doi.org/10.1103/PhysRevLett.11.237"
+          },
+          {
+              "label": "Bardeen, Press & Teukolsky 1972 — Rotating black holes (ApJ 178, 347)",
+              "url": "https://doi.org/10.1086/151796"
+          },
+          {
+              "label": "Doran 2000 — A new form of the Kerr solution (the rain frames)",
+              "url": "https://arxiv.org/abs/gr-qc/9910099"
+          },
+          {
+              "label": "Visser — The Kerr spacetime: a brief introduction",
+              "url": "https://arxiv.org/abs/0706.0622"
+          },
+          {
+              "label": "Kerr metric",
+              "url": "https://en.wikipedia.org/wiki/Kerr_metric"
+          },
+          {
+              "label": "Ergosphere",
+              "url": "https://en.wikipedia.org/wiki/Ergosphere"
+          }
+      ]
+  },
+  maxwellFdtd: {
+      "title": "Maxwell's Equations (FDTD)",
+      "about": "Light, radio and every other electromagnetic wave is an electric field and a magnetic field that keep regenerating each other: a changing magnetic field makes a curling electric field, and a changing electric field makes a curling magnetic one. This system solves Maxwell's equations directly on a grid, with nothing about waves put in by hand, and lets you watch what comes out. Choose a set-up. 'Antenna': a single wire carrying an oscillating current radiates circular waves. 'Phased array': two antennas half a wavelength apart; change the phase difference between them and the beam swings round, with no moving parts — this is how modern radars and 5G base stations steer. 'Double slit': a plane wave hits a metal wall with two openings, and the waves from the two openings interfere. Switch the view to time-averaged intensity and the bright and dark fringes stand still as a fan of rays — Young's experiment. 'Glass block': a plane wave arrives at an angle on glass and bends towards the normal (refraction), part of it bouncing back. Inside the glass the waves are shorter, because light is slower there. Orange is the electric field pointing out of the screen, blue into it. Walls and glass are drawn faintly underneath.",
+      "howItWorks": "This is the finite-difference time-domain (FDTD) method of Kane Yee (1966), in two dimensions with the electric field Eᶻ out of the plane and the magnetic field (Hˣ, Hʸ) in it (the 'TM' polarisation). The components live on a staggered grid, half a cell apart in space and half a step apart in time, so each update is a centred difference: first H is advanced from the curl of E (Faraday's law), then E from the curl of H (the Ampère–Maxwell law). Units: c = 1, cell size 1, time step 0.5 cells (the Courant number S = 0.5, inside the 2-D stability limit 1/√2). Glass has permittivity ε = n², which slows the E update; metal is a perfect conductor where Eᶻ is held at 0. The sources are 'soft' — they add current to the field rather than forcing it — so waves coming back pass through them. The border is a graded absorbing layer with matched electric and magnetic loss (σ* = σ in these units), which lets waves leave with little reflection. The intensity view is a running average of Eᶻ² over about two periods. Checked against theory: the double-slit maxima come out at 23° and 48° for slit spacing 2.6λ (sin θ = mλ/d gives 22.6° and 50.3°; the measuring arc is not fully in the far field); a beam measured at 31.2° incidence refracts to 20.6° in n = 1.5 glass (Snell's law gives 20.3°); and two sources λ/2 apart at 90° phase difference beam about 35° off broadside (30° in the far field). The grid has a little numerical dispersion: short waves travel slightly slower than c, more so along the grid axes than diagonally.",
+      "equations": [
+          {
+              "label": "Faraday's law",
+              "latex": "\\frac{\\partial \\mathbf H}{\\partial t} = -\\frac{1}{\\mu_0}\\nabla\\times\\mathbf E"
+          },
+          {
+              "label": "Ampère–Maxwell law",
+              "latex": "\\frac{\\partial \\mathbf E}{\\partial t} = \\frac{1}{\\varepsilon}\\left(\\nabla\\times\\mathbf H - \\mathbf J\\right)"
+          },
+          {
+              "label": "in 2-D (TM): the three equations solved",
+              "latex": "\\partial_t H_x = -\\partial_y E_z,\\quad \\partial_t H_y = \\partial_x E_z,\\quad \\varepsilon\\,\\partial_t E_z = \\partial_x H_y - \\partial_y H_x - J_z"
+          },
+          {
+              "label": "Yee's leapfrog update (c = 1, Δx = 1)",
+              "latex": "E_z^{n+1} = E_z^{n} + \\frac{S}{\\varepsilon}\\left(H_y^{n+\\frac12}\\big|_{i} - H_y^{n+\\frac12}\\big|_{i-1} - H_x^{n+\\frac12}\\big|_{j} + H_x^{n+\\frac12}\\big|_{j-1}\\right)"
+          },
+          {
+              "label": "double slit and phased array",
+              "latex": "d\\sin\\theta_m = m\\lambda,\\qquad \\sin\\theta_{beam} = \\frac{\\Delta\\varphi\\,\\lambda}{2\\pi d}"
+          },
+          {
+              "label": "Snell's law",
+              "latex": "\\sin\\theta_1 = n\\sin\\theta_2"
+          }
+      ],
+      "params": [
+          {
+              "key": "scene",
+              "symbol": "",
+              "meaning": "the set-up: one antenna, a phased pair, a double slit, or a glass block"
+          },
+          {
+              "key": "wavelength",
+              "symbol": "\\lambda",
+              "meaning": "the wavelength, in grid cells (scaled with the grid size)"
+          },
+          {
+              "key": "phase",
+              "symbol": "\\Delta\\varphi",
+              "meaning": "phased array: the phase difference between the two antennas, which steers the beam"
+          },
+          {
+              "key": "n",
+              "symbol": "n",
+              "meaning": "glass block: the refractive index (permittivity ε = n²)"
+          },
+          {
+              "key": "angle",
+              "symbol": "\\theta_1",
+              "meaning": "glass block: the angle at which the plane wave arrives"
+          },
+          {
+              "key": "view",
+              "symbol": "",
+              "meaning": "draw the electric field, the energy density, or the time-averaged intensity"
+          }
+      ],
+      "code": "// Yee FDTD, TM polarisation, S = c·dt/dx = 0.5\nfor each cell: Hx -= S * (Ez[j+1] - Ez[j]);  Hy += S * (Ez[i+1] - Ez[i])\nfor each cell: Ez  = ca * Ez + (S/eps) * ((Hy[i] - Hy[i-1]) - (Hx[j] - Hx[j-1]))\n// metal: Ez = 0;  glass: eps = n²;  border: graded matched loss\n// soft source: Ez[src] += sin(omega * t + phase)",
+      "links": [
+          {
+              "label": "Yee 1966 — Numerical solution of initial boundary value problems involving Maxwell's equations (IEEE Trans. Antennas Propag. 14, 302)",
+              "url": "https://doi.org/10.1109/TAP.1966.1138693"
+          },
+          {
+              "label": "Maxwell 1865 — A dynamical theory of the electromagnetic field (Phil. Trans. R. Soc. 155, 459)",
+              "url": "https://doi.org/10.1098/rstl.1865.0008"
+          },
+          {
+              "label": "Finite-difference time-domain method",
+              "url": "https://en.wikipedia.org/wiki/Finite-difference_time-domain_method"
+          },
+          {
+              "label": "Maxwell's equations",
+              "url": "https://en.wikipedia.org/wiki/Maxwell%27s_equations"
+          },
+          {
+              "label": "Double-slit experiment",
+              "url": "https://en.wikipedia.org/wiki/Double-slit_experiment"
+          },
+          {
+              "label": "Phased array",
+              "url": "https://en.wikipedia.org/wiki/Phased_array"
+          },
+          {
+              "label": "Snell's law",
+              "url": "https://en.wikipedia.org/wiki/Snell%27s_law"
+          }
+      ]
+  },
+  chargedParticles: {
+      "title": "Charged Particles in Fields",
+      "about": "One force runs every motor, every particle accelerator and the northern lights: the Lorentz force on a charge, F = q(E + v × B). An electric field pushes along itself; a magnetic field pushes sideways to the motion, so it bends a path without speeding it up. Four set-ups show what that does. Cyclotron: in a uniform magnetic field (the faint vertical lines) every charge goes round in a circle, and the time for one turn depends only on its charge and mass, not its speed — the fast ones simply make bigger circles. So all the particles of a kind arrive back at the start together, which is how a cyclotron keeps its kick in step and how a mass spectrometer sorts atoms. Positive (orange) and negative (cyan) charges circle opposite ways; ions four times heavier (magenta) take four times as long. E × B drift: add an electric field across the magnetic one and everything drifts the same way at the same speed E/B — positive or negative, heavy or light — along looping cycloids. Magnetic mirror: between two coils the field is weak in the middle and strong at the ends. A particle spiralling towards a coil is slowed along the field and turned back, unless it is moving too nearly along the field — inside the 'loss cone' — in which case it escapes. Radiation belt: in the Earth's dipole field particles spiral, bounce from one hemisphere to the other, and slowly drift round the planet, positive ions westward and negative charges eastward, which is the ring current around the Earth and the shape of the Van Allen belts.",
+      "howItWorks": "Each particle obeys m dv/dt = q(E + v × B), advanced with the Boris scheme (1970): half an electric kick, a pure rotation of the velocity about B, then the other half kick. The rotation is exact in angle form, so in a pure magnetic field the speed never drifts (it stays constant to rounding error), and the scheme is volume-preserving, which keeps long orbits honest. Steps adapt so that each gyration takes at least about 30 steps. The cyclotron and E × B fields are uniform. The mirror field is the exact field of two circular current loops, computed with complete elliptic integrals; its mirror ratio B_max/B_min gives a loss-cone angle sin²α = B_min/B_max. Starting pitch angles are spread evenly from 10° to 80°, so about (26.1 − 10)/70 ≈ 23% start inside the 26° loss cone; tracking 1,008 particles, 25% escaped (and with isotropic starts 12%, against the formula's 10.1%). The small excess is real physics the formula leaves out: these orbits are not tiny compared with the bottle, and the loss-cone rule assumes they are. The Earth's field is a dipole pointing north at the equator; particles that reach the atmosphere are replaced with fresh ones. The units are scaled so that gyration, bouncing and drifting all fit on screen: real belt particles gyrate millions of times per drift orbit, here only hundreds. The numbers were checked: cyclotron return times equal 2πm/(qB) for every speed, and the E × B drift is exactly E/B for both charges.",
+      "equations": [
+          {
+              "label": "the Lorentz force",
+              "latex": "m\\frac{d\\mathbf v}{dt} = q\\left(\\mathbf E + \\mathbf v\\times\\mathbf B\\right)"
+          },
+          {
+              "label": "cyclotron frequency and radius",
+              "latex": "\\omega_c = \\frac{|q|B}{m},\\qquad r_L = \\frac{m v_\\perp}{|q|B}"
+          },
+          {
+              "label": "E × B drift (the same for every charge and mass)",
+              "latex": "\\mathbf v_E = \\frac{\\mathbf E\\times\\mathbf B}{B^2}"
+          },
+          {
+              "label": "magnetic mirror: the loss cone",
+              "latex": "\\sin^2\\alpha_{loss} = \\frac{B_{min}}{B_{max}}"
+          },
+          {
+              "label": "Boris rotation",
+              "latex": "\\mathbf t = \\frac{q\\mathbf B}{m}\\frac{\\Delta t}{2},\\ \\ \\mathbf v' = \\mathbf v^- + \\mathbf v^-\\times\\mathbf t,\\ \\ \\mathbf v^+ = \\mathbf v^- + \\frac{2\\,\\mathbf v'\\times\\mathbf t}{1+t^2}"
+          }
+      ],
+      "params": [
+          {
+              "key": "scene",
+              "symbol": "",
+              "meaning": "the set-up: cyclotron, E × B drift, magnetic mirror, or the Earth's radiation belt"
+          },
+          {
+              "key": "B",
+              "symbol": "B",
+              "meaning": "the magnetic field strength (scales the whole field)"
+          },
+          {
+              "key": "E",
+              "symbol": "E",
+              "meaning": "the electric field across B, in the E × B set-up"
+          }
+      ],
+      "code": "// Boris push (non-relativistic)\nv  += (q/m) * E * dt/2\nt   = (q/m) * B * dt/2;  s = 2 t / (1 + |t|²)\nv' = v + v × t\nv  += v' × s\nv  += (q/m) * E * dt/2\nx  += v * dt\n// mirror: B from two current loops (elliptic integrals K, E)\n// belt: dipole B = B0 R³ (3 (m·r̂) r̂ − m) / r³",
+      "links": [
+          {
+              "label": "Qin et al. 2013 — Why is Boris algorithm so good? (Phys. Plasmas 20, 084503)",
+              "url": "https://doi.org/10.1063/1.4818428"
+          },
+          {
+              "label": "Lorentz force",
+              "url": "https://en.wikipedia.org/wiki/Lorentz_force"
+          },
+          {
+              "label": "Guiding center (drifts)",
+              "url": "https://en.wikipedia.org/wiki/Guiding_center"
+          },
+          {
+              "label": "Cyclotron",
+              "url": "https://en.wikipedia.org/wiki/Cyclotron"
+          },
+          {
+              "label": "Magnetic mirror",
+              "url": "https://en.wikipedia.org/wiki/Magnetic_mirror"
+          },
+          {
+              "label": "Van Allen radiation belt",
+              "url": "https://en.wikipedia.org/wiki/Van_Allen_radiation_belt"
+          },
+          {
+              "label": "Ring current",
+              "url": "https://en.wikipedia.org/wiki/Ring_current"
+          }
+      ]
+  },
+  threeBody: {
+      "title": "Three-Body Problem",
+      "about": "Two bodies orbiting each other follow ellipses forever, and there is a formula for them. Add a third and in general there is none: the motion can be orderly, or it can be chaos. Three set-ups. Lagrange points: a star and a planet circling each other, seen from a frame that turns with them. In that frame gravity and the centrifugal effect make a landscape — two wells (the star in the middle, the planet on the right), a ridge round the orbit, and five balance points marked in white: L1, L2 and L3 on the line through the two bodies, L4 and L5 at the tips of equilateral triangles, 60° ahead of and behind the planet. L4 and L5 sit on hilltops, yet small bodies stay near them, steered round by the Coriolis effect. That is where Jupiter's Trojan asteroids live, and it is why spacecraft such as JWST are parked near the Sun–Earth L2. The gold trails are small bodies: near L4 and L5 they loop in 'tadpoles', and along the ridge they creep round in 'horseshoes' and turn back before reaching the planet. Raise the mass ratio past 0.0385 (Routh's limit) and the Trojans can no longer stay. Figure-eight: three equal masses chasing each other round a single figure-eight, found by Cris Moore in 1993 and proved to exist by Chenciner and Montgomery in 2000. Pythagorean: masses 3, 4 and 5 let go from rest at the corners of a 3-4-5 right triangle (Burrau, 1913). They swing through a long chaotic dance, and at about t = 60 the lightest body is thrown out for good while 4 and 5 leave as a bound pair — the outcome Szebehely and Peters found in 1967. Then it starts again.",
+      "howItWorks": "Lagrange points use the circular restricted three-body problem: the two big bodies (total mass 1, separation 1) move in a circle at angular velocity 1, and test particles feel both but pull on neither. In the rotating frame, with the star at (−μ, 0) and the planet at (1 − μ, 0), the motion is ẍ − 2ẏ = ∂Ω/∂x, ÿ + 2ẋ = ∂Ω/∂y, with Ω = (x² + y²)/2 + (1 − μ)/r₁ + μ/r₂; the 2ẏ and 2ẋ are the Coriolis terms. The landscape is drawn at height −Ω (squashed so the wells stay in view), and the zero-velocity curves through L1, L2 and L3 are picked out. L1–L3 come from solving ∂Ω/∂x = 0 on the axis; L4 and L5 are exact. Particles are integrated with classical RK4 (on ordinary orbits Jacobi's constant 2Ω − v² holds to about 1e-15; close passes by the planet are less accurate, and those particles are soon replaced). Particles that pass too close to the planet or are flung away are replaced. The figure-eight and Pythagorean problems are full three-body problems (G = 1), integrated with an adaptive Dormand–Prince 5(4) method at a tolerance of 1e-11 per step. The figure-eight returns to its starting state after one period (6.326) to within 4e-8. For the Pythagorean problem the energy stays at −769/60 to about 1e-7, and the escape (mass 3 at t ≈ 60, leaving 4 + 5 bound) is the same at a tolerance of 1e-13. At a looser 1e-10 a different body escapes, at a different time: this is chaos, where tiny errors grow until they decide the outcome. A body counts as gone for good when the other two are bound to each other and its energy relative to them is positive.",
+      "equations": [
+          {
+              "label": "rotating frame (restricted problem)",
+              "latex": "\\ddot x - 2\\dot y = \\frac{\\partial\\Omega}{\\partial x},\\qquad \\ddot y + 2\\dot x = \\frac{\\partial\\Omega}{\\partial y}"
+          },
+          {
+              "label": "effective potential",
+              "latex": "\\Omega = \\frac{x^2+y^2}{2} + \\frac{1-\\mu}{r_1} + \\frac{\\mu}{r_2}"
+          },
+          {
+              "label": "Jacobi constant (conserved)",
+              "latex": "C_J = 2\\Omega - \\dot x^2 - \\dot y^2"
+          },
+          {
+              "label": "L4 and L5 are stable when (Routh 1875)",
+              "latex": "\\mu < \\tfrac12\\left(1 - \\sqrt{23/27}\\right) \\approx 0.0385"
+          },
+          {
+              "label": "the full problem",
+              "latex": "\\ddot{\\mathbf r}_i = \\sum_{j\\ne i} G m_j \\frac{\\mathbf r_j - \\mathbf r_i}{|\\mathbf r_j - \\mathbf r_i|^3}"
+          },
+          {
+              "label": "Pythagorean energy (at rest, sides 3, 4, 5)",
+              "latex": "E = -\\left(\\tfrac{3\\cdot4}{5} + \\tfrac{3\\cdot5}{4} + \\tfrac{4\\cdot5}{3}\\right) = -\\tfrac{769}{60}"
+          }
+      ],
+      "params": [
+          {
+              "key": "scene",
+              "symbol": "",
+              "meaning": "the set-up: Lagrange points, the figure-eight, or the Pythagorean problem"
+          },
+          {
+              "key": "mu",
+              "symbol": "\\mu",
+              "meaning": "Lagrange points: the planet's share of the total mass (Jupiter/Sun ≈ 0.00095; Earth–Moon ≈ 0.012)"
+          }
+      ],
+      "code": "// restricted problem, rotating frame (RK4)\nax =  2*vy + x - (1-mu)*(x+mu)/r1³ - mu*(x-1+mu)/r2³\nay = -2*vx + y - (1-mu)*y/r1³ - mu*y/r2³\n// full problem: a_i = Σ m_j (r_j − r_i)/|r_j − r_i|³, adaptive Dormand–Prince, tol 1e-11\n// figure-eight start: x1 = −x2 = (−0.97000436, 0.24308753), x3 = 0,\n//   v3 = (−0.93240737, −0.86473146), v1 = v2 = −v3/2",
+      "links": [
+          {
+              "label": "Burrau 1913 — Numerische Berechnung eines Spezialfalles des Dreikörperproblems (Astron. Nachr. 195, 113)",
+              "url": "https://doi.org/10.1002/asna.19131950602"
+          },
+          {
+              "label": "Szebehely & Peters 1967 — Complete solution of a general problem of three bodies (AJ 72, 876)",
+              "url": "https://doi.org/10.1086/110355"
+          },
+          {
+              "label": "Moore 1993 — Braids in classical dynamics (Phys. Rev. Lett. 70, 3675)",
+              "url": "https://doi.org/10.1103/PhysRevLett.70.3675"
+          },
+          {
+              "label": "Chenciner & Montgomery 2000 — A remarkable periodic solution of the three-body problem…",
+              "url": "https://arxiv.org/abs/math/0011268"
+          },
+          {
+              "label": "Lagrange point",
+              "url": "https://en.wikipedia.org/wiki/Lagrange_point"
+          },
+          {
+              "label": "Jupiter trojan",
+              "url": "https://en.wikipedia.org/wiki/Jupiter_trojan"
+          },
+          {
+              "label": "Three-body problem",
+              "url": "https://en.wikipedia.org/wiki/Three-body_problem"
+          }
+      ]
+  },
 };
