@@ -82,6 +82,10 @@ import { racketFlipFactory } from './racketFlip';
 import { heavyTopFactory } from './heavyTop';
 import { poinsotFactory } from './poinsot';
 import { foucaultFactory } from './foucault';
+import { riverSpaceFactory } from './riverSpace';
+import { alcubierreFactory } from './alcubierre';
+import { warpFlumeFactory } from './warpFlume';
+import { thirringShellFactory } from './thirringShell';
 import { luneburgLensFactory } from './luneburgLens';
 import { flyBrainFactory } from './flyBrain';
 import { bioBayFactory } from './bioBay';
@@ -190,6 +194,10 @@ export function registerArchetypes(): void {
   register(heavyTopFactory);
   register(poinsotFactory);
   register(foucaultFactory);
+  register(riverSpaceFactory);
+  register(alcubierreFactory);
+  register(warpFlumeFactory);
+  register(thirringShellFactory);
   // Custom Equation (customParametric) is withdrawn until user code runs in the sandbox: it compiles
   // expressions with `new Function`, which the production CSP (no 'unsafe-eval') blocks, so on the
   // live site it silently drew every point at the origin. It returns with an editor once sandboxed

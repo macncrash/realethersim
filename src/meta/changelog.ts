@@ -18,6 +18,25 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+      "version": "0.1.101",
+      "date": "2026-10-08",
+      "title": "The physics of warp — flowing space, horizons, negative energy, and spinning shells",
+      "summary": "Four systems for what a warp drive would really need. See a black hole as a river of space that light swims through; an Alcubierre bubble whose horizons trap light at its front wall and whose wall needs negative energy (with the classical estimate of how much); the same horizons made with water waves in a flume; and a spinning shell of matter dragging space around inside it.",
+      "newSystems": [
+          "riverSpace",
+          "alcubierre",
+          "warpFlume",
+          "thirringShell"
+      ],
+      "notes": [
+          "River of Space (Spacetime): Schwarzschild in Painlevé–Gullstrand form — space flows in at escape speed and light moves at c relative to it, so flashes are dragged lopsided, stand still at the horizon, and are swept inward inside it.",
+          "Alcubierre Warp Bubble (Spacetime): light carried by the bubble's shift vector piles up at the front wall above light speed (Hiscock's horizons); York-time sheet; the negative-energy torus in the wall; Pfenning–Ford energy estimate in Jupiter masses.",
+          "Analog Warp Bubble (Flume) (Spacetime): shallow-water waves on a flow shaped like the Alcubierre shift vector — the lab version of the same horizons (Fr 0.6 vs 1.6). First written with the Gravity MCP server for the AWB-1 flume design.",
+          "Rotating Shell (Frame Dragging) (Spacetime): Thirring 1918 — inertial frames inside a spinning massive shell turn with it, so a pendulum's swing plane traces a rosette; the shape of the positive-energy 'physical warp drive' route.",
+          "None of these makes anything faster than light; each says what it leaves out."
+      ]
+  },
+  {
       "version": "0.1.100",
       "date": "2026-10-03",
       "title": "Rotation — why rackets flip, tops nod, the Earth wobbles and pendulums turn",
