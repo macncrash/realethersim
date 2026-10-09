@@ -81,7 +81,8 @@ export interface Archetype {
   dispose(): void;
 
   // optional: field-native archetypes (foam) expose a field in addition to positions
-  readField?(): { texture: unknown; width: number; height: number };
+  // `mask` (optional, static, 0…1 per cell) tints materials — walls, glass — under the field; `mask` must be the same array object each frame
+  readField?(): { texture: unknown; width: number; height: number; mask?: ArrayLike<number> };
 }
 
 export interface ArchetypeFactory {
