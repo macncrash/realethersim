@@ -5082,4 +5082,333 @@ o[1] = p.b * x[0];`,
           }
       ]
   },
+  elasticWaves: {
+      "title": "Elastic Waves (Earthquake)",
+      "about": "When a fault slips, the shock spreads through the Earth as two different kinds of wave. P waves (primary) push and pull the rock along their direction of travel, like sound; they are the fastest and arrive first. S waves (secondary) shake it from side to side; they travel about 1.7 times slower and cannot pass through liquid, which is how we know the Earth's outer core is molten. Where the waves reach the surface they combine into a Rayleigh wave that rolls the ground up and down like an ocean swell. It arrives last, travels along the surface instead of spreading into the deep rock, and does most of the damage. Seismologists read the delay between P and S to tell how far away a quake was, and early-warning systems use the fast P wave to warn of the shaking seconds before it arrives. This is a vertical slice through the ground with the surface at the top. Choose what to see: the vertical ground motion, or the compression (P) and shear (S) parts separately — in 'deep in the rock' they form two clean rings, P outside S. 'Soft layer over rock' adds a layer of sediment where waves travel at half the speed: they slow down, grow taller and get trapped bouncing inside it, which is why cities built on soft basins (Mexico City, for one) shake hardest.",
+      "howItWorks": "This solves the equations of linear elasticity for in-plane motion (P–SV waves) with Virieux's 1986 staggered-grid scheme: velocities and stresses live on interleaved grids and leapfrog each other in time — velocities change with the divergence of the stress, stresses with the gradient of the velocity, through the rock's Lamé constants λ and μ. The rock is a 'Poisson solid' (λ = μ), close to typical crustal rock, with P speed α = 1 and S speed β = α/√3. The ground surface is traction-free: the normal stress is zero there and the shear stress is mirrored across it. The other edges are absorbing sponges. The source is a Ricker pulse injected into the stresses — part explosion, part shear — so it radiates both P and S. Checked from the computed waves: P travels at 1.000α and S at 0.563α (theory 0.577α; the difference is the grid's numerical dispersion), and the surface pulse, timed by cross-correlating the ground motion at two points 80 cells apart, travels at 0.525α against Rayleigh's 0.9194β = 0.531α. 'Compression' is drawn as the divergence of the velocity field and 'shear' as its curl.",
+      "equations": [
+          {
+              "label": "momentum",
+              "latex": "\\rho\\,\\frac{\\partial \\mathbf v}{\\partial t} = \\nabla\\cdot\\boldsymbol\\sigma"
+          },
+          {
+              "label": "Hooke's law (rate form)",
+              "latex": "\\frac{\\partial \\boldsymbol\\sigma}{\\partial t} = \\lambda\\,(\\nabla\\cdot\\mathbf v)\\,\\mathbf I + \\mu\\left(\\nabla\\mathbf v + \\nabla\\mathbf v^{\\mathsf T}\\right)"
+          },
+          {
+              "label": "wave speeds",
+              "latex": "\\alpha = \\sqrt{\\frac{\\lambda + 2\\mu}{\\rho}},\\qquad \\beta = \\sqrt{\\frac{\\mu}{\\rho}},\\qquad \\frac{\\beta}{\\alpha} = \\frac{1}{\\sqrt3}\\ \\text{when}\\ \\lambda = \\mu"
+          },
+          {
+              "label": "Rayleigh wave speed (λ = μ)",
+              "latex": "\\frac{c_R^2}{\\beta^2} = 2 - \\frac{2}{\\sqrt3}\\quad\\Rightarrow\\quad c_R \\approx 0.9194\\,\\beta"
+          },
+          {
+              "label": "free surface",
+              "latex": "\\sigma_{zz} = \\sigma_{xz} = 0"
+          },
+          {
+              "label": "distance from the P–S delay",
+              "latex": "d = \\frac{\\Delta t}{1/\\beta - 1/\\alpha}"
+          }
+      ],
+      "params": [
+          {
+              "key": "scene",
+              "symbol": "",
+              "meaning": "a quake below the surface, the same under a soft sediment layer, or a source deep in the rock with no surface"
+          },
+          {
+              "key": "view",
+              "symbol": "",
+              "meaning": "draw the vertical ground motion, or the compression (P, the divergence) and shear (S, the curl) parts separately"
+          }
+      ],
+      "code": "// Virieux staggered grid, dx = 1, dt = 0.5 (α = 1)\nvx += dt/ρ (∂x σxx + ∂z σxz);   vz += dt/ρ (∂x σxz + ∂z σzz)\nσxx += dt ((λ+2μ) ∂x vx + λ ∂z vz)\nσzz += dt (λ ∂x vx + (λ+2μ) ∂z vz)\nσxz += dt μ (∂z vx + ∂x vz)\n// surface: σzz = 0, σxz mirrored;  source: Ricker pulse into σxx, σzz, σxz",
+      "links": [
+          {
+              "label": "Virieux 1986 — P-SV wave propagation in heterogeneous media: velocity-stress finite-difference method (Geophysics 51, 889)",
+              "url": "https://doi.org/10.1190/1.1442147"
+          },
+          {
+              "label": "Rayleigh 1885 — On waves propagated along the plane surface of an elastic solid (Proc. LMS 17, 4)",
+              "url": "https://doi.org/10.1112/plms/s1-17.1.4"
+          },
+          {
+              "label": "Seismic wave",
+              "url": "https://en.wikipedia.org/wiki/Seismic_wave"
+          },
+          {
+              "label": "P wave",
+              "url": "https://en.wikipedia.org/wiki/P_wave"
+          },
+          {
+              "label": "S wave",
+              "url": "https://en.wikipedia.org/wiki/S_wave"
+          },
+          {
+              "label": "Rayleigh wave",
+              "url": "https://en.wikipedia.org/wiki/Rayleigh_wave"
+          }
+      ]
+  },
+  phonons: {
+      "title": "Phonons (Lattice Vibrations)",
+      "about": "Sound and heat travel through a crystal as waves of atoms nudging their neighbours. Model the atoms as balls joined by springs and something remarkable appears: the row can only vibrate in definite patterns, called normal modes, and each pattern's frequency is fixed by its wavelength. That rule is the dispersion relation, drawn below the chain, with the current mode marked. Long waves behave like ordinary sound: double the frequency and you halve the wavelength. But the curve bends over as the wavelength shrinks towards two atom spacings, because the atoms cannot wiggle any finer than they are spaced. Use two kinds of atom (light cyan, heavy orange) and the curve splits in two. On the acoustic branch, neighbours move together, as in sound. On the optical branch they move against each other; in ionic crystals such as table salt that motion couples to light, which is where the name comes from. Between the branches is a band gap, a range of frequencies that no vibration can have, the same idea that gives semiconductors their electronic band gaps. Choose 'wave packet' to send a short burst along a long chain. Its crests run at the phase velocity, but the burst itself, and the energy it carries, moves at the group velocity, the slope of the curve. At the edge of the zone the slope is zero and the vibration goes nowhere: a standing wave. The atoms' motion is drawn sideways and magnified so it can be seen.",
+      "howItWorks": "Each atom feels Hooke's-law forces from its two neighbours: m ü_n = K(u_{n+1} + u_{n−1} − 2u_n), on a ring of atoms. The chain is integrated numerically with velocity Verlet; the dispersion relation is never imposed. A single mode is started from the exact eigenvector for the chosen wavenumber and branch, and a wave packet from that eigenvector times a Gaussian envelope. At the zone edge one kind of atom stands still: the light ones on the acoustic branch, the heavy ones on the optical. The curves are the textbook formulas: ω = 2√(K/m)|sin(ka/2)| for one kind of atom, and for two masses ω² = K(1/m₁ + 1/m₂) ± K√((1/m₁ + 1/m₂)² − 4 sin²(ka/2)/(m₁m₂)). The small mast over the chain marks where the group velocity says the burst should be. Checked by integrating the chain and timing the atoms: the frequencies match the formula to 4 decimals on both branches, including the zone edge (0.8165 = √(2K/m₂)). A burst's energy centre moves at 0.7059 cells per unit time against a group velocity of 0.7071 (one kind of atom), and at 0.2977 against 0.2992 and −0.0753 against −0.0754 for the two branches of the two-mass chain — the optical burst drifts backwards while its crests run forwards.",
+      "equations": [
+          {
+              "label": "Newton's law for each atom",
+              "latex": "m_n\\,\\ddot u_n = K\\left(u_{n+1} + u_{n-1} - 2u_n\\right)"
+          },
+          {
+              "label": "one kind of atom",
+              "latex": "\\omega(k) = 2\\sqrt{\\frac{K}{m}}\\,\\left|\\sin\\frac{ka}{2}\\right|"
+          },
+          {
+              "label": "two masses (acoustic −, optical +)",
+              "latex": "\\omega^2 = K\\left(\\frac{1}{m_1}+\\frac{1}{m_2}\\right) \\pm K\\sqrt{\\left(\\frac{1}{m_1}+\\frac{1}{m_2}\\right)^2 - \\frac{4\\sin^2(ka/2)}{m_1 m_2}}"
+          },
+          {
+              "label": "phase and group velocity",
+              "latex": "v_p = \\frac{\\omega}{k},\\qquad v_g = \\frac{d\\omega}{dk}"
+          },
+          {
+              "label": "the band gap at the zone edge (m₁ < m₂)",
+              "latex": "\\sqrt{2K/m_2} < \\omega < \\sqrt{2K/m_1}"
+          }
+      ],
+      "params": [
+          {
+              "key": "scene",
+              "symbol": "",
+              "meaning": "one normal mode on a short chain, or a wave packet on a long one"
+          },
+          {
+              "key": "ratio",
+              "symbol": "m_2/m_1",
+              "meaning": "the heavy atoms' mass relative to the light ones (1 = a single kind of atom)"
+          },
+          {
+              "key": "branch",
+              "symbol": "",
+              "meaning": "acoustic (neighbours together) or optical (neighbours opposed)"
+          },
+          {
+              "key": "mode",
+              "symbol": "k",
+              "meaning": "the wavenumber — how many waves fit along the chain (single mode), or how far across the zone (wave packet)"
+          }
+      ],
+      "code": "// ring of atoms, springs K, velocity Verlet\na[n] = K (u[n+1] + u[n-1] - 2 u[n]) / m[n]\nv += a dt/2;  u += v dt;  recompute a;  v += a dt/2\n// start: exact eigenvector (× Gaussian envelope for a packet)\n// heavy/light amplitude: (2K − m1 ω²) A = K (1 + e^{−ik}) B",
+      "links": [
+          {
+              "label": "Brillouin 1946 — Wave Propagation in Periodic Structures",
+              "url": "https://archive.org/details/wavepropagationi0000bril"
+          },
+          {
+              "label": "Phonon",
+              "url": "https://en.wikipedia.org/wiki/Phonon"
+          },
+          {
+              "label": "Group velocity",
+              "url": "https://en.wikipedia.org/wiki/Group_velocity"
+          },
+          {
+              "label": "Brillouin zone",
+              "url": "https://en.wikipedia.org/wiki/Brillouin_zone"
+          }
+      ]
+  },
+  twoStream: {
+      "title": "Two-Stream Instability (Plasma PIC)",
+      "about": "Two beams of electrons run through each other in opposite directions, over a still background of positive ions — the simplest example of a plasma turning the energy of flowing particles into electric fields. Picture it in phase space: position across, velocity up, so the two beams start as two flat lines, one moving right (cyan) and one left (orange). A tiny bunching in one beam makes an electric field that bunches the other, which pushes back harder; the ripple grows exponentially, then the field grows strong enough to trap electrons, and each wavelength curls up into a whirling vortex. Below the phase space are the electric field (white) and the logarithm of its energy against time (gold): while the ripple grows exponentially the gold line climbs straight, and its slope can be compared with the faint line, the growth rate that the theory of cold beams predicts. Then it bends over as the electrons are trapped. The same instability keeps particle beams in space from staying beams, heats electrons in shocks, and limits the currents a plasma can carry. Turn up the beam temperature (their velocity spread) and the instability weakens; hot enough and it disappears.",
+      "howItWorks": "This is particle-in-cell (PIC) simulation, the workhorse method of plasma physics (Dawson 1983; Birdsall and Langdon). Each dot is a 'macro-electron' standing for many real ones; there are 100,000 of them on a periodic line of 256 grid cells. Every step their charge is shared onto the two nearest grid points (cloud-in-cell weighting) and added to the uniform ion background. The electric field comes from Gauss's law (dE/dx = ρ, with zero mean), is interpolated back to each electron the same way, and moves it by leapfrog (a = −E). Units: plasma frequency ωp = 1. The beams start 'quietly', evenly spaced with a tiny ripple of the chosen wavelength, and a small velocity spread. For two cold beams at ±v₀ each carrying half the density, the dispersion relation 1 = ½/(ω − kv₀)² + ½/(ω + kv₀)² gives growth for kv₀ < 1, fastest at kv₀ = √(3/8) with growth rate 1/(2√2) ≈ 0.354 ωp. The box holds whole wavelengths of that fastest ripple. Checked: the code's plasma oscillation frequency is 1.0000 ωp. Fitting the exponential phase of the field's Fourier mode gives γ = 0.345 against 0.354 for the cold theory. Total energy (kinetic plus field) changes by under 0.1% through saturation, when about 5% of the beams' energy has gone into the field.",
+      "equations": [
+          {
+              "label": "each electron (units: ωp = 1, e = m = ε₀ = 1)",
+              "latex": "\\frac{dx}{dt} = v,\\qquad \\frac{dv}{dt} = -E(x)"
+          },
+          {
+              "label": "Gauss's law with the ion background",
+              "latex": "\\frac{\\partial E}{\\partial x} = 1 - n_e(x)"
+          },
+          {
+              "label": "cold two-stream dispersion relation",
+              "latex": "1 = \\frac{\\omega_p^2/2}{(\\omega - k v_0)^2} + \\frac{\\omega_p^2/2}{(\\omega + k v_0)^2}"
+          },
+          {
+              "label": "its solution",
+              "latex": "\\omega^2 = \\frac{(2a^2 + 1) - \\sqrt{8a^2 + 1}}{2},\\quad a = \\frac{k v_0}{\\omega_p}"
+          },
+          {
+              "label": "fastest growth",
+              "latex": "\\gamma_{max} = \\frac{\\omega_p}{2\\sqrt2}\\ \\text{at}\\ k v_0 = \\sqrt{3/8}\\,\\omega_p"
+          }
+      ],
+      "params": [
+          {
+              "key": "mode",
+              "symbol": "m",
+              "meaning": "how many wavelengths of the fastest-growing ripple fit in the box (= how many vortices form)"
+          },
+          {
+              "key": "vth",
+              "symbol": "v_{th}",
+              "meaning": "the beams' velocity spread (temperature) — more spread, slower growth"
+          },
+          {
+              "key": "v0",
+              "symbol": "v_0",
+              "meaning": "the beams' speed"
+          }
+      ],
+      "code": "// particle-in-cell, periodic, 256 cells, dt = 0.1/ωp\nfor each electron: share charge onto the 2 nearest cells (cloud-in-cell)\nρ = 1 − n_e;  E = ∫ρ dx  (zero mean)\nfor each electron: v −= E(x) dt;  x += v dt  (leapfrog, wrap around)",
+      "links": [
+          {
+              "label": "Dawson 1983 — Particle simulation of plasmas (Rev. Mod. Phys. 55, 403)",
+              "url": "https://doi.org/10.1103/RevModPhys.55.403"
+          },
+          {
+              "label": "Buneman 1959 — Dissipation of currents in ionized media (Phys. Rev. 115, 503)",
+              "url": "https://doi.org/10.1103/PhysRev.115.503"
+          },
+          {
+              "label": "Two-stream instability",
+              "url": "https://en.wikipedia.org/wiki/Two-stream_instability"
+          },
+          {
+              "label": "Particle-in-cell",
+              "url": "https://en.wikipedia.org/wiki/Particle-in-cell"
+          },
+          {
+              "label": "Plasma oscillation",
+              "url": "https://en.wikipedia.org/wiki/Plasma_oscillation"
+          }
+      ]
+  },
+  stellarCollapse: {
+      "title": "Star: Balance and Collapse",
+      "about": "A star is a ball of gas held up by its own pressure against its own gravity. Here it is shown as a slice through the middle: the hot core white, cooler layers yellow and red, and the brightness following the density. 'A star in balance' is the classic model of a Sun-like star, a polytrope of index 3 (Eddington's 'standard model'). Pressure and gravity cancel at every depth, so it is about 54 times denser at the centre than on average. Give it a nudge and it rings, breathing in and out with a period set only by its mean density: make the same mass bigger and it breathes more slowly. That is why a Cepheid variable's pulsation period reveals its size and brightness, which is how Henrietta Leavitt's period–luminosity law turned Cepheids into the yardsticks that showed the universe is expanding. 'Core collapse' takes the same ball but makes the gas slightly too soft to hold itself up. This is what happens when an old massive star's iron core can no longer make energy and its electrons are squeezed into the nuclei. It falls in, faster and faster, the centre reaching hundreds of times its starting density in a fraction of a second, until the core hits nuclear density and suddenly turns stiff. The inner core stops and rebounds, the infalling layers slam into it, and a shock wave runs outward: the start of a core-collapse (Type II) supernova. Here the shock carries some of the outer gas away.",
+      "howItWorks": "The starting star solves the Lane–Emden equation for index n = 3; the solver reproduces the textbook constants ξ₁ = 6.89685 and −ξ₁²θ′(ξ₁) = 2.01824, and likewise for n = 1 and 1.5. It is then evolved by 1-D spherical Lagrangian hydrodynamics on 160 mass shells: each shell's surface is pushed by the pressure difference across it and pulled in by the mass inside it. The scheme is von Neumann–Richtmyer's, with leapfrog time stepping and artificial viscosity to capture shocks. Internal energy changes by the work done on each shell, using the average of the old and new pressure. Units G = M = R = 1. In balance the gas is ideal with Γ = 5/3, and the model is first relaxed onto the grid's own equilibrium. Left alone, its interior then moves at under 0.5% of the escape speed and its shells hold their radii to 0.4%. Nudged, it breathes, and the period scales with radius as R^{3/2} at fixed mass (measured ratio 1.842 against 1.837 for R = 1.5 vs 1), i.e. as 1/√(Gρ̄). For the collapse the pressure follows a 'hybrid' equation of state of the kind used in supernova modelling: a soft power law (Γ = 1.3 below 4/3, so it cannot stand) up to a stand-in nuclear density (400× the starting central density), very stiff (Γ = 2.5) above it, plus a thermal part (Γ = 1.5) for shock-heated gas. Total energy is conserved to about 5% through bounce and ejection. This is a toy, and an honest one. Real cores lose huge amounts of energy breaking iron into nucleons and in neutrinos, so the real shock stalls within a few hundred kilometres. Reviving it takes neutrino heating and turbulence over hundreds of milliseconds, the subject of decades of work (Bethe 1990). Here nothing is lost, so the shock always gets out.",
+      "equations": [
+          {
+              "label": "hydrostatic balance",
+              "latex": "\\frac{dP}{dr} = -\\frac{G\\,m(r)\\,\\rho}{r^2}"
+          },
+          {
+              "label": "polytrope and the Lane–Emden equation",
+              "latex": "P = K\\rho^{1+1/n},\\qquad \\frac{1}{\\xi^2}\\frac{d}{d\\xi}\\left(\\xi^2\\frac{d\\theta}{d\\xi}\\right) = -\\theta^n,\\quad \\rho = \\rho_c\\,\\theta^n"
+          },
+          {
+              "label": "Lagrangian hydrodynamics of each shell",
+              "latex": "\\frac{du}{dt} = -4\\pi r^2\\frac{\\partial (P+q)}{\\partial m} - \\frac{G m}{r^2},\\qquad \\frac{de}{dt} = -(P+q)\\frac{d(1/\\rho)}{dt}"
+          },
+          {
+              "label": "breathing period (Ritter's relation)",
+              "latex": "\\Pi \\propto \\frac{1}{\\sqrt{G\\bar\\rho}}"
+          },
+          {
+              "label": "why Γ < 4/3 collapses",
+              "latex": "E = -\\frac{3\\Gamma - 4}{3(\\Gamma - 1)}\\,\\frac{GM^2}{R}\\times\\text{const}\\quad\\Rightarrow\\quad \\text{unbound to collapse for}\\ \\Gamma < \\tfrac43"
+          }
+      ],
+      "params": [
+          {
+              "key": "scene",
+              "symbol": "",
+              "meaning": "a star in hydrostatic balance (nudged, it breathes) or a core too soft to hold itself up"
+          },
+          {
+              "key": "gamma",
+              "symbol": "\\Gamma",
+              "meaning": "collapse: the softness of the gas below nuclear density — further below 4/3, faster collapse"
+          },
+          {
+              "key": "radius",
+              "symbol": "R",
+              "meaning": "balance: the star's radius at fixed mass — bigger stars breathe more slowly"
+          }
+      ],
+      "code": "// 160 mass shells, von Neumann–Richtmyer\nu_i += dt (−4π r_i² (P_out − P_in)/m̄ − G m_i / r_i²)\nr_i += u_i dt\nρ_j = dm_j / (4π/3 (r_{j+1}³ − r_j³))\nq_j = ρ (2 Δu² + 0.3 |Δu| c)   if compressing\ne_j −= (½(P_old + P_new) + q) Δ(1/ρ)\n// collapse EOS: soft K ρ^1.3 → stiff ρ^2.5 above ρ_nuc, + thermal part",
+      "links": [
+          {
+              "label": "Chandrasekhar 1939 — An Introduction to the Study of Stellar Structure",
+              "url": "https://archive.org/details/introductiontost0000chan"
+          },
+          {
+              "label": "von Neumann & Richtmyer 1950 — A method for the numerical calculation of hydrodynamic shocks (J. Appl. Phys. 21, 232)",
+              "url": "https://doi.org/10.1063/1.1699639"
+          },
+          {
+              "label": "Bethe 1990 — Supernova mechanisms (Rev. Mod. Phys. 62, 801)",
+              "url": "https://doi.org/10.1103/RevModPhys.62.801"
+          },
+          {
+              "label": "Lane–Emden equation",
+              "url": "https://en.wikipedia.org/wiki/Lane%E2%80%93Emden_equation"
+          },
+          {
+              "label": "Type II supernova",
+              "url": "https://en.wikipedia.org/wiki/Type_II_supernova"
+          },
+          {
+              "label": "Cepheid variable",
+              "url": "https://en.wikipedia.org/wiki/Cepheid_variable"
+          }
+      ]
+  },
+  fracture: {
+      "title": "Fracture (Brittle Crack)",
+      "about": "Why does glass shatter, and why does a tiny scratch make it so much easier to break? Here a brittle plate is modelled as a triangular lattice of atoms joined by springs that snap if stretched more than 3.5%. The plate is pulled taut between clamped top and bottom edges, then a notch is cut into its left side. Stress piles up enormously at the notch tip — a sharp crack multiplies the force on the bonds at its tip, which is why a scratch weakens glass. Whether the crack runs is an energy question, first answered by A. A. Griffith in 1921. Breaking bonds costs energy (the new surfaces), while letting the plate relax releases the elastic energy stored in it. Pull too gently and there isn't enough stored energy to pay for the new surface, so the notch just sits there. Pull a little harder and the bonds at the tip snap one after another, and the crack (orange) races across the plate. Pull harder still and the crack becomes unstable: it roughens, sheds side branches and splits, like the forks in a broken windscreen. Classical theory says a crack in a continuous material can't run faster than the Rayleigh speed, the speed of waves along a free surface. In real brittle materials cracks go unstable well before that, in acrylic at about a third of it.",
+      "howItWorks": "There are 150 × 86 atoms on a triangular lattice, each joined to its six neighbours by linear springs (k = m = spacing = 1). This lattice is an isotropic elastic solid with Young's modulus 2k/√3, Poisson's ratio 1/3, shear-wave speed √(3/8) ≈ 0.612 and Rayleigh speed 0.9194 of that, ≈ 0.563. Checked: a long extensional wave along the free plate travels at 0.987 against the bar speed √(E/ρ) = 1. The plate starts uniformly stretched by the chosen strain, with the matching sideways contraction so it is already in balance, and the top and bottom two rows are held as grips. The notch is cut by removing the bonds across the middle line over the left 12% of the plate. Atoms move by velocity Verlet with very light damping, and any bond stretched beyond 3.5% breaks for good. Measured behaviour: at 0.8% strain the crack doesn't run; from about 1.2% it crosses cleanly along the middle; from about 2.6% it branches heavily. The tip settles at about 1.05 times the lattice's Rayleigh speed. That is slightly faster than the continuum limit, which idealised lattices with perfectly brittle springs are known to allow, since nothing absorbs energy except the snapping bonds. Real materials lose energy to microcracks, heat and roughness, and run slower.",
+      "equations": [
+          {
+              "label": "Griffith's criterion: the crack grows when the released elastic energy pays for the new surfaces",
+              "latex": "G \\ge 2\\gamma,\\qquad \\sigma_c = \\sqrt{\\frac{2E\\gamma}{\\pi a}}"
+          },
+          {
+              "label": "each bond (breaks for good beyond ε_c)",
+              "latex": "\\mathbf F = k\\,(|\\mathbf d| - a)\\,\\hat{\\mathbf d},\\qquad |\\mathbf d| > a(1+\\varepsilon_c)\\ \\Rightarrow\\ \\text{snap}"
+          },
+          {
+              "label": "the triangular lattice as an elastic solid",
+              "latex": "E = \\frac{2k}{\\sqrt3},\\quad \\nu = \\tfrac13,\\quad c_s = \\sqrt{\\frac{3k a^2}{8m}},\\quad c_R \\approx 0.9194\\,c_s"
+          },
+          {
+              "label": "the stress near a crack tip grows without limit (linear elasticity)",
+              "latex": "\\sigma \\sim \\frac{K_I}{\\sqrt{2\\pi r}}"
+          }
+      ],
+      "params": [
+          {
+              "key": "strain",
+              "symbol": "\\varepsilon",
+              "meaning": "how far the plate is stretched before the notch is cut — below about 1% nothing happens, around 2% a clean crack runs, near 3% it branches"
+          }
+      ],
+      "code": "// triangular spring lattice, k = m = a = 1, velocity Verlet\nfor each intact bond: s = |d| − 1\n    if s > 0.035: break it (for good)\n    else: f = s · d/|d|  on both atoms\n// start: uniform stretch ε with sideways contraction ε/3, grips held, notch cut\n// crack tip = furthest broken bond along the middle",
+      "links": [
+          {
+              "label": "Griffith 1921 — The phenomena of rupture and flow in solids (Phil. Trans. R. Soc. A 221, 163)",
+              "url": "https://doi.org/10.1098/rsta.1921.0006"
+          },
+          {
+              "label": "Marder & Gross 1995 — Origin of crack tip instabilities (J. Mech. Phys. Solids 43, 1)",
+              "url": "https://doi.org/10.1016/0022-5096(94)00060-I"
+          },
+          {
+              "label": "Fineberg, Gross, Marder & Swinney 1991 — Instability in dynamic fracture (PRL 67, 457)",
+              "url": "https://doi.org/10.1103/PhysRevLett.67.457"
+          },
+          {
+              "label": "Fineberg & Marder 1999 — Instability in dynamic fracture (Physics Reports 313, 1)",
+              "url": "https://doi.org/10.1016/S0370-1573(98)00085-4"
+          },
+          {
+              "label": "Fracture mechanics",
+              "url": "https://en.wikipedia.org/wiki/Fracture_mechanics"
+          }
+      ]
+  },
 };

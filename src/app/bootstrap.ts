@@ -37,6 +37,9 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
 
   const caps = await detectCapabilities();
   const { renderer, backend } = await createRenderer(canvas);
+  // Pixel readback row order differs by backend: WebGPU returns rows top-down (like the screen), WebGL2's
+  // readPixels returns them bottom-up. Every export that copies a readback into an image must use this.
+  const READBACK_BOTTOM_UP = backend === 'webgl2';
   const useWorker = caps.crossOriginIsolated && typeof SharedArrayBuffer !== 'undefined';
   $telemetry.setKey('backend', `${backend} · ${useWorker ? 'worker+SAB' : 'main-thread'}`);
 
@@ -781,6 +784,36 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
       camera.position.set(0, 0, 4.4);
       controls.update();
     }
+    // An upright slice through the ground (surface at the top) — face it straight on.
+    if ($archetypeId.get() === 'elasticWaves') {
+      controls.target.set(0, 0, 0);
+      camera.position.set(0, 0, 4.4);
+      controls.update();
+    }
+    // The chain above its dispersion curve — a flat, face-on view.
+    if ($archetypeId.get() === 'phonons') {
+      controls.target.set(0, -0.2, 0);
+      camera.position.set(0, -0.2, 4.3);
+      controls.update();
+    }
+    // Phase space is a flat plot — face it straight on.
+    if ($archetypeId.get() === 'twoStream') {
+      controls.target.set(0, -0.25, 0);
+      camera.position.set(0, -0.25, 4.3);
+      controls.update();
+    }
+    // A slice through the star's middle — face it straight on.
+    if ($archetypeId.get() === 'stellarCollapse') {
+      controls.target.set(0, 0, 0);
+      camera.position.set(0, 0, 4.4);
+      controls.update();
+    }
+    // The cracking plate is flat — face it straight on.
+    if ($archetypeId.get() === 'fracture') {
+      controls.target.set(0, 0, 0);
+      camera.position.set(0, 0, 3.6);
+      controls.update();
+    }
     if ($archetypeId.get() === 'customParametric') {
       controls.target.set(0, 0, 0);
       camera.position.set(2.6, 1.8, 3.4);
@@ -1065,7 +1098,7 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
       // then copy each row from its real (padded) source offset — otherwise rows drift and shear.
       const stride = buf.length === w * h * 4 ? w * 4 : Math.ceil((w * 4) / 256) * 256;
       for (let r = 0; r < h; r++) {
-        const src = (h - 1 - r) * stride; // flip Y (readback is bottom-up)
+        const src = (READBACK_BOTTOM_UP ? h - 1 - r : r) * stride; // WebGPU reads back top-down; only WebGL2 needs the flip
         img.data.set(buf.subarray(src, src + w * 4), r * w * 4);
       }
       ctx.putImageData(img, 0, 0);
@@ -1204,7 +1237,7 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
             const img = mctx.createImageData(w, h);
             const stride = buf.length === w * h * 4 ? w * 4 : Math.ceil((w * 4) / 256) * 256;
             for (let r = 0; r < h; r++) {
-              const src = (h - 1 - r) * stride; // flip Y (readback is bottom-up)
+              const src = (READBACK_BOTTOM_UP ? h - 1 - r : r) * stride; // WebGPU reads back top-down; only WebGL2 needs the flip
               img.data.set(buf.subarray(src, src + w * 4), r * w * 4);
             }
             mctx.putImageData(img, 0, 0);
@@ -1342,7 +1375,7 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
       const img = fctx.createImageData(w, h);
       const stride = buf.length === w * h * 4 ? w * 4 : Math.ceil((w * 4) / 256) * 256; // WebGPU row padding
       for (let r = 0; r < h; r++) {
-        const src = r * stride; // WebGPU readback is already top-down here — do NOT flip (verified vs the live canvas)
+        const src = (READBACK_BOTTOM_UP ? h - 1 - r : r) * stride; // top-down on WebGPU (verified vs the live canvas); WebGL2 needs the flip
         img.data.set(buf.subarray(src, src + w * 4), r * w * 4);
       }
       fctx.putImageData(img, 0, 0);
@@ -1488,6 +1521,11 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
           else if (id === 'shallowWater') { controls.target.set(0, 0.1, 0); camera.position.set(2.6, 2.4, 2.9); }
           else if (id === 'rayleighBenard') { controls.target.set(0, 0, 0); camera.position.set(0, 0, 3.2); }
           else if (id === 'shearInstabilities') { controls.target.set(0, 0, 0); camera.position.set(0, 0, 4.4); }
+          else if (id === 'elasticWaves') { controls.target.set(0, 0, 0); camera.position.set(0, 0, 4.4); }
+          else if (id === 'phonons') { controls.target.set(0, -0.2, 0); camera.position.set(0, -0.2, 4.3); }
+          else if (id === 'twoStream') { controls.target.set(0, -0.25, 0); camera.position.set(0, -0.25, 4.3); }
+          else if (id === 'stellarCollapse') { controls.target.set(0, 0, 0); camera.position.set(0, 0, 4.4); }
+          else if (id === 'fracture') { controls.target.set(0, 0, 0); camera.position.set(0, 0, 3.6); }
           else if (id === 'customParametric') { controls.target.set(0, 0, 0); camera.position.set(2.6, 1.8, 3.4); }
           else if (id === 'luneburgLens') { controls.target.set(0, 0, 0); camera.position.set(0, 3.9, 0.7); }
           else if (id === 'flyBrain') { controls.target.set(0, 0, 0); camera.position.set(0.4, 0.7, 3.3); }
