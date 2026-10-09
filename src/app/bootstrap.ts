@@ -685,6 +685,30 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
       camera.position.set(1.7, 2.8, 3.2);
       controls.update();
     }
+    // The river of space is a flat flow around the hole — seen from high above so the flashes' shapes read.
+    if ($archetypeId.get() === 'riverSpace') {
+      controls.target.set(0, 0, 0);
+      camera.position.set(0, 3.6, 2.9);
+      controls.update();
+    }
+    // The warp bubble's York-time sheet and light flashes — a raised 3/4 view along the line of motion.
+    if ($archetypeId.get() === 'alcubierre') {
+      controls.target.set(0, -0.1, 0);
+      camera.position.set(0.5, 4.4, 5.6);
+      controls.update();
+    }
+    // The flume is a long shallow channel — seen from above and behind, as in the AWB-1 design.
+    if ($archetypeId.get() === 'warpFlume') {
+      controls.target.set(0, -0.7, 0);
+      camera.position.set(0, 6.4, 8.4);
+      controls.update();
+    }
+    // The rotating shell with its pendulum rosette — from above so the turning swing plane reads.
+    if ($archetypeId.get() === 'thirringShell') {
+      controls.target.set(0, 0, 0);
+      camera.position.set(1.6, 2.6, 4.6);
+      controls.update();
+    }
     if ($archetypeId.get() === 'customParametric') {
       controls.target.set(0, 0, 0);
       camera.position.set(2.6, 1.8, 3.4);
@@ -1352,6 +1376,10 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
           else if (id === 'heavyTop') { controls.target.set(0, -0.35, 0); camera.position.set(0, 1.6, 5.4); }
           else if (id === 'poinsot') { controls.target.set(0, -0.35, 0); camera.position.set(0.6, 2.3, 4.2); }
           else if (id === 'foucault') { controls.target.set(0, -0.3, 0); camera.position.set(1.7, 2.8, 3.2); }
+          else if (id === 'riverSpace') { controls.target.set(0, 0, 0); camera.position.set(0, 3.6, 2.9); }
+          else if (id === 'alcubierre') { controls.target.set(0, -0.1, 0); camera.position.set(0.5, 4.4, 5.6); }
+          else if (id === 'warpFlume') { controls.target.set(0, -0.7, 0); camera.position.set(0, 6.4, 8.4); }
+          else if (id === 'thirringShell') { controls.target.set(0, 0, 0); camera.position.set(1.6, 2.6, 4.6); }
           else if (id === 'customParametric') { controls.target.set(0, 0, 0); camera.position.set(2.6, 1.8, 3.4); }
           else if (id === 'luneburgLens') { controls.target.set(0, 0, 0); camera.position.set(0, 3.9, 0.7); }
           else if (id === 'flyBrain') { controls.target.set(0, 0, 0); camera.position.set(0.4, 0.7, 3.3); }

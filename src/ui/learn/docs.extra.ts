@@ -4014,4 +4014,237 @@ o[1] = p.b * x[0];`,
           }
       ]
   },
+  riverSpace: {
+      "title": "River of Space",
+      "about": "There is a picture of a black hole in which nothing is mysterious about the horizon at all. Write Schwarzschild's solution in Painlevé–Gullstrand coordinates and space itself becomes a river, flowing straight inward through ordinary flat space at exactly the Newtonian escape speed. Light always moves at the speed of light — but relative to the river it is swimming in. Far from the hole the river is slow, and a flash of light spreads out as an almost perfect circle. Closer in, the circle is dragged inward and turns lopsided. At the horizon the river flows at exactly the speed of light, so light aimed straight out stands still, like a swimmer going flat out against a current just as fast. Inside, the river outruns light, and every flash, whichever way it points, is carried to the centre. This flow is what relativists call a shift vector — and it is the same ingredient that drives an Alcubierre warp bubble, here in an exact solution of Einstein's equations made of ordinary, positive mass.",
+      "howItWorks": "In Painlevé–Gullstrand coordinates the black hole's metric is ds² = −dt² + (dx − β dt)² with flat space and a radial flow β = −c√(r_s/r): the time slices are flat, clocks tick at the rate of falling observers, and everything that is curved about the spacetime is carried by the flow. Light then obeys a very simple rule: its velocity is c in some direction n̂, plus the velocity of the river at that spot, ẋ = c·n̂ + β r̂. We set off flashes from sources scattered around the hole, send light out in every direction from each, and integrate that rule (with smaller steps close to the centre, where the river is fast). Gold flashes start outside the horizon, red ones inside; faint blue tracers drift with the river itself; the red ring marks the horizon, where |β| = c. Light that reaches the centre has met the singularity; its points are hidden among the surviving part of the same flash.",
+      "equations": [
+          {
+              "label": "Schwarzschild in Painlevé–Gullstrand form",
+              "latex": "ds^2 = -c^2dt^2 + \\big(d\\mathbf x - \\boldsymbol\\beta\\,dt\\big)^2, \\quad \\boldsymbol\\beta = -c\\sqrt{r_s/r}\\;\\hat{\\mathbf r}"
+          },
+          {
+              "label": "light moves at c relative to the river",
+              "latex": "\\dot{\\mathbf x} = c\\,\\hat{\\mathbf n} + \\boldsymbol\\beta(r)"
+          },
+          {
+              "label": "the horizon: the river reaches c",
+              "latex": "|\\boldsymbol\\beta(r_s)| = c, \\qquad r_s = \\frac{2GM}{c^2}"
+          }
+      ],
+      "params": [
+          {
+              "key": "emitters",
+              "symbol": "N",
+              "meaning": "how many flash sources are scattered around the hole"
+          },
+          {
+              "key": "period",
+              "symbol": "T",
+              "meaning": "time between flashes from each source"
+          }
+      ],
+      "code": "// the river model: space flows in at escape speed; light swims at c through it\nbeta(r) = -sqrt(r_s / r)              // inward, units c = 1\nfor each light point (direction n):\n  x += (n + beta(|x|) * x/|x|) * dt   // c relative to the local river\n// horizon: |beta| = 1 at r = r_s; inside, every direction is carried inward",
+      "links": [
+          {
+              "label": "Hamilton & Lisle 2008 — The river model of black holes",
+              "url": "https://arxiv.org/abs/gr-qc/0411060"
+          },
+          {
+              "label": "Gullstrand–Painlevé coordinates",
+              "url": "https://en.wikipedia.org/wiki/Gullstrand%E2%80%93Painlev%C3%A9_coordinates"
+          }
+      ]
+  },
+  alcubierre: {
+      "title": "Alcubierre Warp Bubble",
+      "about": "In 1994 Miguel Alcubierre wrote down a spacetime in which a ship could reach a distant star arbitrarily fast without ever moving faster than light locally. Space inside a bubble around the ship is flat and still; the trick is that the whole bubble of space is carried along — space contracts ahead of it and expands behind it, the famous picture drawn here as a sheet (squeezed ahead in orange, stretched behind in blue). Seen from the bubble, the rest of the universe streams past. Light always moves at the speed of light relative to its own patch of space, so its path is bent by that stream. Below light speed, flashes from the ship spread out lopsidedly but escape. Above light speed, a horizon forms where the stream reaches c: light sent forward piles up against the front wall (a white-hole horizon, with extreme blueshift), and light sent backward is swept away (a black-hole horizon) — which also means the crew could never signal the front of their own bubble to steer or stop it. The catch is the magenta ring: to bend space this way, the bubble wall needs negative energy density, concentrated in a torus around the line of motion. The hierarchy panel shows the classical estimate of how much. Nothing known can supply it.",
+      "howItWorks": "The Alcubierre metric is ds² = −dt² + (dx − v_s f(r_s) dt)² + dy² + dz²: flat space, normal time, and a shift vector — space at the bubble carried along at v_s, with f a smooth top-hat (1 inside, 0 outside, a tanh wall whose sharpness is σ). We work in the bubble's frame, where space outside streams past at −v_s and light obeys ẋ = c·n̂ − v_s(1 − f) x̂. Flashes from the ship (gold) and from sources outside the bubble (cyan) are integrated with that rule; the red ring is the horizon, the radius where v_s(1 − f) = c (it appears only when v_s > c). The sheet's height is York time θ = v_s (x/r) f′(r), the rate at which volumes expand (normalised for display). The magenta cloud samples the energy density seen by observers at rest, T⁰⁰ = −(v_s²/32π)(ρ²/r²)(f′)², which is negative wherever it isn't zero. The energy readout is Pfenning & Ford's classical estimate E ≈ −(1/12) v_s² (c⁴/G) R² σ for a bubble of radius R (the knob, in metres): it grows with the square of the speed and the radius. With R = 6 m, σ = 1.2 per metre and v_s = 10 c it gives about 255 Jupiter masses — negative ones.",
+      "equations": [
+          {
+              "label": "the Alcubierre metric",
+              "latex": "ds^2 = -dt^2 + \\big(dx - v_s f(r_s)\\,dt\\big)^2 + dy^2 + dz^2"
+          },
+          {
+              "label": "the top-hat shape of the bubble",
+              "latex": "f(r_s) = \\frac{\\tanh\\sigma(r_s+R) - \\tanh\\sigma(r_s-R)}{2\\tanh\\sigma R}"
+          },
+          {
+              "label": "light, in the bubble's frame",
+              "latex": "\\dot{\\mathbf x} = c\\,\\hat{\\mathbf n} - v_s\\,\\big(1 - f(r)\\big)\\,\\hat{\\mathbf x}"
+          },
+          {
+              "label": "York time (expansion of space)",
+              "latex": "\\theta = v_s\\,\\frac{x - x_s}{r_s}\\,\\frac{df}{dr_s}"
+          },
+          {
+              "label": "energy density (negative)",
+              "latex": "T^{00} = -\\frac{1}{8\\pi}\\,\\frac{v_s^2}{4}\\,\\frac{\\rho^2}{r_s^2}\\Big(\\frac{df}{dr_s}\\Big)^2"
+          },
+          {
+              "label": "Pfenning–Ford classical estimate of the total",
+              "latex": "E \\approx -\\frac{1}{12}\\,v_s^2\\,\\frac{c^4}{G}\\,R^2\\,\\sigma"
+          }
+      ],
+      "params": [
+          {
+              "key": "vs",
+              "symbol": "v_s",
+              "meaning": "bubble speed in units of c — above 1 the horizons appear"
+          },
+          {
+              "key": "sigmaR",
+              "symbol": "\\sigma R",
+              "meaning": "how sharp the bubble wall is compared with the bubble's size"
+          },
+          {
+              "key": "radius",
+              "symbol": "R",
+              "meaning": "bubble radius in metres, used for the energy estimate"
+          },
+          {
+              "key": "period",
+              "symbol": "T",
+              "meaning": "time between light flashes"
+          }
+      ],
+      "code": "// Alcubierre bubble, in its own frame: space outside streams past at -v_s\nf(r) = (tanh(s(r+R)) - tanh(s(r-R))) / (2 tanh(sR))\nflow(x) = -v_s * (1 - f(|x|))\nfor each light point (direction n):  x += (n + flow(x) x̂) * dt\nhorizon: v_s * (1 - f(r_h)) = 1           // only when v_s > 1\nsheet height = York time  θ = v_s (x/r) f'(r)\nE ≈ -(1/12) v_s² (c⁴/G) R² σ              // Pfenning & Ford",
+      "links": [
+          {
+              "label": "Alcubierre 1994 — The warp drive",
+              "url": "https://arxiv.org/abs/gr-qc/0009013"
+          },
+          {
+              "label": "Hiscock 1997 — horizons of a superluminal bubble",
+              "url": "https://arxiv.org/abs/gr-qc/9707024"
+          },
+          {
+              "label": "Pfenning & Ford 1997 — The unphysical nature of “Warp Drive”",
+              "url": "https://arxiv.org/abs/gr-qc/9702026"
+          },
+          {
+              "label": "Alcubierre drive",
+              "url": "https://en.wikipedia.org/wiki/Alcubierre_drive"
+          }
+      ]
+  },
+  warpFlume: {
+      "title": "Analog Warp Bubble (Flume)",
+      "about": "You can't build a warp bubble, but you can build one for water waves. Bill Unruh showed in 1981 that waves on a moving fluid obey the same equation as light in a curved spacetime — the flow plays the part of the shift vector. Shape the flow like Alcubierre's: water streams past a sheltered pocket in which it is still, with the pocket's edge having the same top-hat profile as a warp bubble's wall. A plunger at the centre (the ship) makes waves. When the stream outside runs faster than the waves can travel (Froude number above 1 — the analog of a bubble going faster than light), a horizon forms where the flow reaches the wave speed: crests sent forward stall and bunch up at the front wall, crests sent backward are carried away. Turn the stream down below the wave speed and the horizon disappears. Experiments of exactly this kind have been done: wave-blocking at a white-hole horizon in a water channel (Rousseaux et al. 2008) and stimulated Hawking emission from one (Weinfurtner et al. 2011). This system was first written with the Gravity MCP server as part of the AWB-1 analog-warp-flume design: a 1.5 m acrylic channel, 20 mm deep, comparing Fr = 0.6 with Fr = 1.6.",
+      "howItWorks": "Shallow-water waves of small height η and velocity potential φ on a background flow V obey (∂t + V·∇)φ = −gη and (∂t + V·∇)η = −h∇²φ, which combine into the convected wave equation (∂t + V·∇)²φ = c²∇²φ with c² = gh — the acoustic metric. The flow in the ship's frame is V = −U(1 − f(r)) x̂, with Alcubierre's top-hat f. We step it on a grid: semi-Lagrangian advection along the stream (a cubic back-trace), then a symplectic update of the wave terms, with a sponge layer at the edges to absorb outgoing waves. The red ring is the horizon radius, where 1 − f(r) = 1/Fr (at Fr = 1.6 with the default pocket, r ≈ 1.03 R). Colour shows the water itself: blue where the flow is slower than the waves (so they can travel upstream), orange where the stream outruns them.",
+      "equations": [
+          {
+              "label": "acoustic metric (Unruh 1981)",
+              "latex": "ds^2 \\propto -(c^2 - V^2)\\,dt^2 - 2\\,\\mathbf V\\cdot d\\mathbf x\\,dt + d\\mathbf x^2"
+          },
+          {
+              "label": "convected wave equation",
+              "latex": "(\\partial_t + \\mathbf V\\cdot\\nabla)^2\\phi = c^2\\,\\nabla^2\\phi, \\qquad c^2 = g h"
+          },
+          {
+              "label": "the flow: a warp-bubble-shaped pocket",
+              "latex": "\\mathbf V(\\mathbf x) = -U\\,\\big(1 - f(r)\\big)\\,\\hat x"
+          },
+          {
+              "label": "horizon",
+              "latex": "|\\mathbf V(r_h)| = c \\iff 1 - f(r_h) = 1/\\mathrm{Fr}, \\quad \\mathrm{Fr} = U/c"
+          }
+      ],
+      "params": [
+          {
+              "key": "Fr",
+              "symbol": "\\mathrm{Fr}",
+              "meaning": "Froude number: stream speed over wave speed — the analog of v_s/c; above 1 there are horizons"
+          },
+          {
+              "key": "R",
+              "symbol": "R",
+              "meaning": "radius of the sheltered pocket (the bubble)"
+          },
+          {
+              "key": "sigma",
+              "symbol": "\\sigma",
+              "meaning": "sharpness of the pocket's wall"
+          },
+          {
+              "key": "omega",
+              "symbol": "\\omega",
+              "meaning": "plunger frequency"
+          },
+          {
+              "key": "amp",
+              "symbol": "A",
+              "meaning": "plunger amplitude"
+          }
+      ],
+      "code": "// waves on a moving medium shaped like a warp bubble (semi-Lagrangian + symplectic)\nV(x) = -Fr * (1 - f(r)) along x        // c = 1\nadvect eta, phi along the stream (cubic back-trace)\nphi -= dt * eta;   eta -= dt * laplacian(phi)\nplunger at the centre; sponge at the edges\nhorizon: 1 - f(r_h) = 1/Fr",
+      "links": [
+          {
+              "label": "Unruh 1981 — Experimental black-hole evaporation?",
+              "url": "https://doi.org/10.1103/PhysRevLett.46.1351"
+          },
+          {
+              "label": "Weinfurtner et al. 2011 — stimulated Hawking emission in a water flume",
+              "url": "https://arxiv.org/abs/1008.1911"
+          },
+          {
+              "label": "Analogue gravity",
+              "url": "https://en.wikipedia.org/wiki/Analogue_gravity"
+          }
+      ]
+  },
+  thirringShell: {
+      "title": "Rotating Shell (Frame Dragging)",
+      "about": "Does spinning matter drag space around with it? General relativity says yes. In 1918 Hans Thirring worked out what happens inside a massive spherical shell that is slowly spinning: the local sense of 'not rotating' — the frame in which a gyroscope or a pendulum keeps its direction — itself rotates, in the same sense as the shell. So a pendulum hung at the centre does not swing in a plane fixed to the distant stars. Its swing plane slowly turns with the shell, drawing a rosette, though nothing touches it: a Foucault pendulum whose 'Earth' is a shell of matter around it. Set the compactness to zero (Newton's gravity) and the plane stays put. A massive shell carrying its interior along is exactly the shape of the 'physical' warp drives proposed recently (Bobrick and Martire 2021; Fell and Heisenberg 2024): ordinary positive-energy matter, but enormously massive, and only ever slower than light. The real effect is tiny for ordinary objects: a shell with the Earth's mass and size would turn its interior about a billionth as fast as itself. Gravity Probe B measured the Earth's own frame dragging, outside it, in 2011.",
+      "howItWorks": "To first order in the shell's compactness GM/(Rc²), the space inside a shell of mass M and radius R spinning at Ω is flat but rotating: inertial frames there turn at ω = (4/3)(GM/Rc²)·Ω, the same everywhere inside (Thirring 1918). A pendulum at the centre swings in a fixed plane of that rotating inertial frame, so seen from the distant stars its plane turns at ω. We draw it exactly: the bob is at A cos(ω₀t) along a direction that has turned through ∫ω dt, and its recent history is drawn as a fading trail, which is why the swing traces a rosette. The amber shell turns at Ω (its stripes show the spin); the faint ring with ticks far outside stands for the distant stars. The hierarchy panel compares the dragging rate with the shell's spin, and with what a shell of the Earth's mass and size would do. The formula is the weak-field result; for very compact shells (approaching a black hole) the full answer differs.",
+      "equations": [
+          {
+              "label": "Thirring's interior frame dragging (weak field)",
+              "latex": "\\omega = \\frac{4}{3}\\,\\frac{GM}{Rc^2}\\,\\Omega"
+          },
+          {
+              "label": "the pendulum, seen from the distant stars",
+              "latex": "\\mathbf x(t) = A\\cos(\\omega_0 t)\\,\\big(\\cos\\omega t,\\ 0,\\ -\\sin\\omega t\\big)"
+          },
+          {
+              "label": "for an Earth-sized shell of the Earth's mass",
+              "latex": "\\frac{\\omega}{\\Omega} = \\frac{4}{3}\\frac{GM_\\oplus}{R_\\oplus c^2} \\approx 9\\times10^{-10}"
+          }
+      ],
+      "params": [
+          {
+              "key": "kappa",
+              "symbol": "GM/Rc^2",
+              "meaning": "the shell's compactness — 0 is Newtonian gravity (no dragging)"
+          },
+          {
+              "key": "spin",
+              "symbol": "\\Omega",
+              "meaning": "how fast the shell spins"
+          }
+      ],
+      "code": "// Thirring 1918: inside a spinning massive shell, inertial frames rotate\nomega = (4/3) * kappa * Omega        // kappa = GM/(R c²), weak field\ndrag += omega * dt                    // the inertial frame's turn so far\nbob(t) = A cos(w0 t) * (cos drag, 0, -sin drag)\ndraw the bob's last few seconds as a trail → a rosette",
+      "links": [
+          {
+              "label": "Frame-dragging",
+              "url": "https://en.wikipedia.org/wiki/Frame-dragging"
+          },
+          {
+              "label": "Lense–Thirring precession",
+              "url": "https://en.wikipedia.org/wiki/Lense%E2%80%93Thirring_precession"
+          },
+          {
+              "label": "Bobrick & Martire 2021 — Introducing physical warp drives",
+              "url": "https://arxiv.org/abs/2102.06824"
+          },
+          {
+              "label": "Fell & Heisenberg 2024 — Constant velocity physical warp drive solution",
+              "url": "https://arxiv.org/abs/2405.02709"
+          },
+          {
+              "label": "Gravity Probe B",
+              "url": "https://en.wikipedia.org/wiki/Gravity_Probe_B"
+          }
+      ]
+  },
 };
