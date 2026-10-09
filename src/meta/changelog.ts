@@ -18,6 +18,27 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+      "version": "0.1.104",
+      "date": "2026-10-09",
+      "title": "Solids, plasma and stars — earthquakes, phonons, cracks, beams and a collapsing core",
+      "summary": "The last five systems on the physics-teacher list, each checked against theory: P, S and Rayleigh waves from an earthquake; vibrations of a crystal lattice with its band gap and group velocity; a crack running through a brittle plate; two electron beams tearing into vortices in a particle-in-cell plasma; and a star in balance, then a core collapsing and bouncing. Also: exported images and video clips are the right way up again.",
+      "newSystems": [
+          "elasticWaves",
+          "phonons",
+          "fracture",
+          "twoStream",
+          "stellarCollapse"
+      ],
+      "notes": [
+          "Elastic Waves (Earthquake) (Field): Virieux's velocity–stress scheme — P waves at α, S waves at α/√3, and the Rayleigh surface wave at 0.92β (measured 0.525α vs 0.531α); a soft sediment layer that traps and amplifies the shaking.",
+          "Phonons (Lattice Vibrations) (Matter): a chain of springs and atoms integrated directly — normal modes match the dispersion relation to 4 decimals on both branches, and a wave packet's energy moves at the group velocity while its crests move at the phase velocity.",
+          "Fracture (Brittle Crack) (Matter): a triangular spring lattice pulled taut with a notch — no crack below a threshold, a clean crack above it, branching under overload; tip speed shown against the Rayleigh speed.",
+          "Two-Stream Instability (Plasma PIC) (Plasma): a particle-in-cell code in phase space, with the field energy's exponential growth compared live against the cold-beam growth rate (measured 0.345 vs 0.354 ωp).",
+          "Star: Balance and Collapse (Cosmology): Lagrangian hydrodynamics of a Lane–Emden star that rings with Ritter's period scaling, and a toy core collapse that bounces at nuclear density and launches a shock — with what the toy leaves out.",
+          "Fixed: exported PNG images and recorded clips (WebM / GIF) were upside down on WebGPU. Every export now follows the renderer's real row order."
+      ]
+  },
+  {
       "version": "0.1.103",
       "date": "2026-10-09",
       "title": "Heat and fluids — gases, diffusion, percolation, floods, convection and instabilities",
