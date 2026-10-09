@@ -82,7 +82,9 @@ export interface Archetype {
 
   // optional: field-native archetypes (foam) expose a field in addition to positions
   // `mask` (optional, static, 0…1 per cell) tints materials — walls, glass — under the field; `mask` must be the same array object each frame
-  readField?(): { texture: unknown; width: number; height: number; mask?: ArrayLike<number> };
+  // `scale` (optional) fixes the colour scale (value at full colour) instead of following the field's mean amplitude;
+  // `aspect` is the panel's height/width (default: height/width in cells); `upright` stands the panel up facing +z (row 0 at the bottom)
+  readField?(): { texture: unknown; width: number; height: number; mask?: ArrayLike<number>; scale?: number; aspect?: number; upright?: boolean };
 }
 
 export interface ArchetypeFactory {

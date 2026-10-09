@@ -15,7 +15,7 @@ const { Fn, uniform, vec3, uv, clamp, pow, texture } = tsl as any;
 
 export interface FieldPass {
   mesh: THREE.Mesh;
-  update(field: { texture: unknown; width: number; height: number; mask?: ArrayLike<number> }): void;
+  update(field: { texture: unknown; width: number; height: number; mask?: ArrayLike<number>; scale?: number; aspect?: number; upright?: boolean }): void;
   dispose(): void;
 }
 
@@ -61,7 +61,7 @@ export function createFieldPass(opts: FieldOptions = {}): FieldPass {
   geo.rotateX(-Math.PI / 2);
   const mesh = new THREE.Mesh(geo, mat);
 
-  function update(field: { texture: unknown; width: number; height: number; mask?: ArrayLike<number> }): void {
+  function update(field: { texture: unknown; width: number; height: number; mask?: ArrayLike<number>; scale?: number; aspect?: number; upright?: boolean }): void {
     const src = field.texture as ArrayLike<number>;
     const w = field.width, h = field.height, n = w * h;
     if (!tex || !buf || buf.length !== n) {
@@ -88,10 +88,13 @@ export function createFieldPass(opts: FieldOptions = {}): FieldPass {
       }
       colorBuilt = false;
     }
+    // panel shape: flat on the ground by default, or standing up facing the camera; height/width = aspect
+    mesh.scale.set(1, 1, field.aspect ?? h / w);
+    mesh.rotation.x = field.upright ? Math.PI / 2 : 0;
     // copy the field (Float64 grid) into the R-float texture buffer + track mean amplitude
     let sum = 0;
     for (let i = 0; i < n; i++) { const val = src[i]; buf[i] = val; sum += val < 0 ? -val : val; }
-    uScale.value = 3 * (sum / n) + 1e-6;
+    uScale.value = field.scale && field.scale > 0 ? field.scale : 3 * (sum / n) + 1e-6;
     tex.needsUpdate = true;
     if (!colorBuilt) buildColor(tex);
   }
