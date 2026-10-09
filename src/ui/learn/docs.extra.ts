@@ -4696,4 +4696,390 @@ o[1] = p.b * x[0];`,
           }
       ]
   },
+  idealGas: {
+      "title": "Ideal Gas (Maxwell–Boltzmann)",
+      "about": "What is temperature? Molecules moving. This is a box of gas molecules modelled as hard discs that bounce off each other and the walls without losing any energy. The cyan ones are light; the orange ones are four times heavier. They all start at exactly the same speed, in random directions. Within a few collisions that single speed spreads out into the Maxwell–Boltzmann distribution: watch the histograms on the wall behind fill in under the white theory curves. Most molecules are near a typical speed, a few are nearly still, and a long tail is much faster. At the same time energy flows from the heavy molecules (which started with four times the kinetic energy) to the light ones, until both kinds have the same average energy. That is equipartition, and it is what 'the same temperature' means. In equilibrium the light molecules move twice as fast on average. The walls feel the molecules' impacts as pressure. The panel compares it with the ideal-gas law, PA = NkT, which ignores the size of the molecules, and with the hard-disc equation of state, which allows for the space the discs take up — the measured value tracks the second. Switch the walls to 'hot' and they give every molecule that touches them a fresh random velocity at the wall's temperature: the gas heats (or cools) until it matches.",
+      "howItWorks": "Discs move in straight lines between collisions. Each small time step, overlapping pairs that are moving towards each other (found with a grid of cells) bounce elastically: an impulse along the line of centres that conserves momentum and kinetic energy exactly, for any pair of masses. Steps are short enough that no disc travels more than a fifth of its radius per step. Reflecting walls simply reverse the normal velocity. Thermal walls replace the outgoing velocity with one drawn from the wall's temperature (a Rayleigh-distributed normal part, as for molecules leaving a warm surface, and a Gaussian tangential part). Pressure is the momentum delivered to the walls per unit length per unit time. The histograms are speed densities for each kind, averaged over the last second or so. The curves are the two-dimensional Maxwell–Boltzmann distribution f(v) = (mv/kT) exp(−mv²/2kT), using each kind's measured kT, where kT is its mean kinetic energy in two dimensions. Checked: from the start energy is conserved to rounding error. By t ≈ 2 the light discs' speeds pass a Kolmogorov–Smirnov test against Maxwell–Boltzmann and the two kinds share the same kT, within the fluctuations of 1,800 molecules. PA/NkT comes out between 1.24 and 1.33 against Henderson's 1.295 for 12% packing. With hot walls at kT = 1.5 the gas settles at about 1.5.",
+      "equations": [
+          {
+              "label": "Maxwell–Boltzmann speed distribution (2-D)",
+              "latex": "f(v) = \\frac{mv}{kT}\\,e^{-mv^2/2kT}"
+          },
+          {
+              "label": "temperature from motion (2-D, per molecule)",
+              "latex": "\\left\\langle \\tfrac12 m v^2 \\right\\rangle = kT"
+          },
+          {
+              "label": "ideal-gas law (2-D)",
+              "latex": "PA = NkT"
+          },
+          {
+              "label": "hard discs at packing fraction φ (Henderson 1975)",
+              "latex": "\\frac{PA}{NkT} \\approx \\frac{1 + \\varphi^2/8}{(1-\\varphi)^2}"
+          },
+          {
+              "label": "an elastic collision (impulse along the line of centres)",
+              "latex": "\\mathbf v_1' = \\mathbf v_1 + \\frac{2m_2}{m_1+m_2}\\,\\frac{(\\mathbf v_2-\\mathbf v_1)\\cdot\\mathbf d}{|\\mathbf d|^2}\\,\\mathbf d"
+          }
+      ],
+      "params": [
+          {
+              "key": "n",
+              "symbol": "N",
+              "meaning": "the number of molecules (60% light, 40% heavy)"
+          },
+          {
+              "key": "size",
+              "symbol": "a",
+              "meaning": "the molecules' size — bigger discs fill more of the box and push the pressure further above the ideal-gas value"
+          },
+          {
+              "key": "walls",
+              "symbol": "",
+              "meaning": "perfectly reflecting walls (energy conserved) or hot walls at a set temperature"
+          },
+          {
+              "key": "tWall",
+              "symbol": "kT_{wall}",
+              "meaning": "the hot walls' temperature"
+          }
+      ],
+      "code": "// each step: move, bounce off walls, then for each nearby overlapping, approaching pair\nd = x_j - x_i; dv = v_j - v_i; vn = dv·d\nk = 2 vn / ((m_i + m_j) |d|²)\nv_i += k m_j d;   v_j -= k m_i d        // momentum and energy exactly conserved\n// pressure = Σ m |Δv_wall| / (perimeter × time)",
+      "links": [
+          {
+              "label": "Maxwell 1860 — Illustrations of the dynamical theory of gases (Phil. Mag. 19, 19)",
+              "url": "https://doi.org/10.1080/14786446008642818"
+          },
+          {
+              "label": "Alder & Wainwright 1959 — Studies in molecular dynamics I (J. Chem. Phys. 31, 459)",
+              "url": "https://doi.org/10.1063/1.1730376"
+          },
+          {
+              "label": "Henderson 1975 — A simple equation of state for hard discs (Mol. Phys. 30, 971)",
+              "url": "https://doi.org/10.1080/00268977500102511"
+          },
+          {
+              "label": "Maxwell–Boltzmann distribution",
+              "url": "https://en.wikipedia.org/wiki/Maxwell%E2%80%93Boltzmann_distribution"
+          },
+          {
+              "label": "Equipartition theorem",
+              "url": "https://en.wikipedia.org/wiki/Equipartition_theorem"
+          },
+          {
+              "label": "Kinetic theory of gases",
+              "url": "https://en.wikipedia.org/wiki/Kinetic_theory_of_gases"
+          }
+      ]
+  },
+  heatEquation: {
+      "title": "Heat Equation",
+      "about": "Heat flows from hot to cold, and the steeper the temperature difference the faster it flows (Fourier's law). Put that together with the fact that heat is conserved and you get the heat equation, one of the most important equations in physics: the same mathematics describes diffusing dye, spreading pollutants, and the price models of finance. Three set-ups on a square plate; orange is warmer, blue colder, and the thin dark lines are isotherms, one every tenth of the temperature range. Hot and cold drops: spots of heat and cold land on a plate whose edges let no heat out. Each spreads as a widening, fading bell curve whose width grows like the square root of time, so it spreads quickly at first and then ever more slowly. The total amount of heat never changes. Two metals: the left half is copper, the right half steel (tinted), with the left edge held hot and the right edge cold. Heat races through the copper and creeps into the steel. In the end the temperature settles into two straight ramps meeting at the join, steep in the steel and gentle in the copper, because the same heat flow has to pass through both and steel conducts it about ten times less well. Steady state: one edge is held hot and the other three cold. The plate relaxes to the solution of Laplace's equation, where every point is the average of its surroundings and the isotherms fan out from the hot edge. By symmetry the centre ends up exactly a quarter of the way from cold to hot.",
+      "howItWorks": "The plate is a grid of cells and each step moves heat across every face between neighbouring cells: flow = D_face × (T_neighbour − T_cell), added to one cell and taken from the other, so heat is conserved exactly. This is the standard explicit finite-volume scheme for ∂T/∂t = ∇·(D∇T); with time step 1 and grid spacing 1 it is stable for D ≤ 1/4, and D is 0.24 here. At the copper–steel join the face uses the harmonic mean of the two diffusivities, which makes the heat flow continuous across it. Outer edges are insulated (no flow) unless a column or row is held at a fixed temperature. The steel's diffusivity is set to 0.11 of the copper's, close to real copper (111 mm²/s) and 1%-carbon steel (11.7 mm²/s); their heat capacities per volume are similar, so their conductivities are in about the same ratio. Checked: a drop's variance grows by exactly 2D per step along each axis, and the total heat is unchanged to every printed digit. In the two-metal plate the slopes end up in the ratio 9.09 = 1/0.11 (it takes about 300,000 steps — steel is slow). The steady-state centre settles at 0.252 on this 200-cell grid, against exactly 0.25 in the continuum.",
+      "equations": [
+          {
+              "label": "the heat equation",
+              "latex": "\\frac{\\partial T}{\\partial t} = \\nabla\\cdot\\left(D\\,\\nabla T\\right)"
+          },
+          {
+              "label": "Fourier's law (heat flux)",
+              "latex": "\\mathbf q = -k\\,\\nabla T,\\qquad D = \\frac{k}{\\rho c}"
+          },
+          {
+              "label": "a spreading spot (uniform plate)",
+              "latex": "T \\propto \\frac{1}{\\sigma^2(t)}\\,e^{-r^2/2\\sigma^2(t)},\\quad \\sigma^2(t) = \\sigma_0^2 + 2Dt"
+          },
+          {
+              "label": "two metals in steady state: the same heat flow through both",
+              "latex": "D_{Cu}\\,\\frac{dT}{dx}\\Big|_{Cu} = D_{steel}\\,\\frac{dT}{dx}\\Big|_{steel}"
+          },
+          {
+              "label": "steady state: Laplace's equation",
+              "latex": "\\nabla^2 T = 0"
+          },
+          {
+              "label": "the update on the grid (conservative, explicit)",
+              "latex": "T_i^{n+1} = T_i^n + \\sum_{\\text{faces}} D_f\\,(T_j^n - T_i^n)"
+          }
+      ],
+      "params": [
+          {
+              "key": "scene",
+              "symbol": "",
+              "meaning": "the set-up: drops on an insulated plate, two metals between a hot and a cold edge, or a plate with fixed edge temperatures"
+          },
+          {
+              "key": "ratio",
+              "symbol": "D_{steel}/D_{Cu}",
+              "meaning": "how well the right half conducts heat compared with the copper (two metals)"
+          }
+      ],
+      "code": "// one step: move heat across every face (conserves the total exactly)\nfor each face (i, j): f = Dface * (T[j] - T[i]);  T[i] += f;  T[j] -= f\nDface = 2 Di Dj / (Di + Dj)          // continuous heat flow across a join\n// fixed-temperature edges are reset after each step; other edges let no heat through",
+      "links": [
+          {
+              "label": "Fourier 1822 — Théorie analytique de la chaleur",
+              "url": "https://archive.org/details/thorieanalytiq00four"
+          },
+          {
+              "label": "Heat equation",
+              "url": "https://en.wikipedia.org/wiki/Heat_equation"
+          },
+          {
+              "label": "Thermal conduction (Fourier's law)",
+              "url": "https://en.wikipedia.org/wiki/Thermal_conduction"
+          },
+          {
+              "label": "Thermal diffusivity (table of materials)",
+              "url": "https://en.wikipedia.org/wiki/Thermal_diffusivity"
+          },
+          {
+              "label": "Laplace's equation",
+              "url": "https://en.wikipedia.org/wiki/Laplace%27s_equation"
+          }
+      ]
+  },
+  percolation: {
+      "title": "Percolation",
+      "about": "When does a random network connect? Fill each square of a grid at random, each with probability p, and call touching filled squares a cluster (each cluster has its own colour here). For small p the clusters are small islands. For large p almost everything joins one giant cluster that stretches from edge to edge (drawn in gold). The change between the two is not gradual. On a big grid it happens almost exactly at one value, the percolation threshold p_c ≈ 0.5927 for squares that connect through their edges. Right at the threshold the spanning cluster is a fractal, full of holes and dead ends on every scale. Every so often a fire is lit along the left edge and spreads one square per step through filled squares; its front is drawn raised. Below the threshold it dies out; above it, it crosses, taking a winding path much longer than the straight line. The same mathematics describes forest fires, water seeping through rock or coffee grounds, current through a composite material, and an epidemic spreading through a population when each contact passes it on with probability p. Change p and watch how sudden the transition is.",
+      "howItWorks": "Each of the L × L squares is filled independently with probability p. Clusters are found with union–find over edge-neighbours, and a cluster 'spans' if it reaches both the left and the right columns. The fire is a breadth-first search from every filled square in the left column; a square's arrival time is the length of the shortest path to it through filled squares (the chemical distance). The animation replays those arrival times. Each square is drawn as four points scattered inside it, because a perfectly regular grid of single points shimmers with moiré. Checked: on 360 × 360 grids no sample of 40 spanned at p = 0.58, 18 of 40 did at p = 0.5927 (the spanning probability at the threshold on a square with these boundaries is one half), and all 40 did at p = 0.63. At p_c on a 600 × 600 grid, the largest cluster's mass grows with box size with exponent 1.874, against the exact 2-D value 91/48 ≈ 1.896 (finite grids fall a little short). The best estimate of the threshold, p_c = 0.59274621, is from Newman and Ziff (2000).",
+      "equations": [
+          {
+              "label": "the threshold (square lattice, site percolation)",
+              "latex": "p_c \\approx 0.592746"
+          },
+          {
+              "label": "the spanning cluster at p_c is a fractal",
+              "latex": "M(r) \\sim r^{d_f},\\qquad d_f = \\tfrac{91}{48} \\approx 1.896"
+          },
+          {
+              "label": "above threshold, the share of squares in the giant cluster",
+              "latex": "P_\\infty \\sim (p - p_c)^{\\beta},\\qquad \\beta = \\tfrac{5}{36}"
+          },
+          {
+              "label": "the typical cluster size diverges at the threshold",
+              "latex": "\\xi \\sim |p - p_c|^{-\\nu},\\qquad \\nu = \\tfrac{4}{3}"
+          }
+      ],
+      "params": [
+          {
+              "key": "p",
+              "symbol": "p",
+              "meaning": "the chance that each square is filled (a new random grid on each change)"
+          },
+          {
+              "key": "speed",
+              "symbol": "",
+              "meaning": "how fast the fire spreads"
+          }
+      ],
+      "code": "for each square: filled = random() < p\nunion–find over touching filled squares → clusters\nspans = some cluster touches both the left and right columns\nfire: breadth-first search from the left column through filled squares\n      → each square's arrival time = shortest path length",
+      "links": [
+          {
+              "label": "Broadbent & Hammersley 1957 — Percolation processes (Math. Proc. Camb. Phil. Soc. 53, 629)",
+              "url": "https://doi.org/10.1017/S0305004100032680"
+          },
+          {
+              "label": "Newman & Ziff 2000 — Efficient Monte Carlo algorithm and high-precision results for percolation (PRL 85, 4104)",
+              "url": "https://doi.org/10.1103/PhysRevLett.85.4104"
+          },
+          {
+              "label": "Percolation theory",
+              "url": "https://en.wikipedia.org/wiki/Percolation_theory"
+          },
+          {
+              "label": "Percolation threshold",
+              "url": "https://en.wikipedia.org/wiki/Percolation_threshold"
+          },
+          {
+              "label": "Percolation critical exponents",
+              "url": "https://en.wikipedia.org/wiki/Percolation_critical_exponents"
+          }
+      ]
+  },
+  shallowWater: {
+      "title": "Shallow Water (Dam Break)",
+      "about": "When water is shallow compared with the length of its waves — a flood, a tide, a tsunami crossing the ocean, the water in a bath — its motion follows the shallow-water equations (de Saint-Venant, 1871). They say the water is pushed downhill by gravity: where the surface is higher, it flows away. Waves travel at √(gh), so they move faster where the water is deeper. That is why tsunamis slow and pile up near shore and why the back of a flood wave catches up with its front. Then the wave steepens into a sharp step called a bore: the front of a dam-break flood, or a tidal bore running up a river. Three set-ups in a tank with walls. Dam break: a dam holding deep water fails. A smooth dip (a rarefaction) runs back into the reservoir while a bore races downstream; then both bounce off the walls and slosh. Past pillars: the same flood hits two square pillars and wraps round them, throwing off bow waves that cross and interfere. Drop in a pond: a column of water collapses into an expanding ring wave that reflects off the tank walls. The surface is drawn as relief with a faint grid on it, so its shape reads from any angle; every few seconds the scene starts again.",
+      "howItWorks": "The tank is divided into cells, each holding the water depth h and the momentum (hu, hv). Every step the cells exchange water and momentum across their faces using the HLL approximate Riemann solver (Harten, Lax and van Leer, 1983), the standard tool for equations that make shocks and bores. Values are reconstructed to each face with minmod-limited slopes, which is second-order accurate in smooth water and sharp without wiggles at bores, and time is advanced with a two-stage Runge–Kutta step at a CFL number of 0.4. The tank walls reflect: only pressure crosses them. Faces against a pillar pair the water cell with its own mirror image, so no water leaks through. Units: g = 1 and reservoir depth 1. Checked: for the straight dam break with downstream depth 0.2, before the waves reach the walls, the computed depth along the tank differs from Stoker's exact solution by 0.002 on average, and the bore is within one cell of where the exact solution puts it. The total volume of water is conserved to about 1e-13 in every set-up.",
+      "equations": [
+          {
+              "label": "mass",
+              "latex": "\\frac{\\partial h}{\\partial t} + \\frac{\\partial (hu)}{\\partial x} + \\frac{\\partial (hv)}{\\partial y} = 0"
+          },
+          {
+              "label": "momentum (x; y is the same with u and v swapped)",
+              "latex": "\\frac{\\partial (hu)}{\\partial t} + \\frac{\\partial}{\\partial x}\\left(hu^2 + \\tfrac12 g h^2\\right) + \\frac{\\partial (huv)}{\\partial y} = 0"
+          },
+          {
+              "label": "wave speed",
+              "latex": "c = \\sqrt{g h}"
+          },
+          {
+              "label": "dam break: the rarefaction fan (Ritter, Stoker)",
+              "latex": "h(x,t) = \\frac{\\left(2\\sqrt{g h_L} - x/t\\right)^2}{9g}"
+          },
+          {
+              "label": "the bore: mass and momentum balance across the jump",
+              "latex": "u_m = (h_m - h_R)\\sqrt{\\frac{g(h_m + h_R)}{2 h_m h_R}},\\qquad s = \\frac{h_m u_m}{h_m - h_R}"
+          }
+      ],
+      "params": [
+          {
+              "key": "scene",
+              "symbol": "",
+              "meaning": "the set-up: a straight dam break, the flood past two pillars, or a collapsing column"
+          },
+          {
+              "key": "ratio",
+              "symbol": "h_R/h_L",
+              "meaning": "the water depth below the dam, as a fraction of the reservoir's"
+          }
+      ],
+      "code": "// finite volumes: each cell holds (h, hu, hv)\nfor each face: reconstruct h, u, v on both sides (minmod slopes)\n               flux = HLL(left, right)      // handles bores\n               cell_left -= flux; cell_right += flux\n// walls: only pressure ½ g h² crosses; pillar faces: cell vs its mirror image\n// two-stage Runge–Kutta, dt = 0.4 dx / max(|u| + √(gh))",
+      "links": [
+          {
+              "label": "Harten, Lax & van Leer 1983 — Upstream differencing and Godunov-type schemes (SIAM Review 25, 35)",
+              "url": "https://doi.org/10.1137/1025002"
+          },
+          {
+              "label": "Stoker 1957 — Water Waves: the mathematical theory with applications",
+              "url": "https://archive.org/details/waterwavesmathem0000stok"
+          },
+          {
+              "label": "Shallow water equations",
+              "url": "https://en.wikipedia.org/wiki/Shallow_water_equations"
+          },
+          {
+              "label": "Tidal bore",
+              "url": "https://en.wikipedia.org/wiki/Tidal_bore"
+          }
+      ]
+  },
+  rayleighBenard: {
+      "title": "Rayleigh–Bénard Convection",
+      "about": "Heat a pan of liquid from below. The warm liquid at the bottom is lighter than the cool liquid above it and wants to rise, but its viscosity and the diffusion of heat resist. The contest is measured by one number, the Rayleigh number Ra. Below a critical value nothing moves and heat simply conducts upward. Above it the layer organises itself into rolls: warm plumes rising (orange) and cold ones sinking (blue), side by side. The rolls carry heat far faster than conduction alone, which is what the Nusselt number Nu in the panel measures. Raise Ra and the plumes sharpen into mushroom shapes, the thin boundary layers at the floor and ceiling shed them more violently, and the flow begins to wobble on its way to turbulence. Convection like this stirs the Earth's mantle (moving the continents), boils the Sun's surface into granules, builds thunderclouds, and makes the hexagonal cells in a heated pan of oil (Bénard, 1900). This is a vertical slice through the layer with the hot floor at the bottom. Try Ra just below and just above the threshold to see the onset.",
+      "howItWorks": "The fluid obeys the Navier–Stokes equations in the Boussinesq approximation: density changes only matter where they make fluid buoyant. In two dimensions these reduce to an equation for the vorticity ω, driven by sideways temperature differences, and one for the temperature, carried by the flow and diffusing. Units are diffusive (layer depth 1, temperature difference 1, time in d²/κ). The solver is pseudo-spectral: derivatives are taken exactly in Fourier space and products on the grid with 2/3-rule dealiasing. Diffusion is integrated exactly and the rest with second-order Adams–Bashforth steps limited by the flow speed. The top and bottom are free-slip, fixed-temperature walls, made by solving on the layer plus its mirror image with every field odd about the walls. With such walls the critical Rayleigh number of an endless layer is 27π⁴/4 ≈ 657.5 (Rayleigh, 1916). In this box, four layer-depths wide, the first roll that fits needs Ra ≈ 761. Checked against the linear theory, the computed growth rate of the first roll is −0.506 at Ra = 700 (theory −0.505), −0.001 at Ra = 761 (theory 0), and +0.546 at Ra = 830 (theory +0.547). The Nusselt number is 1 + ⟨wθ⟩, the total heat flux over the conducted flux. Real pans have no-slip walls, which raise the threshold to about 1708; 2-D rolls also leave out the 3-D patterns real layers form.",
+      "equations": [
+          {
+              "label": "vorticity (2-D Boussinesq, diffusive units)",
+              "latex": "\\frac{\\partial\\omega}{\\partial t} + \\mathbf u\\cdot\\nabla\\omega = Pr\\,\\nabla^2\\omega + Pr\\,Ra\\,\\frac{\\partial\\theta}{\\partial x}"
+          },
+          {
+              "label": "temperature (θ = departure from the conducting profile 1 − z)",
+              "latex": "\\frac{\\partial\\theta}{\\partial t} + \\mathbf u\\cdot\\nabla\\theta = w + \\nabla^2\\theta"
+          },
+          {
+              "label": "the Rayleigh and Prandtl numbers",
+              "latex": "Ra = \\frac{g\\alpha\\,\\Delta T\\,d^3}{\\nu\\kappa},\\qquad Pr = \\frac{\\nu}{\\kappa}"
+          },
+          {
+              "label": "onset (free-slip walls), growth rate σ of a roll with wavenumber k_x",
+              "latex": "(\\sigma + Pr\\,k^2)(\\sigma + k^2)\\,k^2 = Pr\\,Ra\\,k_x^2,\\quad k^2 = k_x^2 + \\pi^2,\\quad Ra_c = \\tfrac{27}{4}\\pi^4"
+          },
+          {
+              "label": "heat transport",
+              "latex": "Nu = 1 + \\langle w\\,\\theta \\rangle"
+          }
+      ],
+      "params": [
+          {
+              "key": "ra",
+              "symbol": "Ra",
+              "meaning": "how strongly buoyancy beats viscosity and heat diffusion"
+          },
+          {
+              "key": "pr",
+              "symbol": "Pr",
+              "meaning": "viscosity over heat diffusivity (air ≈ 0.7, water ≈ 7)"
+          }
+      ],
+      "code": "// pseudo-spectral, vorticity–streamfunction (ψ = −ω/k²)\nu = −∂ψ/∂z,  w = ∂ψ/∂x\nNω = −u·∇ω + Pr·Ra ∂θ/∂x\nNθ = −u·∇θ + w\n// integrating factor for diffusion, Adams–Bashforth 2 for N\nω̂ ← e^{−Pr k² dt} (ω̂ + dt (3/2 N̂ − 1/2 e^{−Pr k² dt} N̂_prev))\n// walls: fields kept odd about z = 0 and z = 1 (free slip, fixed temperature)",
+      "links": [
+          {
+              "label": "Rayleigh 1916 — On convection currents in a horizontal layer of fluid… (Phil. Mag. 32, 529)",
+              "url": "https://doi.org/10.1080/14786441608635602"
+          },
+          {
+              "label": "Rayleigh–Bénard convection",
+              "url": "https://en.wikipedia.org/wiki/Rayleigh%E2%80%93B%C3%A9nard_convection"
+          },
+          {
+              "label": "Rayleigh number",
+              "url": "https://en.wikipedia.org/wiki/Rayleigh_number"
+          },
+          {
+              "label": "Nusselt number",
+              "url": "https://en.wikipedia.org/wiki/Nusselt_number"
+          },
+          {
+              "label": "Spectral method",
+              "url": "https://en.wikipedia.org/wiki/Spectral_method"
+          }
+      ]
+  },
+  shearInstabilities: {
+      "title": "Kelvin–Helmholtz & Rayleigh–Taylor",
+      "about": "Two ways a smooth boundary between fluids tears itself apart. Kelvin–Helmholtz: two streams sliding past each other — here the middle band (orange dye) flows right and the outer fluid (blue) flows left. Any small ripple on the boundary is lifted, because the flow speeds up over its crest and the pressure there drops. So the ripple grows, leans over, and rolls up into a row of spiral billows that then merge and mix the two streams. It is how wind raises waves on water, why clouds sometimes show rows of breaking-wave 'billows', and what shapes the edges of Jupiter's belts. Rayleigh–Taylor: heavy fluid (blue) resting on light fluid (orange) in gravity. It is balanced, but the way a pencil standing on its point is balanced: the heavy fluid falls in fingers and the light fluid rises in mushroom-capped plumes, and they mix. It is what you see when you turn a glass of water upside down, in the fingers of a supernova remnant like the Crab Nebula, and in the instabilities that fusion capsules must survive. The box wraps round at its edges, so there is a second boundary half a box away with light fluid on top of heavy: that one is stable and only ripples, which shows it is the arrangement, not the boundary itself, that is unstable. Each run starts again once the fluids have mixed.",
+      "howItWorks": "Both use the same pseudo-spectral solver for 2-D incompressible flow (vorticity–streamfunction form) as the convection system, on a 128 × 128 grid in a box that is periodic in both directions. Derivatives are exact in Fourier space, products are dealiased by the 2/3 rule, viscosity and diffusion are integrated exactly, and the rest uses second-order Adams–Bashforth with a step limited by the flow speed. Kelvin–Helmholtz: two tanh shear layers of half-thickness δ = 0.025 with a velocity jump of 2U (U = 1), dye that follows the streams, small random ripples, and no gravity. For an inviscid tanh layer the fastest ripples grow as e^{σt} with σ ≈ 0.19 U/δ, at a wavelength of about 14δ (Michalke, 1964). Here a three-wave ripple (kδ = 0.47, where theory gives 7.5) grows at 7.0 at the lowest viscosity and early on, then more slowly, because viscosity steadily thickens the shear layer itself, and thicker layers grow more slowly. Rayleigh–Taylor: buoyancy +1 for light and −1 for heavy fluid, with an interface thickness of about 2δ (δ = 0.01). For a sharp interface with no viscosity a ripple of wavenumber k grows as e^{√(Agk) t} (Rayleigh 1882; Taylor 1950), which is √k in these units. For a two-wave ripple (k = 4π) the measured rate is 3.25 against 3.54, the expected reduction for an interface of finite thickness. Two dimensions only: real billows and plumes break down further into 3-D turbulence.",
+      "equations": [
+          {
+              "label": "vorticity, with buoyancy b (light > 0)",
+              "latex": "\\frac{\\partial\\omega}{\\partial t} + \\mathbf u\\cdot\\nabla\\omega = \\nu\\nabla^2\\omega + \\frac{\\partial b}{\\partial x}"
+          },
+          {
+              "label": "dye or buoyancy, carried by the flow",
+              "latex": "\\frac{\\partial b}{\\partial t} + \\mathbf u\\cdot\\nabla b = \\kappa\\nabla^2 b"
+          },
+          {
+              "label": "Kelvin–Helmholtz, a sharp sheet (velocity jump ΔU): every ripple grows",
+              "latex": "\\sigma = \\tfrac12\\,k\\,\\Delta U"
+          },
+          {
+              "label": "…a tanh layer of half-thickness δ: fastest growth (Michalke 1964)",
+              "latex": "\\sigma_{max} \\approx 0.19\\,\\frac{U}{\\delta}\\quad\\text{at}\\quad k\\delta \\approx 0.44"
+          },
+          {
+              "label": "Rayleigh–Taylor, a sharp interface (Atwood number A)",
+              "latex": "\\sigma = \\sqrt{A\\,g\\,k},\\qquad A = \\frac{\\rho_{heavy}-\\rho_{light}}{\\rho_{heavy}+\\rho_{light}}"
+          }
+      ],
+      "params": [
+          {
+              "key": "scene",
+              "symbol": "",
+              "meaning": "shear between two streams (Kelvin–Helmholtz) or heavy fluid on light (Rayleigh–Taylor)"
+          },
+          {
+              "key": "visc",
+              "symbol": "\\nu",
+              "meaning": "viscosity (and the dye's diffusion): higher values smooth out the finest billows and fingers and slow their growth"
+          }
+      ],
+      "code": "// same solver as convection, periodic box, 128²\nNω = −u·∇ω + ∂b/∂x      // (no buoyancy term for Kelvin–Helmholtz)\nNb = −u·∇b\n// KH: u(z) = tanh((z−¼)/δ) − tanh((z−¾)/δ) − 1, ω = −du/dz, dye b = same profile\n// RT: b = tanh(cos(2πz) / (2πδ))  → heavy over light at z = ¼, light over heavy at z = ¾",
+      "links": [
+          {
+              "label": "Thomson (Kelvin) 1871 — Hydrokinetic solutions and observations (Phil. Mag. 42, 362)",
+              "url": "https://doi.org/10.1080/14786447108640585"
+          },
+          {
+              "label": "Rayleigh 1882 — …equilibrium of an incompressible heavy fluid of variable density (Proc. LMS 14, 170)",
+              "url": "https://doi.org/10.1112/plms/s1-14.1.170"
+          },
+          {
+              "label": "Taylor 1950 — The instability of liquid surfaces when accelerated… (Proc. R. Soc. A 201, 192)",
+              "url": "https://doi.org/10.1098/rspa.1950.0052"
+          },
+          {
+              "label": "Michalke 1964 — On the inviscid instability of the hyperbolic-tangent velocity profile (JFM 19, 543)",
+              "url": "https://doi.org/10.1017/S0022112064000908"
+          },
+          {
+              "label": "Kelvin–Helmholtz instability",
+              "url": "https://en.wikipedia.org/wiki/Kelvin%E2%80%93Helmholtz_instability"
+          },
+          {
+              "label": "Rayleigh–Taylor instability",
+              "url": "https://en.wikipedia.org/wiki/Rayleigh%E2%80%93Taylor_instability"
+          }
+      ]
+  },
 };

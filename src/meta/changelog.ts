@@ -18,6 +18,29 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+      "version": "0.1.103",
+      "date": "2026-10-09",
+      "title": "Heat and fluids — gases, diffusion, percolation, floods, convection and instabilities",
+      "summary": "Six more systems a physics course is built on, each checked against theory. Molecules relaxing to the Maxwell–Boltzmann distribution; heat spreading through copper and steel; the sudden percolation threshold; a dam-break flood; convection rolls switching on at the critical Rayleigh number; and the Kelvin–Helmholtz and Rayleigh–Taylor instabilities.",
+      "newSystems": [
+          "idealGas",
+          "heatEquation",
+          "percolation",
+          "shallowWater",
+          "rayleighBenard",
+          "shearInstabilities"
+      ],
+      "notes": [
+          "Ideal Gas (Maxwell–Boltzmann) (Matter): hard discs of two masses start at one speed and relax to Maxwell–Boltzmann; live speed histograms against theory, equipartition between the two kinds, and wall pressure against the ideal-gas law and the hard-disc equation of state. Hot walls heat or cool the gas.",
+          "Heat Equation (Field): drops of heat spreading on an insulated plate (σ² grows by exactly 2Dt), a copper–steel plate settling into two ramps, and a plate relaxing to Laplace's equation — with isotherms.",
+          "Percolation (Matter): random grids coloured by cluster, the spanning cluster in gold, and a fire that crosses only above p_c ≈ 0.5927; the critical cluster's fractal dimension measured near 91/48.",
+          "Shallow Water (Dam Break) (Fluid): a second-order finite-volume flood that matches Stoker's exact dam-break solution, wrapping round pillars and spreading as a ring wave.",
+          "Rayleigh–Bénard Convection (Fluid): a pseudo-spectral solver whose rolls switch on at exactly the critical Rayleigh number for the box; Nusselt number live.",
+          "Kelvin–Helmholtz & Rayleigh–Taylor (Fluid): shear layers rolling into billows and heavy fluid falling through light in fingers and mushrooms, with growth rates checked against linear theory.",
+          "Field panels can now stand upright and take any shape, and can keep a fixed colour scale."
+      ]
+  },
+  {
       "version": "0.1.102",
       "date": "2026-10-09",
       "title": "Teaching staples — relativity, light, fields and three bodies",

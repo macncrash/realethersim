@@ -745,6 +745,42 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
       camera.position.set(0.3, 3.0, 3.9);
       controls.update();
     }
+    // The gas box from above and in front, with the speed histograms standing on the wall behind.
+    if ($archetypeId.get() === 'idealGas') {
+      controls.target.set(0, 0.25, -0.4);
+      camera.position.set(-0.3, 2.9, 3.9);
+      controls.update();
+    }
+    // The heat plate, seen from almost straight above like the other field panels.
+    if ($archetypeId.get() === 'heatEquation') {
+      controls.target.set(0, 0, 0);
+      camera.position.set(0, 3.9, 0.7);
+      controls.update();
+    }
+    // The percolation grid from above and in front, so the fire's raised front reads.
+    if ($archetypeId.get() === 'percolation') {
+      controls.target.set(0, 0, 0.2);
+      camera.position.set(0, 3.3, 2.4);
+      controls.update();
+    }
+    // The tank from above and to the side, so the flood front and the bow waves read as relief.
+    if ($archetypeId.get() === 'shallowWater') {
+      controls.target.set(0, 0.1, 0);
+      camera.position.set(2.6, 2.4, 2.9);
+      controls.update();
+    }
+    // Convection is a slice standing upright (hot floor at the bottom) — face it straight on.
+    if ($archetypeId.get() === 'rayleighBenard') {
+      controls.target.set(0, 0, 0);
+      camera.position.set(0, 0, 3.2);
+      controls.update();
+    }
+    // An upright square slice (gravity points down the screen) — face it straight on.
+    if ($archetypeId.get() === 'shearInstabilities') {
+      controls.target.set(0, 0, 0);
+      camera.position.set(0, 0, 4.4);
+      controls.update();
+    }
     if ($archetypeId.get() === 'customParametric') {
       controls.target.set(0, 0, 0);
       camera.position.set(2.6, 1.8, 3.4);
@@ -1446,6 +1482,12 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
           else if (id === 'maxwellFdtd') { controls.target.set(0, 0, 0); camera.position.set(0, 3.9, 0.7); }
           else if (id === 'chargedParticles') { controls.target.set(0, 0, 0); camera.position.set(2.3, 2.5, 3.7); }
           else if (id === 'threeBody') { controls.target.set(0, -0.3, 0); camera.position.set(0.3, 3.0, 3.9); }
+          else if (id === 'idealGas') { controls.target.set(0, 0.25, -0.4); camera.position.set(-0.3, 2.9, 3.9); }
+          else if (id === 'heatEquation') { controls.target.set(0, 0, 0); camera.position.set(0, 3.9, 0.7); }
+          else if (id === 'percolation') { controls.target.set(0, 0, 0.2); camera.position.set(0, 3.3, 2.4); }
+          else if (id === 'shallowWater') { controls.target.set(0, 0.1, 0); camera.position.set(2.6, 2.4, 2.9); }
+          else if (id === 'rayleighBenard') { controls.target.set(0, 0, 0); camera.position.set(0, 0, 3.2); }
+          else if (id === 'shearInstabilities') { controls.target.set(0, 0, 0); camera.position.set(0, 0, 4.4); }
           else if (id === 'customParametric') { controls.target.set(0, 0, 0); camera.position.set(2.6, 1.8, 3.4); }
           else if (id === 'luneburgLens') { controls.target.set(0, 0, 0); camera.position.set(0, 3.9, 0.7); }
           else if (id === 'flyBrain') { controls.target.set(0, 0, 0); camera.position.set(0.4, 0.7, 3.3); }

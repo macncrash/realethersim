@@ -92,6 +92,12 @@ import { kerrDraggingFactory } from './kerrDragging';
 import { maxwellFdtdFactory } from './maxwellFdtd';
 import { chargedParticlesFactory } from './chargedParticles';
 import { threeBodyFactory } from './threeBody';
+import { idealGasFactory } from './idealGas';
+import { heatEquationFactory } from './heatEquation';
+import { percolationFactory } from './percolation';
+import { shallowWaterFactory } from './shallowWater';
+import { rayleighBenardFactory } from './rayleighBenard';
+import { shearInstabilitiesFactory } from './shearInstabilities';
 import { luneburgLensFactory } from './luneburgLens';
 import { flyBrainFactory } from './flyBrain';
 import { bioBayFactory } from './bioBay';
@@ -210,6 +216,12 @@ export function registerArchetypes(): void {
   register(maxwellFdtdFactory);
   register(chargedParticlesFactory);
   register(threeBodyFactory);
+  register(idealGasFactory);
+  register(heatEquationFactory);
+  register(percolationFactory);
+  register(shallowWaterFactory);
+  register(rayleighBenardFactory);
+  register(shearInstabilitiesFactory);
   // Custom Equation (customParametric) is withdrawn until user code runs in the sandbox: it compiles
   // expressions with `new Function`, which the production CSP (no 'unsafe-eval') blocks, so on the
   // live site it silently drew every point at the origin. It returns with an editor once sandboxed
