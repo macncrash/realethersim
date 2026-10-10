@@ -814,6 +814,18 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
       camera.position.set(0, 0, 3.6);
       controls.update();
     }
+    // The two-slit set-up is a flat panel — face it straight on.
+    if ($archetypeId.get() === 'aharonovBohm') {
+      controls.target.set(0, 0, 0);
+      camera.position.set(0, 0, 3.5);
+      controls.update();
+    }
+    // The plates side-on and a little above, so the strings, the gap and the spectrum strip all read.
+    if ($archetypeId.get() === 'casimirPlates') {
+      controls.target.set(0, -0.3, 0);
+      camera.position.set(0.9, 0.9, 4.4);
+      controls.update();
+    }
     if ($archetypeId.get() === 'customParametric') {
       controls.target.set(0, 0, 0);
       camera.position.set(2.6, 1.8, 3.4);
@@ -1526,6 +1538,8 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
           else if (id === 'twoStream') { controls.target.set(0, -0.25, 0); camera.position.set(0, -0.25, 4.3); }
           else if (id === 'stellarCollapse') { controls.target.set(0, 0, 0); camera.position.set(0, 0, 4.4); }
           else if (id === 'fracture') { controls.target.set(0, 0, 0); camera.position.set(0, 0, 3.6); }
+          else if (id === 'aharonovBohm') { controls.target.set(0, 0, 0); camera.position.set(0, 0, 3.5); }
+          else if (id === 'casimirPlates') { controls.target.set(0, -0.3, 0); camera.position.set(0.9, 0.9, 4.4); }
           else if (id === 'customParametric') { controls.target.set(0, 0, 0); camera.position.set(2.6, 1.8, 3.4); }
           else if (id === 'luneburgLens') { controls.target.set(0, 0, 0); camera.position.set(0, 3.9, 0.7); }
           else if (id === 'flyBrain') { controls.target.set(0, 0, 0); camera.position.set(0.4, 0.7, 3.3); }
