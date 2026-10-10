@@ -5411,4 +5411,118 @@ o[1] = p.b * x[0];`,
           }
       ]
   },
+  aharonovBohm: {
+      "title": "Aharonov–Bohm Effect",
+      "about": "Can a magnetic field affect an electron that never touches it? In quantum mechanics, yes. An electron wave (drawn as its amplitude) passes through two slits and interferes, building up the familiar bright and dark fringes on a screen. Just behind the wall, between the slits, sits a thin solenoid (the white dot), perfectly shielded. All of its magnetic field is inside, the electron can't get in, and everywhere the electron can go the magnetic field is exactly zero. Yet turning up the flux inside slides the fringes sideways. Half a flux quantum (h/2e) turns every bright fringe dark; one whole quantum (h/e) puts them back exactly where they started. The reason is that the electron responds to the magnetic vector potential A, which is not zero outside the solenoid even though the field B is. The two paths round the solenoid pick up different phases, and the difference, (e/ħ)∮A·dl = 2πΦ/Φ₀, depends only on the flux they enclose. Aharonov and Bohm predicted this in 1959; Tonomura's team confirmed it in 1986 by holography with electrons passing round a tiny magnetised ring sealed inside a superconductor, so that no field could leak out. On the right, the pattern builds up on the screen (bright strip) next to the pattern with no flux (dim strip), so the shift is easy to see. Try 0, 0.5, 1 and 1.5.",
+      "howItWorks": "The electron obeys the time-dependent Schrödinger equation iħ∂ψ/∂t = −(ħ²/2m)∇²ψ on a 288 × 192 lattice (units ħ = m = 1, lattice spacing 1). The wall and the solenoid are cells the wave cannot enter. The flux enters only as a Peierls phase: every hop of the electron across a line running up from the solenoid to the edge of the box picks up a factor e^{±2πiα}, with α = Φ/Φ₀ the flux in flux quanta. That is exactly a vector potential confined to a thin sheet; the magnetic field it describes is zero everywhere the electron can be. The wave is advanced by second-order differencing (Askar and Cakmak 1978): ψ(t+dt) = ψ(t−dt) − 2i dt Hψ(t), which keeps the norm for dt·E_max < 1 (here 0.2 × 4). A thin absorbing layer at the edges soaks up the outgoing wave. A second, identical run with no flux goes on alongside as the reference, and both runs add up |ψ|² at the screen. Checked: with the absorber off, the norm changes by 5 × 10⁻⁶ in 300 steps. The measured fringe shift equals the flux mod 1 to two decimals: 0.250 at α = 0.25, −0.500 at 0.5, −0.251 at 0.75. At α = 1 the screen pattern matches α = 0 exactly, total dose included, as gauge invariance requires.",
+      "equations": [
+          {
+              "label": "Schrödinger equation with a vector potential",
+              "latex": "i\\hbar\\frac{\\partial\\psi}{\\partial t} = \\frac{1}{2m}\\left(-i\\hbar\\nabla - e\\mathbf A\\right)^2\\psi"
+          },
+          {
+              "label": "phase difference between the two paths",
+              "latex": "\\Delta\\varphi = \\frac{e}{\\hbar}\\oint \\mathbf A\\cdot d\\mathbf l = \\frac{e\\,\\Phi}{\\hbar} = 2\\pi\\,\\frac{\\Phi}{\\Phi_0},\\qquad \\Phi_0 = \\frac{h}{e}"
+          },
+          {
+              "label": "fringe shift (in fringes)",
+              "latex": "\\delta = \\frac{\\Phi}{\\Phi_0}\\pmod 1"
+          },
+          {
+              "label": "on the lattice: Peierls phase on each hop",
+              "latex": "-\\tfrac12\\,\\psi_{j} \\to -\\tfrac12\\,e^{\\,i\\frac{e}{\\hbar}\\int_j^i \\mathbf A\\cdot d\\mathbf l}\\,\\psi_j"
+          },
+          {
+              "label": "time stepping (second-order differencing)",
+              "latex": "\\psi^{n+1} = \\psi^{n-1} - 2i\\,\\Delta t\\,H\\psi^n"
+          }
+      ],
+      "params": [
+          {
+              "key": "flux",
+              "symbol": "\\Phi/\\Phi_0",
+              "meaning": "the magnetic flux inside the shielded solenoid, in flux quanta h/e — the fringes shift by this amount (whole numbers change nothing)"
+          }
+      ],
+      "code": "// lattice Schrödinger equation, ħ = m = 1, spacing 1\n(Hψ)_i = 2ψ_i − ½ Σ_neighbours U_ij ψ_j     // U = 1, except\nU = e^{±2πiα} for hops across the cut above the solenoid\nψ_next = ψ_prev − 2i dt Hψ                   // second-order differencing\nwalls and solenoid: ψ = 0;  screen: Σ |ψ|² over time\n// a second run with α = 0 is the reference",
+      "links": [
+          {
+              "label": "Aharonov & Bohm 1959 — Significance of electromagnetic potentials in the quantum theory (Phys. Rev. 115, 485)",
+              "url": "https://doi.org/10.1103/PhysRev.115.485"
+          },
+          {
+              "label": "Tonomura et al. 1986 — Evidence for Aharonov–Bohm effect with magnetic field completely shielded from electron wave (PRL 56, 792)",
+              "url": "https://doi.org/10.1103/PhysRevLett.56.792"
+          },
+          {
+              "label": "Peierls 1933 — Zur Theorie des Diamagnetismus von Leitungselektronen (Z. Phys. 80, 763)",
+              "url": "https://doi.org/10.1007/BF01342591"
+          },
+          {
+              "label": "Askar & Cakmak 1978 — Explicit integration method for the time-dependent Schrödinger equation (J. Chem. Phys. 68, 2794)",
+              "url": "https://doi.org/10.1063/1.436072"
+          },
+          {
+              "label": "Aharonov–Bohm effect",
+              "url": "https://en.wikipedia.org/wiki/Aharonov%E2%80%93Bohm_effect"
+          }
+      ]
+  },
+  casimirPlates: {
+      "title": "Casimir Plates",
+      "about": "Two uncharged metal plates, side by side in a perfect vacuum, are pushed together by empty space itself. In quantum theory the vacuum is never perfectly still: every mode of the electromagnetic field, every wavelength in every direction, keeps a residual jiggle with energy ½ħω even with no light present. A metal surface forces the electric field to vanish on it. So between two parallel mirrors only the waves that fit can exist, those with a node on each plate (wavelengths 2d, 2d/2, 2d/3, …), while outside every wavelength is allowed. The strings show this zero-point field along lines through the plates: cyan between them, where only the allowed standing waves jiggle, and violet outside, where all wavelengths do. Make the gap smaller and the long waves inside disappear. Below, the mode spectrum shows the allowed frequencies inside (bright ticks, evenly spaced) against the unbroken continuum outside. Fewer modes inside than outside means less zero-point energy inside, and the plates are pushed together (red arrows). The total zero-point energy is infinite on both sides, but the difference is finite and can be calculated, which the panel does live. The force is tiny at a micrometre (about a thousandth of a pascal) but grows as 1/d⁴: about an atmosphere at ten nanometres, where it matters in micro-machines. It has been measured since Lamoreaux's 1997 experiment.",
+      "howItWorks": "For two ideal parallel mirrors the energy per area is E/A = −π²ħc/(720 d³), so the pressure is P = π²ħc/(240 d⁴) (Casimir 1948). The panel evaluates these in real units for the chosen gap: 13.0 Pa at 100 nm, 1.30 × 10⁵ Pa (about 1.3 atmospheres) at 10 nm, 1.30 mPa at 1 µm. The finite answer comes out of an infinite sum, and the panel shows how, in the simplest case: a 1-D field between two plates, with modes ω_n = nπc/d. Its zero-point energy Σ ½ħω_n diverges, so each mode is damped by a smooth cutoff e^{−εω} (as a real metal stops reflecting at high frequency). The damped sum is d/(2πε²) − π/(24d) + O(ε²). The first term is just proportional to the length of the gap, the same energy density as empty space everywhere, and cancels against the outside. What remains, −π/(24d), doesn't depend on the cutoff at all. The panel computes the damped sum numerically with ε = 0.004 and subtracts the first term, giving −0.130899/d against the exact −π/24 = −0.130900. (The same number is behind the famous '1 + 2 + 3 + … = −1/12'.) The strings are drawn from the same mode picture: inside, each allowed standing mode with a random phase and zero-point amplitude ∝ 1/√ω; outside, a random sample of the continuum with a node on the plate. They show which modes exist, not the actual size of the fluctuations. Real metals are not perfect mirrors and real experiments use a sphere near a plate (parallel plates are hard to keep parallel); corrections for finite conductivity, temperature and roughness are a few percent at these gaps.",
+      "equations": [
+          {
+              "label": "Casimir pressure between ideal parallel mirrors",
+              "latex": "P = \\frac{\\pi^2\\hbar c}{240\\,d^4}"
+          },
+          {
+              "label": "energy per area",
+              "latex": "\\frac{E}{A} = -\\frac{\\pi^2\\hbar c}{720\\,d^3}"
+          },
+          {
+              "label": "the allowed standing waves between the plates",
+              "latex": "\\lambda_n = \\frac{2d}{n},\\qquad \\omega_n = \\frac{n\\pi c}{d}"
+          },
+          {
+              "label": "1-D regularised zero-point sum (ħ = c = 1)",
+              "latex": "\\sum_{n=1}^{\\infty} \\frac{n\\pi}{2d}\\,e^{-\\varepsilon n\\pi/d} = \\frac{d}{2\\pi\\varepsilon^2} - \\frac{\\pi}{24\\,d} + O(\\varepsilon^2)"
+          },
+          {
+              "label": "the same sum by the Riemann zeta function",
+              "latex": "\\sum_{n\\ge1} n \\;\\to\\; \\zeta(-1) = -\\tfrac{1}{12}"
+          }
+      ],
+      "params": [
+          {
+              "key": "gap",
+              "symbol": "d",
+              "meaning": "the distance between the plates, in nanometres — the pressure grows as 1/d⁴"
+          }
+      ],
+      "code": "// pressure between ideal mirrors\nP = π² ħc / (240 d⁴)\n// 1-D check: regulated zero-point sum, then remove the part that grows with the gap\nS(ε) = Σ_n (nπ/2d) e^{−ε nπ/d}\nfinite = S(ε) − d / (2π ε²)   →  −π/(24 d) as ε → 0\n// strings: inside, standing modes sin(nπx/d) cos(ω_n t + φ_n) / √ω_n;\n//          outside, sampled continuum modes with a node on the plate",
+      "links": [
+          {
+              "label": "Casimir 1948 — On the attraction between two perfectly conducting plates (Proc. KNAW 51, 793)",
+              "url": "https://www.dwc.knaw.nl/DL/publications/PU00018547.pdf"
+          },
+          {
+              "label": "Lamoreaux 1997 — Demonstration of the Casimir force in the 0.6 to 6 µm range (PRL 78, 5)",
+              "url": "https://doi.org/10.1103/PhysRevLett.78.5"
+          },
+          {
+              "label": "Bressi et al. 2002 — Measurement of the Casimir force between parallel metallic surfaces (PRL 88, 041804)",
+              "url": "https://doi.org/10.1103/PhysRevLett.88.041804"
+          },
+          {
+              "label": "Casimir effect",
+              "url": "https://en.wikipedia.org/wiki/Casimir_effect"
+          },
+          {
+              "label": "Zero-point energy",
+              "url": "https://en.wikipedia.org/wiki/Zero-point_energy"
+          }
+      ]
+  },
 };

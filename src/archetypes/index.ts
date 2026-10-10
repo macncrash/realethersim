@@ -103,6 +103,8 @@ import { phononsFactory } from './phonons';
 import { twoStreamFactory } from './twoStream';
 import { stellarCollapseFactory } from './stellarCollapse';
 import { fractureFactory } from './fracture';
+import { aharonovBohmFactory } from './aharonovBohm';
+import { casimirPlatesFactory } from './casimirPlates';
 import { luneburgLensFactory } from './luneburgLens';
 import { flyBrainFactory } from './flyBrain';
 import { bioBayFactory } from './bioBay';
@@ -232,6 +234,8 @@ export function registerArchetypes(): void {
   register(twoStreamFactory);
   register(stellarCollapseFactory);
   register(fractureFactory);
+  register(aharonovBohmFactory);
+  register(casimirPlatesFactory);
   // Custom Equation (customParametric) is withdrawn until user code runs in the sandbox: it compiles
   // expressions with `new Function`, which the production CSP (no 'unsafe-eval') blocks, so on the
   // live site it silently drew every point at the origin. It returns with an editor once sandboxed

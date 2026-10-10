@@ -18,6 +18,20 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+      "version": "0.1.105",
+      "date": "2026-10-09",
+      "title": "Quantum — a field you never touch, and empty space that pushes",
+      "summary": "A new Quantum category with two of the strangest results in physics, both computed rather than drawn. The Aharonov–Bohm effect: a shielded magnetic flux the electron never touches still shifts its interference fringes. And Casimir plates: the vacuum's zero-point field pushes two plates together, with the infinite mode sum tamed live to its finite answer.",
+      "newSystems": [
+          "aharonovBohm",
+          "casimirPlates"
+      ],
+      "notes": [
+          "Aharonov–Bohm Effect (Quantum): the time-dependent Schrödinger equation on a lattice, a double slit, and a shielded solenoid whose flux enters only as a Peierls phase. The fringes shift by exactly the flux in units of h/e (measured 0.250 at 0.25, 0.500 at 0.5) and return at a whole quantum; a no-flux run alongside shows the difference.",
+          "Casimir Plates (Quantum): the zero-point field between and around two mirrors — only standing modes fit inside — with the pressure π²ħc/240d⁴ in real units (13 Pa at 100 nm, about an atmosphere at 10 nm) and the regularised 1-D mode sum computed to −π/24d."
+      ]
+  },
+  {
       "version": "0.1.104",
       "date": "2026-10-09",
       "title": "Solids, plasma and stars — earthquakes, phonons, cracks, beams and a collapsing core",
