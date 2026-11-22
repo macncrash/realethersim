@@ -5525,4 +5525,229 @@ o[1] = p.b * x[0];`,
           }
       ]
   },
+  quasicrystal: {
+      "title": "Quasicrystal Multigrid",
+      "about": "A crystal is a pattern that repeats, and a repeating pattern can only have 2-, 3-, 4- or 6-fold symmetry: five-fold or eight-fold tiles leave gaps. So when Dan Shechtman shone electrons through an aluminium–manganese alloy in 1982 and got sharp spots in a ten-fold pattern, it looked impossible. The answer was order without repetition: an arrangement that never repeats yet has strict long-range order, like Penrose's tiling. This system builds a whole family of them. Choose the number of grids: 3 gives an ordinary periodic tiling (it looks like stacked cubes), 4 the octagonal Ammann–Beenker tiling of squares and 45° rhombi, 5 a Penrose tiling, 6 a twelve-fold one and 7 a fourteen-fold one. Then switch the view to diffraction. The tiles turn into the pattern of spots a crystal of atoms at their corners would scatter. The periodic tiling gives spots on a lattice, as a crystal should. The quasicrystals give spots just as sharp, arranged with the symmetry no lattice can have: eight-fold, ten-fold, twelve-fold. That sharpness is the signature of long-range order, and it is what won Shechtman the 2011 Nobel Prize in Chemistry.",
+      "howItWorks": "N. G. de Bruijn's construction (1981). Take N families of evenly spaced parallel lines, the k-th family at angle πk/N, each shifted by an offset γₖ (chosen so no three lines meet at a point). Every point where a line of family k crosses a line of family l becomes one rhombus with edges along eₖ and eₗ; the rhombus's position is fixed by counting, for every other family, how many of its lines lie on each side of that point. The rhombi fit edge to edge with no gaps, and their angle is π(l − k)/N, so there are ⌊N/2⌋ shapes. For the Ammann–Beenker tiling (N = 4) the squares and rhombi come in the ratio 1 : √2: in the patch shown 0.726, at twice the radius 0.711, and at three times 0.702, closing on 1/√2 = 0.707. The diffraction view is the squared Fourier transform of the tile corners, |Σⱼ wⱼ e^{ik·rⱼ}|² on a 151 × 151 grid of wave vectors, with a Gaussian window wⱼ so the patch's edge doesn't ring; the straight-through beam at k = 0 is left out, as a beam stop does on a real camera. Checked: for N = 4 the strongest spots come in eights, each matching its image under a 45° turn, and doubling the window leaves their height almost unchanged (0.498 → 0.485 of the maximum possible), which is what makes them Bragg peaks. Points scattered at random give no spot above 0.014. The tiles turn slowly; the change of view is a morph of the same particles.",
+      "equations": [
+          {
+              "label": "the grid directions and lines",
+              "latex": "\\mathbf e_k = \\left(\\cos\\tfrac{\\pi k}{N},\\ \\sin\\tfrac{\\pi k}{N}\\right),\\qquad \\mathbf e_k\\cdot\\mathbf r + \\gamma_k \\in \\mathbb Z"
+          },
+          {
+              "label": "a tile corner, from the line counts",
+              "latex": "\\mathbf t = \\sum_{m} K_m\\,\\mathbf e_m,\\qquad K_m = \\lfloor \\mathbf e_m\\cdot\\mathbf r + \\gamma_m \\rfloor"
+          },
+          {
+              "label": "Ammann–Beenker: squares to rhombi",
+              "latex": "\\frac{n_\\square}{n_\\diamond} \\to \\frac{1}{\\sqrt 2}"
+          },
+          {
+              "label": "the diffraction pattern",
+              "latex": "I(\\mathbf k) = \\frac{\\left|\\sum_j w_j\\, e^{i\\mathbf k\\cdot\\mathbf r_j}\\right|^2}{\\left(\\sum_j w_j\\right)^2}"
+          }
+      ],
+      "params": [
+          {
+              "key": "grids",
+              "symbol": "N",
+              "meaning": "the number of grids: the tiling has 2N-fold symmetry, and N = 3 is the periodic one"
+          },
+          {
+              "key": "view",
+              "symbol": "",
+              "meaning": "the tiles, or the diffraction pattern their corners would make"
+          }
+      ],
+      "code": "for each pair of grids k < l, for each pair of lines i, j:\n  r = the crossing point\n  K_m = floor(e_m · r + γ_m)  for every other grid m\n  corners = Σ K_m e_m  +  {0, e_k, e_k + e_l, e_l} shifted by (i−1, j−1)\n// diffraction: I(k) = |Σ_j w_j exp(i k·r_j)|² / (Σ w_j)², over the corners",
+      "links": [
+          {
+              "label": "de Bruijn 1981 — Algebraic theory of Penrose's non-periodic tilings of the plane, I (Indag. Math. 84, 39)",
+              "url": "https://doi.org/10.1016/1385-7258(81)90016-0"
+          },
+          {
+              "label": "Shechtman, Blech, Gratias & Cahn 1984 — Metallic phase with long-range orientational order and no translational symmetry (PRL 53, 1951)",
+              "url": "https://doi.org/10.1103/PhysRevLett.53.1951"
+          },
+          {
+              "label": "Ammann–Beenker tiling (Wikipedia)",
+              "url": "https://en.wikipedia.org/wiki/Ammann%E2%80%93Beenker_tiling"
+          },
+          {
+              "label": "Quasicrystal (Wikipedia)",
+              "url": "https://en.wikipedia.org/wiki/Quasicrystal"
+          }
+      ]
+  },
+  pinwheel: {
+      "title": "Pinwheel Tiling",
+      "about": "Every tile here is the same right triangle, with legs 1 and 2, yet the tiles point in more and more directions the closer you look, and in the limit in every direction at once. John Conway found the rule and Charles Radin worked out what it does (1994): the triangle splits into five copies of itself, each √5 times smaller. Each copy lies along an edge of its parent and is turned by θ = arctan ½ ≈ 26.57° from it, some one way and some, being mirror images, the other. Since θ is not a rational fraction of a full turn, the turns never add up to a whole number of revolutions, and every generation brings tiles pointing in directions no earlier one had. The colours show the direction of each tile's long edge. The ring on the right has one dot per tile at its angle, so its spokes are the directions in use, brighter where more tiles share one. Raise the generations and watch the spokes multiply. The searchlight sweeps round the angles and lights every tile pointing that way: they turn up everywhere, which is what statistical rotational symmetry means. Periodic tilings have one or a few directions; Penrose's has ten; this one has infinitely many.",
+      "howItWorks": "Each triangle is stored by its three corners: A (the 26.57° angle), B (the right angle) and C. One generation: drop the altitude from B to the hypotenuse, meeting it at D. Triangle BDC is one copy. Triangle ABD is twice as big; its midpoints cut off a copy at A and one at B, and leave a rectangle that the diagonal from D cuts into two more, mirror images of each other. That mix of hands is essential: with the rectangle cut along its other diagonal, all five children have the same hand and the turns cancel, so the tiling only ever uses two directions. Starting from a 2 × 1 rectangle of two triangles, n generations make 2·5ⁿ tiles. Checked: every tile at every level has legs exactly 2·5^(−n/2) and 5^(−n/2) with a right angle at B (to 10⁻¹⁶), the areas add up to 2, and the number of directions (mod 180°) goes 1, 3, 5, 7, 9, 12, 13 over levels 0 to 6: about two new ones a generation, never closing up.",
+      "equations": [
+          {
+              "label": "the turn",
+              "latex": "\\theta = \\arctan\\tfrac12 \\approx 26.565^\\circ,\\qquad \\frac{\\theta}{\\pi} \\notin \\mathbb Q"
+          },
+          {
+              "label": "one generation",
+              "latex": "\\triangle \\to 5\\ \\text{copies},\\ \\text{each scaled by } \\tfrac{1}{\\sqrt 5}"
+          },
+          {
+              "label": "tiles after n generations",
+              "latex": "2\\cdot 5^{\\,n}"
+          }
+      ],
+      "params": [
+          {
+              "key": "levels",
+              "symbol": "n",
+              "meaning": "the number of generations of splitting"
+          },
+          {
+              "key": "speed",
+              "symbol": "",
+              "meaning": "how fast the searchlight sweeps the directions"
+          }
+      ],
+      "code": "children(A, B, C):            // A: the 26.57° corner, B: the right angle\n  D = foot of the altitude from B onto AC\n  M1 = mid(A, D), M2 = mid(D, B), M3 = mid(A, B)\n  return (B, D, C), (A, M1, M3), (M3, M2, B),\n         (D, M1, M3), (M3, M2, D)   // the rectangle, cut along D–M3",
+      "links": [
+          {
+              "label": "Radin 1994 — The pinwheel tilings of the plane (Annals of Mathematics 139, 661)",
+              "url": "https://doi.org/10.2307/2118575"
+          },
+          {
+              "label": "Pinwheel tiling (Wikipedia)",
+              "url": "https://en.wikipedia.org/wiki/Pinwheel_tiling"
+          }
+      ]
+  },
+  hopfield: {
+      "title": "Hopfield Memory",
+      "about": "How can a memory be stored everywhere at once and found again from a damaged clue? John Hopfield's 1982 answer: a network of simple on/off neurons, all connected, whose connections hold the memories. Storing a pattern uses Hebb's rule, 'cells that fire together wire together': for every pair of neurons, strengthen the connection if the pattern has them alike and weaken it if it has them different. To recall, start from a damaged copy and let neurons, one at a time, flip to whichever side their inputs vote for. Each flip lowers the network's energy, so it rolls downhill into the nearest valley, and the stored patterns are the valleys. On the left are the 1024 neurons; on the right, the pattern the network is trying to recall and a bar for its overlap with each stored pattern, rising to the top as recall succeeds. There is a hard limit. Store random patterns past about 0.14 per neuron (138 here) and the valleys run together: recall collapses into a muddle. With the six pictures, which overlap each other a lot, recall is good but not perfect, and some cues settle into blends. Raise the temperature and neurons sometimes flip the wrong way; enough of that and nothing is remembered.",
+      "howItWorks": "N = 1024 neurons sᵢ = ±1. Hebb's rule gives weights wᵢⱼ = (1/N) Σ_μ ξᵢ^μ ξⱼ^μ, with no self-connections. The weights are never built as a matrix: neuron i's input is hᵢ = Σ_μ ξᵢ^μ (m_μ − ξᵢ^μ sᵢ/N), where m_μ = (1/N) Σⱼ ξⱼ^μ sⱼ is the overlap with pattern μ, and the overlaps are updated each time a neuron flips. That is the same network at a cost of P per update instead of N (checked against the explicit matrix: identical). Updates are asynchronous, in a fresh random order each sweep, sᵢ ← sign(hᵢ); at temperature T, sᵢ = +1 with probability 1/(1 + e^{−2hᵢ/T}). A recall ends after a sweep with no flips. The energy E = −½ Σ_{i≠j} wᵢⱼ sᵢ sⱼ = −(N/2) Σ_μ m_μ² + P/2 never rises at T = 0. Checked, from cues with 20% of neurons flipped and averaged over 12 cues: final overlap 1.000 with 20 and 60 patterns stored, 0.996 at 100, 0.978 at 130 (α = 0.127), then 0.628 at 150 (α = 0.146), 0.344 at 200 and 0.313 at 300. That is the collapse near α ≈ 0.138 that Amit, Gutfreund and Sompolinsky calculated in 1985. The six pictures, cued with 30% damage, recover to overlaps of 0.80 to 1.00.",
+      "equations": [
+          {
+              "label": "Hebb's rule",
+              "latex": "w_{ij} = \\frac1N\\sum_{\\mu=1}^{P} \\xi_i^{\\mu}\\xi_j^{\\mu},\\qquad w_{ii} = 0"
+          },
+          {
+              "label": "update",
+              "latex": "s_i \\leftarrow \\operatorname{sign}\\Big(\\sum_j w_{ij}s_j\\Big)"
+          },
+          {
+              "label": "energy",
+              "latex": "E = -\\tfrac12 \\sum_{i\\ne j} w_{ij}s_is_j"
+          },
+          {
+              "label": "overlap",
+              "latex": "m_\\mu = \\frac1N\\sum_i \\xi_i^{\\mu}s_i"
+          },
+          {
+              "label": "capacity, random patterns",
+              "latex": "\\alpha = \\frac PN \\lesssim 0.138"
+          }
+      ],
+      "params": [
+          {
+              "key": "set",
+              "symbol": "",
+              "meaning": "store random patterns, or six drawings that overlap one another"
+          },
+          {
+              "key": "patterns",
+              "symbol": "P",
+              "meaning": "how many random patterns are stored (138 is the capacity for 1024 neurons)"
+          },
+          {
+              "key": "noise",
+              "symbol": "",
+              "meaning": "the share of neurons flipped in each cue"
+          },
+          {
+              "key": "temperature",
+              "symbol": "T",
+              "meaning": "how often a neuron flips against its input"
+          }
+      ],
+      "code": "m[μ] = (1/N) Σ_j ξ[μ][j] s[j]          // overlaps\nfor each sweep, neurons in a random order:\n  h = Σ_μ ξ[μ][i] (m[μ] − ξ[μ][i] s[i] / N)\n  new = sign(h)\n  if new ≠ s[i]:  s[i] = new;  m[μ] += 2 new ξ[μ][i] / N\nstop after a sweep with no flips",
+      "links": [
+          {
+              "label": "Hopfield 1982 — Neural networks and physical systems with emergent collective computational abilities (PNAS 79, 2554)",
+              "url": "https://doi.org/10.1073/pnas.79.8.2554"
+          },
+          {
+              "label": "Amit, Gutfreund & Sompolinsky 1985 — Storing infinite numbers of patterns in a spin-glass model of neural networks (PRL 55, 1530)",
+              "url": "https://doi.org/10.1103/PhysRevLett.55.1530"
+          },
+          {
+              "label": "Hopfield network (Wikipedia)",
+              "url": "https://en.wikipedia.org/wiki/Hopfield_network"
+          }
+      ]
+  },
+  axon: {
+      "title": "Hodgkin–Huxley Axon",
+      "about": "A nerve impulse is a wave of voltage that runs along an axon without fading. Alan Hodgkin and Andrew Huxley worked out how, using the giant axon of the squid, which is wide enough to thread a wire down. Sodium channels open when the voltage rises, letting sodium in and pushing the voltage higher still; they then close by themselves, while slower potassium channels open and pull the voltage back down. Current spreading inside the axon lifts the next stretch past its threshold, and the impulse moves on. In 1952 they put this into four equations, solved them with a hand calculator, and predicted the impulse's shape and speed: 18.8 m/s, against 21.2 m/s measured. This axon runs the same equations, and the impulse travels at 18.6 m/s. Make the axon thicker and it conducts faster, as the square root of the radius: four times as thick, twice as fast. Wrap it in myelin and the impulse jumps from gap to gap, nearly four times as fast for the same width; that is how vertebrate nerves stay thin. Warm it up and it speeds up, until at 30 °C the sodium channels close too quickly and the impulse dies out. Stimulate both ends and the two impulses meet and annihilate: each runs into the stretch the other has just left, which can't fire again yet.",
+      "howItWorks": "The axon is 8 cm long, cut into 800 compartments of 100 µm. Each has a membrane voltage V and three gates, m and h for sodium and n for potassium, obeying the Hodgkin–Huxley equations in their modern form (rest at −65 mV, gNa = 120, gK = 36, gL = 0.3 mS/cm², ENa = 50, EK = −77, EL = −54.4 mV). The rate constants are scaled by 3^((T − 6.3)/10) for temperature. Neighbouring compartments are joined through the axoplasm (35.4 Ω·cm), giving the cable equation. Each 0.01 ms step moves the gates exactly for their present voltage (x → x∞ + (x − x∞)e^{−Δt/τ}), then solves for the new voltages implicitly in one tridiagonal sweep, which stays stable at any compartment size. The myelinated axon keeps its channels only at a node every 2 mm and cuts the capacitance and leak a hundredfold in between. Checked: 18.60 m/s at 238 µm and 18.5 °C (Hodgkin and Huxley's own calculation gave 18.8); 37.38 m/s at four times the radius, a ratio of 2.009 against √4 = 2; 12.3 m/s at 6.3 °C, 22.5 at 28 °C, and no impulse at 30 °C. Myelinated, 71 m/s at 238 µm against 18.6 bare. The drawing exaggerates the axon's width; the trace above it is the voltage along its length.",
+      "equations": [
+          {
+              "label": "the cable",
+              "latex": "C_m\\frac{\\partial V}{\\partial t} = \\frac{a}{2R_i}\\frac{\\partial^2 V}{\\partial x^2} - \\bar g_{Na}m^3h(V-E_{Na}) - \\bar g_K n^4 (V-E_K) - g_L(V-E_L)"
+          },
+          {
+              "label": "the gates",
+              "latex": "\\frac{dx}{dt} = \\phi\\,\\big[\\alpha_x(V)(1-x) - \\beta_x(V)\\,x\\big],\\qquad x\\in\\{m,h,n\\},\\quad \\phi = 3^{(T-6.3)/10}"
+          },
+          {
+              "label": "speed and radius",
+              "latex": "v \\propto \\sqrt{a}"
+          }
+      ],
+      "params": [
+          {
+              "key": "radiusUm",
+              "symbol": "a",
+              "meaning": "the axon's radius (the squid's giant axon is about 238 µm)"
+          },
+          {
+              "key": "tempC",
+              "symbol": "T",
+              "meaning": "temperature: faster channels, faster impulse, until near 30 °C it fails"
+          },
+          {
+              "key": "myelin",
+              "symbol": "",
+              "meaning": "bare, or wrapped in myelin with a gap every 2 mm"
+          },
+          {
+              "key": "stimulus",
+              "symbol": "",
+              "meaning": "a pulse at the left end, or at both ends so two impulses collide"
+          },
+          {
+              "key": "intervalMs",
+              "symbol": "",
+              "meaning": "how often the stimulus repeats"
+          }
+      ],
+      "code": "every 0.01 ms:\n  for each compartment with channels:\n    m, h, n ← x∞ + (x − x∞)·exp(−Δt/τ_x)        // at the present V\n  G = gNa m³h + gK n⁴ + gL;  GE = gNa m³h ENa + gK n⁴ EK + gL EL\n  solve  Cm(V′ − V)/Δt = r(V′₋ − 2V′ + V′₊) − (G V′ − GE) + I_stim   // tridiagonal",
+      "links": [
+          {
+              "label": "Hodgkin & Huxley 1952 — A quantitative description of membrane current and its application to conduction and excitation in nerve (J. Physiol. 117, 500)",
+              "url": "https://doi.org/10.1113/jphysiol.1952.sp004764"
+          },
+          {
+              "label": "Huxley & Stämpfli 1949 — Evidence for saltatory conduction in peripheral myelinated nerve fibres (J. Physiol. 108, 315)",
+              "url": "https://doi.org/10.1113/jphysiol.1949.sp004335"
+          },
+          {
+              "label": "Hodgkin–Huxley model (Wikipedia)",
+              "url": "https://en.wikipedia.org/wiki/Hodgkin%E2%80%93Huxley_model"
+          },
+          {
+              "label": "Saltatory conduction (Wikipedia)",
+              "url": "https://en.wikipedia.org/wiki/Saltatory_conduction"
+          }
+      ]
+  },
 };

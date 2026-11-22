@@ -18,6 +18,24 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+      "version": "0.1.106",
+      "date": "2026-11-22",
+      "title": "Quasicrystals, pinwheels, memories and nerves",
+      "summary": "Two new tilings and two new neural systems, each checked against the published result: de Bruijn's multigrid quasicrystals with their diffraction patterns, the pinwheel tiling, a Hopfield memory and the Hodgkin–Huxley nerve impulse.",
+      "newSystems": [
+          "quasicrystal",
+          "pinwheel",
+          "hopfield",
+          "axon"
+      ],
+      "notes": [
+          "Quasicrystal Multigrid (Tiling): periodic, 8-, 10-, 12- and 14-fold tilings from de Bruijn's grids, and the view switches to the diffraction pattern their corners make — sharp spots with symmetry no crystal lattice can have, as Shechtman found in 1982.",
+          "Pinwheel Tiling (Tiling): one right triangle, five copies of itself each generation, and tiles in ever more directions. A searchlight lights every tile pointing its way.",
+          "Hopfield Memory (Neural): 1024 neurons store pictures or random patterns by Hebb's rule and recall them from a damaged cue; past about 0.14 patterns per neuron, recall collapses, as theory says.",
+          "Hodgkin–Huxley Axon (Neural): the 1952 equations on an 8 cm squid axon, conducting at 18.6 m/s (Hodgkin and Huxley calculated 18.8). Thicker is faster as √radius, myelin nearly four times faster, warmth faster until the impulse fails at 30 °C, and two impulses that meet annihilate."
+      ]
+  },
+  {
       "version": "0.1.105",
       "date": "2026-10-09",
       "title": "Quantum — a field you never touch, and empty space that pushes",

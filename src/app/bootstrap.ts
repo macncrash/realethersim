@@ -637,6 +637,11 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
       camera.position.set(0, 0, 3.0);
       controls.update();
     }
+    // Flat tilings and the Hopfield panel, face on; the axon from a little above, so the tube reads as a tube.
+    if ($archetypeId.get() === 'quasicrystal') { controls.target.set(0, 0, 0); camera.position.set(0, 0, 3.1); controls.update(); }
+    if ($archetypeId.get() === 'pinwheel') { controls.target.set(-0.15, 0, 0); camera.position.set(-0.15, 0, 4.2); controls.update(); }
+    if ($archetypeId.get() === 'hopfield') { controls.target.set(0.2, 0, 0); camera.position.set(0.2, 0, 4.1); controls.update(); }
+    if ($archetypeId.get() === 'axon') { controls.target.set(0, 0.1, 0); camera.position.set(0, 0.9, 3.6); controls.update(); }
     if ($archetypeId.get() === 'primeSpiral') {
       controls.target.set(0, 0, 0);
       camera.position.set(0, 0, 3.0);
@@ -1508,6 +1513,10 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
           else if (id === 'doublePendulumSwarm') { controls.target.set(0, -0.2, 0); camera.position.set(0, -0.2, 3.4); }
           else if (id === 'ising') { controls.target.set(0, 0, 0); camera.position.set(0, 0, 3.1); }
           else if (id === 'penrose') { controls.target.set(0, 0, 0); camera.position.set(0, 0, 3.0); }
+          else if (id === 'quasicrystal') { controls.target.set(0, 0, 0); camera.position.set(0, 0, 3.1); }
+          else if (id === 'pinwheel') { controls.target.set(-0.15, 0, 0); camera.position.set(-0.15, 0, 4.2); }
+          else if (id === 'hopfield') { controls.target.set(0.2, 0, 0); camera.position.set(0.2, 0, 4.1); }
+          else if (id === 'axon') { controls.target.set(0, 0.1, 0); camera.position.set(0, 0.9, 3.6); }
           else if (id === 'primeSpiral') { controls.target.set(0, 0, 0); camera.position.set(0, 0, 3.0); }
           else if (id === 'collatz') { controls.target.set(0, 0, 0); camera.position.set(0, 0, 5.4); }
           else if (id === 'barabasiAlbert') { controls.target.set(0, 0, 0); camera.position.set(0, 0.4, 5.0); }

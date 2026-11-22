@@ -71,6 +71,8 @@ import { elementaryCAFactory } from './elementaryCA';
 import { doublePendulumSwarmFactory } from './doublePendulumSwarm';
 import { isingFactory } from './ising';
 import { penroseFactory } from './penrose';
+import { quasicrystalFactory } from './quasicrystal';
+import { pinwheelFactory } from './pinwheel';
 import { primeSpiralFactory } from './primeSpiral';
 import { collatzFactory } from './collatz';
 import { barabasiAlbertFactory } from './barabasiAlbert';
@@ -107,6 +109,8 @@ import { aharonovBohmFactory } from './aharonovBohm';
 import { casimirPlatesFactory } from './casimirPlates';
 import { luneburgLensFactory } from './luneburgLens';
 import { flyBrainFactory } from './flyBrain';
+import { hopfieldFactory } from './hopfield';
+import { axonFactory } from './axon';
 import { bioBayFactory } from './bioBay';
 import { combJellyFactory } from './combJelly';
 import { jellyfishFountainFactory } from './jellyfishFountain';
@@ -202,6 +206,8 @@ export function registerArchetypes(): void {
   register(doublePendulumSwarmFactory);
   register(isingFactory);
   register(penroseFactory);
+  register(quasicrystalFactory);
+  register(pinwheelFactory);
   register(primeSpiralFactory);
   register(collatzFactory);
   register(barabasiAlbertFactory);
@@ -242,6 +248,8 @@ export function registerArchetypes(): void {
   // execution lands (ETHERSIM Studio plan, Phase 3).
   register(luneburgLensFactory);
   register(flyBrainFactory);
+  register(hopfieldFactory);
+  register(axonFactory);
   register(bioBayFactory);
   register(combJellyFactory);
   register(jellyfishFountainFactory);
