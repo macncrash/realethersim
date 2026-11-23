@@ -18,6 +18,18 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+      "version": "0.1.109",
+      "date": "2026-11-23",
+      "title": "Favourites: your hearted systems, one click away",
+      "summary": "Systems you heart in the Learn panel now have their own filter in Browse all and in search, so you can find your way back to them.",
+      "newSystems": [],
+      "notes": [
+          "Browse all has a ♥ Favourites chip that shows only the systems you've hearted, with a small heart on each hearted card.",
+          "Search (⌘K) has a ♥ Favourites toggle that narrows the list to your hearted systems and stays on until you turn it off; hearted systems show a heart in the list.",
+          "Favourites are kept in this browser, as before; nothing about them leaves it."
+      ]
+  },
+  {
       "version": "0.1.108",
       "date": "2026-11-23",
       "title": "Metronomes: rollers that roll, and a calmer platform",

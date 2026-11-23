@@ -3,11 +3,13 @@ import { StoreController } from '@nanostores/lit';
 import { $archetypeId, listFactories, selectArchetype } from '../store';
 import { getFactory } from '../../core/registry';
 import { APP_VERSION } from '../../version';
+import { $hearts } from '../favourites';
 import { RELEASES, LATEST_RELEASE } from '../../meta/changelog';
 import { ATTRIBUTIONS, COPYRIGHT, LICENSE_SPDX, LICENSE_TEXT } from '../../meta/attributions';
 
 const REPO_URL = 'https://github.com/macncrash/realethersim';
 const SEEN_KEY = 'ethersim:lastSeenVersion';
+const FAVOURITES = '\u2665'; // the Browse filter chip for hearted systems (not a category name)
 
 // Category display order (mirrors the archetype-switcher tabs) for the Browse grid's filter chips.
 const CATEGORY_ORDER = [
@@ -36,6 +38,7 @@ export class InfoOverlay extends LitElement {
   }
 
   private cur = new StoreController(this, $archetypeId);
+  private hearts = new StoreController(this, $hearts); // favourites hearted in the Learn panel
 
   private open = false;
   private tab: Tab = 'whatsnew';
@@ -150,7 +153,9 @@ export class InfoOverlay extends LitElement {
   // ---- card ----
   private card(id: string): TemplateResult {
     const isCur = id === this.cur.value;
+    const loved = this.hearts.value.has(id);
     return html`<button class="io-card ${isCur ? 'cur' : ''}" @click=${() => this.go(id)} title="Open ${this.labelOf(id)}">
+      ${loved ? html`<span class="io-heart" title="In your favourites">♥</span>` : nothing}
       <span class="io-thumb">
         <img
           src="thumbs/${id}.webp"
@@ -211,8 +216,10 @@ export class InfoOverlay extends LitElement {
     const cats = CATEGORY_ORDER.filter((c) => present.has(c));
     for (const c of present) if (!cats.includes(c)) cats.push(c);
     const q = this.query.trim().toLowerCase();
+    const hearts = this.hearts.value, favCount = all.filter((s) => hearts.has(s.id)).length;
+    const favs = this.filterCat === FAVOURITES;
     const list = all
-      .filter((s) => (this.filterCat ? s.category === this.filterCat : true))
+      .filter((s) => (favs ? hearts.has(s.id) : this.filterCat ? s.category === this.filterCat : true))
       .filter((s) => (q ? `${s.label} ${s.category} ${s.id}`.toLowerCase().includes(q) : true))
       .sort((a, b) => a.label.localeCompare(b.label));
     return html`
@@ -228,6 +235,7 @@ export class InfoOverlay extends LitElement {
         />
         <div class="io-chips">
           <button class="io-chip ${this.filterCat === null ? 'on' : ''}" @click=${() => { this.filterCat = null; this.requestUpdate(); }}>All ${all.length}</button>
+          <button class="io-chip io-chip-fav ${favs ? 'on' : ''}" @click=${() => { this.filterCat = FAVOURITES; this.requestUpdate(); }} title="Systems you've hearted (❤️ in a system's Learn panel). Kept in this browser.">♥ Favourites ${favCount}</button>
           ${cats.map(
             (c) => html`<button class="io-chip ${this.filterCat === c ? 'on' : ''}" @click=${() => { this.filterCat = c; this.requestUpdate(); }}>
               ${c} ${all.filter((s) => s.category === c).length}
@@ -237,7 +245,11 @@ export class InfoOverlay extends LitElement {
       </div>
       <div class="io-scroll">
         ${list.length === 0
-          ? html`<div class="io-empty">${this.query.trim() ? `No system matches “${this.query}”.` : 'No systems in this category.'}</div>`
+          ? html`<div class="io-empty">${this.query.trim()
+              ? `No ${favs ? 'favourite' : 'system'} matches “${this.query}”.`
+              : favs
+                ? 'No favourites yet. Open a system and tap the ❤️ at the top of its Learn panel; it will show up here, in this browser, next time too.'
+                : 'No systems in this category.'}</div>`
           : html`<div class="io-grid">${list.map((s) => this.card(s.id))}</div>`}
       </div>
     `;
@@ -345,7 +357,12 @@ export class InfoOverlay extends LitElement {
           display: flex; flex-direction: column; padding: 0; overflow: hidden; text-align: left; cursor: pointer;
           background: #0e1c2a; border: 1px solid #1d3344; border-radius: 10px; transition: border-color 0.12s, transform 0.12s;
         }
+        .io-card { position: relative; }
         .io-card:hover { border-color: #4ad6c8; transform: translateY(-2px); }
+        .io-heart {
+          position: absolute; top: 5px; right: 6px; z-index: 1; font-size: 13px; line-height: 1; color: #ff6b8a;
+          text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8); pointer-events: none;
+        }
         .io-card.cur { border-color: #5af0c8; box-shadow: 0 0 0 1px #2f8a6a inset; }
         .io-thumb {
           display: block; width: 100%; aspect-ratio: 8 / 5; overflow: hidden;
@@ -390,6 +407,8 @@ export class InfoOverlay extends LitElement {
         }
         .io-chip:hover { border-color: #4ad6c8; }
         .io-chip.on { background: #1f5a4a; border-color: #2f8a6a; color: #eafff7; }
+        .io-chip-fav { color: #ff9fb2; border-color: #4a2a38; background: #1e1520; }
+        .io-chip-fav.on { color: #ffe3ea; border-color: #a0455e; background: #4a1f2d; }
         .io-empty { padding: 40px; text-align: center; color: #678; }
 
         /* about */

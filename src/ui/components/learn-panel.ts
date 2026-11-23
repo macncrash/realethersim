@@ -6,6 +6,7 @@ import { $archetypeId, $params } from '../store';
 import { getFactory } from '../../core/registry';
 import { getDoc, type SystemDoc } from '../learn/content';
 import { APP_VERSION } from '../../version';
+import { $hearts, toggleHeart } from '../favourites';
 
 const REPO = 'https://github.com/macncrash/realethersim';
 
@@ -44,6 +45,7 @@ export class LearnPanel extends LitElement {
 
   private archId = new StoreController(this, $archetypeId);
   private params = new StoreController(this, $params);
+  private hearts = new StoreController(this, $hearts); // re-render when a heart changes anywhere
   private tab: Tab = 'about';
   // Collapsed by default on phones (where it would overlap the full-width control panel); open on desktop.
   private open = typeof window !== 'undefined' ? window.innerWidth > 640 : true;
@@ -59,23 +61,13 @@ export class LearnPanel extends LitElement {
 
   // Lightweight, anonymous, user-initiated favourites — a heart, no downvotes. The first heart sends
   // a fire-and-forget beacon to /_vote/up/<id>; the server-log → observatory pipeline counts it (no
-  // new endpoint, no PII, deduped per system). localStorage remembers it so the UI reflects it.
+  // new endpoint, no PII, deduped per system). The hearts themselves live in ../favourites (localStorage),
+  // which the Browse grid and the search palette also read.
   private isHearted(id: string): boolean {
-    try {
-      return localStorage.getItem('ethersim:heart:' + id) === '1';
-    } catch {
-      return false;
-    }
+    return this.hearts.value.has(id);
   }
   private toggleHeart(id: string): void {
-    const was = this.isHearted(id);
-    try {
-      if (was) localStorage.removeItem('ethersim:heart:' + id);
-      else localStorage.setItem('ethersim:heart:' + id, '1');
-    } catch {
-      /* private mode — heart still sends, just won't persist the UI state */
-    }
-    if (!was) {
+    if (toggleHeart(id)) {
       // only beacon on the first heart (the server dedups by salted ip-hash anyway)
       try {
         navigator.sendBeacon?.('/_vote/up/' + encodeURIComponent(id));
@@ -83,7 +75,6 @@ export class LearnPanel extends LitElement {
         /* best-effort */
       }
     }
-    this.requestUpdate();
   }
   private report(id: string): void {
     const label = getFactory(id).label;

@@ -25,6 +25,7 @@ import {
 } from '../store';
 import { getFactory } from '../../core/registry';
 import { APP_VERSION } from '../../version';
+import { $hearts } from '../favourites';
 
 // Format an interval (seconds) compactly: "30s", "2m 35s", "20m".
 function fmtInterval(sec: number): string {
@@ -54,10 +55,12 @@ export class CommandPalette extends LitElement {
   private details = new StoreController(this, $demoDetails);
   private interval = new StoreController(this, $demoInterval); // seconds between auto-advances
   private cur = new StoreController(this, $archetypeId);
+  private hearts = new StoreController(this, $hearts); // favourites hearted in the Learn panel
 
   private open = false;
   private query = '';
   private active = 0;
+  private favOnly = false; // show only hearted systems; stays on between openings so favourites are one ⌘K away
 
   override connectedCallback(): void {
     super.connectedCallback();
@@ -163,7 +166,10 @@ export class CommandPalette extends LitElement {
   }
 
   private filtered(): Item[] {
-    const all: Item[] = listFactories().map((f) => ({ id: f.id, label: f.label, category: f.category }));
+    const hearts = this.hearts.value;
+    const all: Item[] = listFactories()
+      .filter((f) => !this.favOnly || hearts.has(f.id))
+      .map((f) => ({ id: f.id, label: f.label, category: f.category }));
     const q = this.query.trim().toLowerCase();
     if (!q) {
       return all.sort((a, b) => a.category.localeCompare(b.category) || a.label.localeCompare(b.label));
@@ -198,6 +204,13 @@ export class CommandPalette extends LitElement {
       selectArchetype(item.id);
       this.hide();
     }
+  }
+
+  private toggleFavOnly(): void {
+    this.favOnly = !this.favOnly;
+    this.active = 0;
+    this.requestUpdate();
+    requestAnimationFrame(() => (this.querySelector('.cmdp-input') as HTMLInputElement | null)?.focus());
   }
 
   private onInput(e: Event): void {
@@ -300,6 +313,7 @@ export class CommandPalette extends LitElement {
     }
     const list = this.filtered();
     const curId = this.cur.value;
+    const hearts = this.hearts.value;
     return html`
       <style>
         .cmdp-back {
@@ -327,6 +341,9 @@ export class CommandPalette extends LitElement {
         .cmdp-row:hover { background: #122c3a; }
         .cmdp-row.cur .cmdp-label::after { content: ' ●'; color: #5af0c8; font-size: 0.7em; }
         .cmdp-label { flex: 1; }
+        .cmdp-heart { color: #ff6b8a; font-size: 12px; }
+        .cmdp-act.fav { color: #ff9fb2; border-color: #4a2a38; background: #1e1520; }
+        .cmdp-act.fav.on { color: #ffe3ea; border-color: #a0455e; background: #4a1f2d; }
         .cmdp-cat {
           font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase; color: #5a8; opacity: 0.75;
           background: #0f2430; padding: 2px 7px; border-radius: 999px;
@@ -351,13 +368,15 @@ export class CommandPalette extends LitElement {
         <div class="cmdp-box">
           <input
             class="cmdp-input"
-            placeholder="Search ${list.length} systems…  (type to filter, ↵ to open)"
+            placeholder=${this.favOnly ? `Search ${list.length} favourites…  (↵ to open)` : `Search ${list.length} systems…  (type to filter, ↵ to open)`}
             .value=${this.query}
             @input=${(e: Event) => this.onInput(e)}
           />
           <div class="cmdp-list">
             ${list.length === 0
-              ? html`<div class="cmdp-empty">No system matches “${this.query}”.</div>`
+              ? html`<div class="cmdp-empty">${this.favOnly && !this.query.trim()
+                  ? 'No favourites yet. Open a system and tap the ❤️ at the top of its Learn panel; it will show up here.'
+                  : `No ${this.favOnly ? 'favourite' : 'system'} matches “${this.query}”.`}</div>`
               : list.map(
                   (it, i) => html`
                     <div
@@ -372,6 +391,7 @@ export class CommandPalette extends LitElement {
                       }}
                     >
                       <span class="cmdp-label">${it.label}</span>
+                      ${hearts.has(it.id) ? html`<span class="cmdp-heart" title="In your favourites">♥</span>` : nothing}
                       <span class="cmdp-cat">${it.category}</span>
                     </div>
                   `,
@@ -395,6 +415,13 @@ export class CommandPalette extends LitElement {
               }}
             >
               ↺ Reset defaults
+            </button>
+            <button
+              class="cmdp-act fav ${this.favOnly ? 'on' : ''}"
+              @click=${() => this.toggleFavOnly()}
+              title="Show only the systems you've hearted (❤️ in a system's Learn panel)"
+            >
+              ♥ Favourites ${listFactories().filter((f) => hearts.has(f.id)).length}
             </button>
             <button class="cmdp-act ${this.demo.value ? 'on' : ''}" @click=${() => this.toggleDemo()} title="Demo / screensaver (⌘D)">
               ${this.demo.value ? '⏸ Demo on' : '▶ Demo'}
