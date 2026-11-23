@@ -1,3 +1,5 @@
+import { defaultParams } from '../src/core/archetype';
+import { resolveParams } from '../src/core/params';
 import { describe, expect, it } from 'vitest';
 import { MetronomeRig, type RigParams } from '../src/archetypes/metronomeRig';
 import { metronomesFactory } from '../src/archetypes/metronomes';
@@ -62,5 +64,32 @@ describe("Huygens' metronomes", () => {
       for (let i = 0; i < 30; i++) a.step(0.016, p as never);
       expect(a.readPositions().every((x) => Number.isFinite(x))).toBe(true);
     }
+  });
+
+  it('draws rollers under the plate, rolling without slipping, and keeps the drawn shake small', () => {
+    const params = resolveParams(defaultParams(metronomesFactory.params), 1 / 60);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const a = metronomesFactory.create({ particleCount: 120_000, seed: 5, params }) as any;
+    const R: number = a.rollerR, q0: number = a.roll0, P0: number = a.plat0;
+    const angle = (pos: Float32Array, plateX: number) => { // roller particle 0's angle about its axle (a = 0 at the top)
+      const o = q0 * 3, axle = a.rollX[0] + plateX / 2; return Math.atan2(pos[o] - axle, pos[o + 1] - (a.floorY + R));
+    };
+    const plateX = (pos: Float32Array) => pos[P0 * 3] - a.platLocal[0]; // plate particle 0 is unrotated in roll mode
+    let pos: Float32Array = a.readPositions(), px = plateX(pos), ang = angle(pos, px), worst = 0, lo = Infinity, hi = -Infinity, xMin = Infinity, xMax = -Infinity;
+    for (let f = 0; f < 60 * 60; f++) {
+      a.step(1 / 60, params);
+      pos = a.readPositions();
+      const x = plateX(pos), g = angle(pos, x);
+      let dg = g - ang; dg -= 2 * Math.PI * Math.round(dg / (2 * Math.PI));
+      worst = Math.max(worst, Math.abs(dg * 2 * R - (x - px))); // the top of the roller moves with the plate
+      for (let k = a.roll0; k < a.roll1; k++) { lo = Math.min(lo, pos[k * 3 + 1]); hi = Math.max(hi, pos[k * 3 + 1]); }
+      if (f > 50 * 60) { xMin = Math.min(xMin, x); xMax = Math.max(xMax, x); }
+      px = x; ang = g;
+    }
+    expect(worst).toBeLessThan(1e-4);
+    expect(hi).toBeLessThanOrEqual(-0.045 + 1e-6); // never pokes into the plate
+    expect(lo).toBeGreaterThanOrEqual(a.floorY - 1e-6); // nor through the floor
+    const width = a.rig.cols * a.sp;
+    expect((xMax - xMin) / 2 / width).toBeLessThan(0.06); // locked crowd: the drawn shake is a few % of the width
   });
 });

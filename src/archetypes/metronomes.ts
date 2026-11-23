@@ -21,11 +21,16 @@ import { Freedom, Headings, MetronomeRig, SPACING, type RigParams } from './metr
 // escapements drive, and which ways they face. Above the platform, a phase ring shows every metronome's
 // place in its swing, in a frame turning with the average one, so a synchronised crowd stands still in a
 // clump; the arrow is the Kuramoto order parameter r, and the chart records r (in step) and r₂ (in step
-// or exactly opposite). The platform shakes only a few millimetres, so the shake is drawn 40× larger; the
+// or exactly opposite). The platform shakes only a few millimetres, so the shake is magnified until it
+// spans about 3% of the platform's width (×6 for the default hundred, nearly true size for two); the
 // pendulum swings are true. Mechanics: metronomeRig.ts (Pantaleone 2002, generalised to three platform
 // degrees of freedom; RK4 with the platform's accelerations solved exactly at every stage).
 
-const MOTION_ZOOM = 40; // the platform moves millimetres; drawn this much larger so it can be seen
+// The platform shakes about ±6 mm whatever its size, so the shake is drawn as a share of the platform's
+// width: magnified until it spans about ±3% of it, and never shrunk below true size.
+const SHAKE_FRAC = 0.03;
+const SHAKE_REF = 0.0062; // m, the shake of a synchronised crowd at the default tempo
+const PLATE_T = 0.045; // render thickness of the plate; it hangs below y = 0, the rollers sit under it
 const WIDTH = 2.3; // render width of the largest platform side
 const RING_R = 0.42;
 const HIST = 400; // chart samples
@@ -64,6 +69,7 @@ class MetronomesArchetype implements Archetype {
   private readonly prevPh: Float64Array; private ref = 0; // the frame turning with the average metronome
   private readonly panelZ: number; private readonly panelY: number; private readonly ringX: number; private readonly chartX0: number; private readonly chartX1: number;
   private r = 0; private r2 = 0;
+  private zoom = 1; // how much larger the platform's shake is drawn
   private readonly drift = new Float64Array(3); // the platform's slow drift (X, Y, φ), followed over a few seconds and drawn true size
 
   constructor(config: ArchetypeConfig) {
@@ -74,7 +80,8 @@ class MetronomesArchetype implements Archetype {
     this.sp = Math.min(0.5, WIDTH / Math.max(cols, rows));
     this.unitsPerM = this.sp / SPACING;
     this.caseH = 1.45 * this.sp;
-    this.floorY = -2 * this.rollerR;
+    this.floorY = -PLATE_T - 2 * this.rollerR;
+    this.zoom = Math.max(1, (SHAKE_FRAC * Math.max(cols, rows) * SPACING) / SHAKE_REF);
     const N = Math.max(60_000, config.particleCount);
     this.particleCount = N;
     this.positions = new Float32Array(N * 3); this.colors = new Float32Array(N * 3);
@@ -103,7 +110,7 @@ class MetronomesArchetype implements Archetype {
     this.plat0 = 0;
     const local: number[] = [];
     const steel: [number, number, number] = [0.42, 0.45, 0.5];
-    const plateT = 0.045, margin = this.sp * 0.35, Px = Wx / 2 + margin, Pz = Wz / 2 + margin;
+    const plateT = PLATE_T, margin = this.sp * 0.35, Px = Wx / 2 + margin, Pz = Wz / 2 + margin;
     const plateCount = 9000;
     for (let k = 0; k < plateCount; k++, idx++) {
       const u = rng(), v = rng();
@@ -173,7 +180,7 @@ class MetronomesArchetype implements Archetype {
     const ballCount = 2400; this.ballLocal = new Float32Array(ballCount * 3);
     for (let k = 0; k < ballCount; k++, idx++) {
       const c = k % 4, z = rng() * 2 - 1, t = rng() * 2 * Math.PI, s = Math.sqrt(1 - z * z), R = this.rollerR;
-      this.ballLocal[k * 3] = (c & 1 ? 1 : -1) * Px * 0.75 + R * s * Math.cos(t); this.ballLocal[k * 3 + 1] = -R + R * z; this.ballLocal[k * 3 + 2] = (c & 2 ? 1 : -1) * Pz * 0.75 + R * s * Math.sin(t);
+      this.ballLocal[k * 3] = (c & 1 ? 1 : -1) * Px * 0.75 + R * s * Math.cos(t); this.ballLocal[k * 3 + 1] = -PLATE_T - R + R * z; this.ballLocal[k * 3 + 2] = (c & 2 ? 1 : -1) * Pz * 0.75 + R * s * Math.sin(t);
       setC(idx, [0.6, 0.62, 0.7], 0.7);
     }
     this.ball1 = idx;
@@ -266,10 +273,10 @@ class MetronomesArchetype implements Archetype {
   }
 
   private layout(): void {
-    const pos = this.positions, rig = this.rig, n = rig.n, b = 2 * n, Z = MOTION_ZOOM * this.unitsPerM;
+    const pos = this.positions, rig = this.rig, n = rig.n, b = 2 * n, Z = this.zoom * this.unitsPerM;
     // only the shake is magnified; the slow drift it rides on is drawn true size
     const d = this.drift, U = this.unitsPerM;
-    const X = (rig.s[b] - d[0]) * Z + d[0] * U, Zp = (rig.s[b + 1] - d[1]) * Z + d[1] * U, phi = (rig.s[b + 2] - d[2]) * MOTION_ZOOM + d[2], c = Math.cos(phi), s = Math.sin(phi);
+    const X = (rig.s[b] - d[0]) * Z + d[0] * U, Zp = (rig.s[b + 1] - d[1]) * Z + d[1] * U, phi = (rig.s[b + 2] - d[2]) * this.zoom + d[2], c = Math.cos(phi), s = Math.sin(phi);
     // physics y → render z; a turn φ (anticlockwise seen from above in physics) turns render (x, z) the same way
     const tx = (x: number, z: number) => X + c * x - s * z, tz = (x: number, z: number) => Zp + s * x + c * z;
     for (let k = this.plat0, j = 0; k < this.plat1; k++, j += 3) {
@@ -285,13 +292,14 @@ class MetronomesArchetype implements Archetype {
       pos[o] = tx(lx, lz); pos[o + 1] = this.pivotY + up; pos[o + 2] = tz(lx, lz);
     }
     const [fx, fy, fp] = rig.free(), rolls = fx && !fy && !fp, balls = fy, pin = fp && !fx;
-    // rollers roll without slipping: their axles move half as far as the platform, and they turn by X / 2R
-    const turn = -(X / 2) / this.rollerR;
+    // rollers roll without slipping between floor and plate: their axles move half as far as the platform,
+    // and they turn by X / 2R, top moving with the plate (a = 0 is the top; +a carries it towards +x)
+    const turn = (X / 2) / this.rollerR;
     for (let q = 0, k = this.roll0; k < this.roll1; k++, q++) {
       const o = k * 3;
       if (!rolls) { pos[o + 1] = -46; continue; }
       const a = this.rollA[q] + turn;
-      pos[o] = this.rollX[q] + X / 2 + this.rollerR * Math.sin(a); pos[o + 1] = -this.rollerR + this.rollerR * Math.cos(a); pos[o + 2] = this.rollS[q];
+      pos[o] = this.rollX[q] + X / 2 + this.rollerR * Math.sin(a); pos[o + 1] = -PLATE_T - this.rollerR + this.rollerR * Math.cos(a); pos[o + 2] = this.rollS[q];
     }
     for (let q = 0, k = this.ball0; k < this.ball1; k++, q++) {
       const o = k * 3;

@@ -18,6 +18,17 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+      "version": "0.1.108",
+      "date": "2026-11-23",
+      "title": "Metronomes: rollers that roll, and a calmer platform",
+      "summary": "The rollers under Huygens' metronomes now turn the right way and sit beneath the platform, and the platform's shake is drawn at a size that fits it.",
+      "newSystems": [],
+      "notes": [
+          "Huygens' Metronomes: the rollers now roll without slipping (they were turning backwards) and sit between the plate and the floor instead of cutting into the plate.",
+          "Huygens' Metronomes: the platform's real ±6 mm shake is now magnified until it spans about ±3% of the platform's width (about 6 times for the default hundred, nearly true size for two) instead of a fixed 40 times, so it no longer swings too far or too fast."
+      ]
+  },
+  {
       "version": "0.1.107",
       "date": "2026-11-23",
       "title": "Huygens' metronomes: a crowd that finds one beat",
