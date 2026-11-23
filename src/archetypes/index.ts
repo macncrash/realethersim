@@ -18,6 +18,7 @@ import { kuramotoFactory } from './kuramoto';
 import { chimeraFactory } from './chimera';
 import { karmanFactory } from './karman';
 import { pendulumWaveFactory } from './pendulumWave';
+import { metronomesFactory } from './metronomes';
 import { kuramotoSivashinskyFactory } from './kuramotoSivashinsky';
 import { billiardFactory } from './billiard';
 import { crystalFactory } from './molecularDynamics';
@@ -152,6 +153,7 @@ export function registerArchetypes(): void {
   register(chimeraFactory);
   register(karmanFactory);
   register(pendulumWaveFactory);
+  register(metronomesFactory);
   register(kuramotoSivashinskyFactory);
   register(billiardFactory);
   register(crystalFactory);

@@ -18,6 +18,18 @@ export interface Release {
 
 export const RELEASES: Release[] = [
   {
+      "version": "0.1.107",
+      "date": "2026-11-23",
+      "title": "Huygens' metronomes: a crowd that finds one beat",
+      "summary": "Up to 400 metronomes on one platform that can roll, slide or spin, pulled from a clatter into a single beat by nothing but the platform's motion. Nine knobs decide whether they agree, and the phase ring shows it happening.",
+      "newSystems": [
+          "metronomes"
+      ],
+      "notes": [
+          "Huygens' Metronomes (Oscillator): Pantaleone's metronome model with a platform that can roll, slide, spin or slide and spin, solved exactly at every step. A hundred metronomes lock in about 40 seconds on a light platform, but not on a heavy or sticky one, not with 2% or more mistuning, and not at 60 bpm. A spinning platform splits them into two halves swinging opposite; crossed metronomes form two crowds that ignore each other. A phase ring and a chart of r and r₂ show the crowd coming together."
+      ]
+  },
+  {
       "version": "0.1.106",
       "date": "2026-11-22",
       "title": "Quasicrystals, pinwheels, memories and nerves",

@@ -688,6 +688,7 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
       controls.update();
     }
     // The pendulum over its floor — a high 3/4 view of the wire, the trace and the pegs.
+    if ($archetypeId.get() === 'metronomes') { controls.target.set(0.1, 0.45, -0.5); camera.position.set(1.3, 3.0, 4.7); controls.update(); }
     if ($archetypeId.get() === 'foucault') {
       controls.target.set(0, -0.3, 0);
       camera.position.set(1.7, 2.8, 3.2);
@@ -1525,6 +1526,7 @@ export async function bootstrap(canvas: HTMLCanvasElement): Promise<Engine> {
           else if (id === 'racketFlip') { controls.target.set(0, -0.3, 0); camera.position.set(0, -0.1, 5.7); }
           else if (id === 'heavyTop') { controls.target.set(0, -0.35, 0); camera.position.set(0, 1.6, 5.4); }
           else if (id === 'poinsot') { controls.target.set(0, -0.35, 0); camera.position.set(0.6, 2.3, 4.2); }
+          else if (id === 'metronomes') { controls.target.set(0, 0.25, 0); camera.position.set(1.1, 1.7, 2.5); }
           else if (id === 'foucault') { controls.target.set(0, -0.3, 0); camera.position.set(1.7, 2.8, 3.2); }
           else if (id === 'riverSpace') { controls.target.set(0, 0, 0); camera.position.set(0, 3.6, 2.9); }
           else if (id === 'alcubierre') { controls.target.set(0, -0.1, 0); camera.position.set(0.5, 4.4, 5.6); }

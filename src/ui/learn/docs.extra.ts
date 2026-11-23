@@ -5685,6 +5685,91 @@ o[1] = p.b * x[0];`,
           }
       ]
   },
+  metronomes: {
+      "title": "Huygens' Metronomes",
+      "about": "In February 1665 Christiaan Huygens, ill in bed, noticed that two pendulum clocks hanging from the same beam always ended up swinging exactly opposite each other, however he disturbed them. He called it an odd kind of sympathy. The clocks were talking through tiny motions of the beam. Stand metronomes on a board that can roll and the same quiet conversation pulls a crowd of them from a clatter into one beat. Nothing joins them but the platform: every swing nudges it a few millimetres, and its motion nudges every pendulum back. A metronome a little ahead is held back, one a little behind is hurried along, and the platform moves more the more of them agree, so agreement feeds on itself. With the defaults, a hundred metronomes started at random are in step within about 40 seconds. Then try to stop it. Make the platform heavy, or sticky, and it can't move enough to carry the message. Mistune the metronomes by 2% or more and they can't agree. Slow the tempo to 60 and the push is too weak. Let the platform spin instead of roll and the crowd splits in two, front half and back half swinging exactly opposite, because opposite swings on either side of the pin turn the platform together. Face the metronomes in a checkerboard on a platform that slides both ways and you get two separate crowds that ignore each other. And two metronomes on a sticky platform stop swinging together and settle far apart, often nearly opposite, more like Huygens' clocks.",
+      "howItWorks": "Each metronome is a physical pendulum with an escapement modelled, following Pantaleone (2002), as a van der Pol term: it pumps energy in when the swing is small and takes it out when it is large, holding every metronome near 40°. The platform can move in x and y and turn about its centre by an angle φ, or any of those can be locked. A swing pushes the platform with the reaction to its bob's acceleration, and the platform's acceleration at the metronome's foot pushes back on the pendulum. The coupling strength is β = mr/I = ω²/g, so it grows with the square of the tempo. Putting one equation into the other gives a 3 × 3 linear system for the platform's three accelerations, solved exactly at every stage of a fourth-order Runge–Kutta step of 4 ms or less. Each metronome weighs 150 g with a pendulum of first moment 2 g·m, standing 12 cm apart. The platform's mass is a multiple of all the metronomes together, and its friction is a damping rate. Platform rotations are small, so their geometry is linearised; the pendulum angles are not. The phase ring is drawn in a frame turning with the average metronome, so a synchronised crowd stands still in one clump; the arrow is the order parameter r, and the chart tracks r (warm, in step) and r₂ (blue, in step or exactly opposite). Checked: with friction off, the momentum of platform and pendulums together stays constant to 1 part in 10⁹; 100 metronomes on the default platform reach r = 0.9 in 28 to 42 s over five random starts, but not on a platform 30 times their mass, nor with 4% spread, nor at 60 bpm; on a pinned, spinning platform the two halves each reach r > 0.8 and swing within 0.35 rad of opposite. The platform really shakes about ±6 mm at the defaults; the shake is drawn 40 times larger, its slow drift and the pendulum swings true size.",
+      "equations": [
+          {
+              "label": "each metronome",
+              "latex": "\\ddot\\theta_i = -\\omega_i^2\\sin\\theta_i - \\varepsilon\\Big[\\big(\\tfrac{\\theta_i}{\\theta_0}\\big)^2 - 1\\Big]\\dot\\theta_i - \\beta\\cos\\theta_i\\,(\\mathbf e_i\\cdot\\ddot{\\mathbf q}),\\qquad \\beta = \\frac{mr}{I} = \\frac{\\omega^2}{g}"
+          },
+          {
+              "label": "the platform",
+              "latex": "D\\,\\ddot{\\mathbf q} = -\\gamma D\\,\\dot{\\mathbf q} - mr\\sum_i\\big(\\ddot\\theta_i\\cos\\theta_i - \\dot\\theta_i^2\\sin\\theta_i\\big)\\,\\mathbf e_i,\\qquad \\mathbf q = (X, Y, \\varphi),\\ D = \\mathrm{diag}(M, M, J)"
+          },
+          {
+              "label": "how much they agree",
+              "latex": "r\\,e^{i\\psi} = \\frac1N\\sum_j e^{i\\phi_j}"
+          }
+      ],
+      "params": [
+          {
+              "key": "count",
+              "symbol": "N",
+              "meaning": "how many metronomes, in a square-ish grid"
+          },
+          {
+              "key": "bpm",
+              "symbol": "ω",
+              "meaning": "tempo in ticks per minute (two ticks a swing); the coupling grows as its square"
+          },
+          {
+              "key": "spread",
+              "symbol": "Δω/ω",
+              "meaning": "how mistuned the metronomes are, as a percentage"
+          },
+          {
+              "key": "platformMass",
+              "symbol": "M",
+              "meaning": "the platform's mass, as a multiple of all the metronomes together"
+          },
+          {
+              "key": "friction",
+              "symbol": "γ",
+              "meaning": "how much the platform's rolling is damped (per second)"
+          },
+          {
+              "key": "drive",
+              "symbol": "ε",
+              "meaning": "how hard each escapement pumps its pendulum towards a 40° swing"
+          },
+          {
+              "key": "freedom",
+              "symbol": "",
+              "meaning": "the platform rolls one way, slides any way, spins on a pin, or slides and spins"
+          },
+          {
+              "key": "headings",
+              "symbol": "",
+              "meaning": "which way the metronomes face: all alike, crossed in a checkerboard, or every which way"
+          },
+          {
+              "key": "speed",
+              "symbol": "",
+              "meaning": "simulated seconds per second"
+          }
+      ],
+      "code": "// one metronome's angular acceleration, with the platform's acceleration q̈ already solved\nconst f = -w[i] * w[i] * Math.sin(th) - eps * ((th / th0) ** 2 - 1) * thDot;\nthDDot = f - beta * Math.cos(th) * (ux * aX + uy * aY + (px * uy - py * ux) * aPhi);",
+      "links": [
+          {
+              "label": "Pantaleone, Synchronization of metronomes (Am. J. Phys. 2002)",
+              "url": "https://doi.org/10.1119/1.1501118"
+          },
+          {
+              "label": "Bennett et al., Huygens's clocks (Proc. R. Soc. A 2002)",
+              "url": "https://doi.org/10.1098/rspa.2001.0888"
+          },
+          {
+              "label": "Martens et al., Chimera states in mechanical oscillator networks (PNAS 2013)",
+              "url": "https://doi.org/10.1073/pnas.1302880110"
+          },
+          {
+              "label": "Kuramoto model (Wikipedia)",
+              "url": "https://en.wikipedia.org/wiki/Kuramoto_model"
+          }
+      ]
+  },
   axon: {
       "title": "Hodgkin–Huxley Axon",
       "about": "A nerve impulse is a wave of voltage that runs along an axon without fading. Alan Hodgkin and Andrew Huxley worked out how, using the giant axon of the squid, which is wide enough to thread a wire down. Sodium channels open when the voltage rises, letting sodium in and pushing the voltage higher still; they then close by themselves, while slower potassium channels open and pull the voltage back down. Current spreading inside the axon lifts the next stretch past its threshold, and the impulse moves on. In 1952 they put this into four equations, solved them with a hand calculator, and predicted the impulse's shape and speed: 18.8 m/s, against 21.2 m/s measured. This axon runs the same equations, and the impulse travels at 18.6 m/s. Make the axon thicker and it conducts faster, as the square root of the radius: four times as thick, twice as fast. Wrap it in myelin and the impulse jumps from gap to gap, nearly four times as fast for the same width; that is how vertebrate nerves stay thin. Warm it up and it speeds up, until at 30 °C the sodium channels close too quickly and the impulse dies out. Stimulate both ends and the two impulses meet and annihilate: each runs into the stretch the other has just left, which can't fire again yet.",
